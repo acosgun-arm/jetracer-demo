@@ -1,5 +1,7 @@
 # JetRacer high-rate simulator
 
+[![Headless CI](https://github.com/acosgun-arm/jetracer-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/acosgun-arm/jetracer-demo/actions/workflows/ci.yml)
+
 A lightweight simulator and control stack for developing JetRacer vision
 software before the hardware arrives. It provides a C++ CPU renderer, a
 kinematic bicycle model, configurable wide-angle cameras, lane/road semantics,
