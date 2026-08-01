@@ -205,6 +205,21 @@
     "yolo_local_stop_sign_class_id": 0,
     "pretrained_yolo_stop_sign_class_id": 11
   },
+  "synthetic_clip_export": {
+    "camera_profile": "elp",
+    "track_id": "waveshare_3x2",
+    "duration_s": 10.0,
+    "cruise_speed_mps": 0.9,
+    "road_class_id": 1,
+    "output_directory": "benchmarks/synthetic_clips",
+    "ffmpeg_executable": "ffmpeg",
+    "rgb_codec": "libx264",
+    "rgb_preset": "ultrafast",
+    "rgb_crf": 18,
+    "rgb_pixel_format": "yuv420p",
+    "semantic_codec": "ffv1",
+    "sha256_chunk_bytes": 1048576
+  },
   "segmentation_evaluation": {
     "source_road_labels": ["road"],
     "ground_truth_class_ids": [1, 2],

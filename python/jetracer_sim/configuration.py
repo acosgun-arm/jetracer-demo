@@ -58,6 +58,7 @@ def load_runtime_configuration(
             "stop_sign",
             "obstacle_avoidance",
             "dataset_export",
+            "synthetic_clip_export",
             "segmentation_evaluation",
             "model_benchmark",
         ),
@@ -330,6 +331,34 @@ def _validate_runtime_document(document: dict[str, Any]) -> None:
         raise ValueError("recorded clip benchmark hash chunk must be positive")
     if not isinstance(clip_benchmark.get("realtime_pacing"), bool):
         raise ValueError("recorded clip benchmark pacing must be a boolean")
+    synthetic_clip = document["synthetic_clip_export"]
+    if not isinstance(synthetic_clip, dict):
+        raise ValueError("synthetic clip export configuration must be an object")
+    if synthetic_clip.get("camera_profile") not in {"stress", "elp", "imx219"}:
+        raise ValueError("synthetic clip camera profile is invalid")
+    if not str(synthetic_clip.get("track_id", "")):
+        raise ValueError("synthetic clip track ID must not be empty")
+    if min(
+        float(synthetic_clip.get("duration_s", 0.0)),
+        float(synthetic_clip.get("cruise_speed_mps", 0.0)),
+    ) <= 0.0:
+        raise ValueError("synthetic clip duration and speed must be positive")
+    if not 0 <= int(synthetic_clip.get("rgb_crf", -1)) <= 51:
+        raise ValueError("synthetic clip RGB CRF must be in [0, 51]")
+    if not 0 <= int(synthetic_clip.get("road_class_id", -1)) <= 255:
+        raise ValueError("synthetic clip road class ID must be a uint8 value")
+    for name in (
+        "output_directory",
+        "ffmpeg_executable",
+        "rgb_codec",
+        "rgb_preset",
+        "rgb_pixel_format",
+        "semantic_codec",
+    ):
+        if not str(synthetic_clip.get(name, "")):
+            raise ValueError(f"synthetic clip {name} must not be empty")
+    if int(synthetic_clip.get("sha256_chunk_bytes", 0)) <= 0:
+        raise ValueError("synthetic clip hash chunk size must be positive")
 
 
 def _validate_native_document(document: dict[str, Any]) -> None:

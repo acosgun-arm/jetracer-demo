@@ -8,6 +8,7 @@ __pycache__/
 .pytest_cache/
 /benchmarks/cameras/
 /benchmarks/recorded_clips/
+/benchmarks/synthetic_clips/
 /models/*.onnx
 /models/*.onnx.json
 /models/*.pt

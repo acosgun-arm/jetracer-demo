@@ -266,6 +266,12 @@ from .dataset import (  # noqa: F401
     DatasetExportSummary,
     export_evaluation_dataset,
 )
+from .synthetic_clip import (  # noqa: F401
+    SYNTHETIC_CLIP_SCHEMA_VERSION,
+    SyntheticClipExportConfig,
+    SyntheticClipExportSummary,
+    export_synthetic_track_clip,
+)
 from .evaluation import (  # noqa: F401
     SEGMENTATION_EVALUATION_SCHEMA_VERSION,
     SegmentationEvaluationResult,

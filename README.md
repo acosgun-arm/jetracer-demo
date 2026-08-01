@@ -100,6 +100,16 @@ for focused runs. Results are written under `build/benchmarks/` and include
 off-road events, centreline deviation, average speed, stop compliance, and
 collisions.
 
+Export a headless 10-second Waveshare-track clip at the ELP camera's native
+1920x1200 cadence, together with lossless semantic ground truth and metadata:
+
+```bash
+python tools/export_synthetic_clip.py
+```
+
+Outputs are written under `benchmarks/synthetic_clips/`. Use `--track`,
+`--duration`, `--speed`, or `--profile` to override the configured defaults.
+
 ## Build and test
 
 For the complete native and Python test suite:

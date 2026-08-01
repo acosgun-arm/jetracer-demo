@@ -120,6 +120,7 @@ if(JETRACER_SIM_BUILD_PYTHON)
       resource_paths.py
       state_validation.py
       stopping.py
+      synthetic_clip.py
       tracks.py
       vehicle_io.py)
     configure_file(
@@ -272,6 +273,12 @@ if(JETRACER_SIM_BUILD_TESTS)
                 "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python"
                 ${Python_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_dataset_export.py)
+      add_test(
+        NAME jetracer_sim_synthetic_clip_tests
+        COMMAND ${CMAKE_COMMAND} -E env
+                "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python"
+                ${Python_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_synthetic_clip.py)
       add_test(
         NAME jetracer_sim_segmentation_evaluation_tests
         COMMAND ${CMAKE_COMMAND} -E env
