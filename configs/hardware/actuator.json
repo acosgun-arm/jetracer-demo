@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "profile_id": "jetracer-pro-controller-provisional",
+  "controller": {
+    "manufacturer": null,
+    "model": null,
+    "interface": null,
+    "address_or_device": null,
+    "status": "unidentified"
+  },
+  "calibrated": false,
+  "steering": {
+    "minimum_output": null,
+    "neutral_output": null,
+    "maximum_output": null,
+    "inverted": false
+  },
+  "throttle": {
+    "minimum_output": null,
+    "neutral_output": null,
+    "maximum_output": null,
+    "inverted": false
+  },
+  "interlocks": {
+    "motors_enabled": false,
+    "physical_test_authorized": false,
+    "requires_preflight_pass": true,
+    "requires_bringup_stage": "wheels_raised"
+  },
+  "wheels_up_acceptance": {
+    "neutral_hold_s": 2.0,
+    "direction_test_command_fraction": 0.15,
+    "direction_test_hold_s": 0.5,
+    "endpoint_test_command_fraction": 0.25,
+    "endpoint_test_hold_s": 0.5,
+    "maximum_neutral_motion_mps": 0.02,
+    "watchdog_observation_s": 0.5
+  },
+  "evidence": {
+    "controller_inventory_report": null,
+    "calibration_report": null,
+    "wheels_up_report": null
+  }
+}

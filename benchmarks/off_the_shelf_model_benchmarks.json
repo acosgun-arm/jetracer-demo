@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "benchmarks": [
+    {
+      "model_id": "segformer-b0-ade20k-cpu-fp16",
+      "source": "measured_model",
+      "measured_fps": 19.412985945720642,
+      "mean_latency_s": 0.051511910779518076,
+      "p50_latency_s": 0.05105670800548978,
+      "p95_latency_s": 0.05659422114549669,
+      "p99_latency_s": 0.06190800699405373,
+      "maximum_latency_s": 0.06336479098536074,
+      "iterations": 100,
+      "warmup_iterations": 10,
+      "environment": "Darwin 25.5.0 arm64; Python 3.14.6",
+      "recorded_at_utc": "2026-08-01T14:49:25.453924+00:00"
+    },
+    {
+      "model_id": "segformer-b0-ade20k-cpu-fp32",
+      "source": "measured_model",
+      "measured_fps": 21.046211921685497,
+      "mean_latency_s": 0.047514488769811576,
+      "p50_latency_s": 0.04714979146956466,
+      "p95_latency_s": 0.05168373098131269,
+      "p99_latency_s": 0.054288977369433285,
+      "maximum_latency_s": 0.05694320797920227,
+      "iterations": 100,
+      "warmup_iterations": 10,
+      "environment": "Darwin 25.5.0 arm64; Python 3.14.6",
+      "recorded_at_utc": "2026-08-01T14:49:19.679764+00:00"
+    }
+  ]
+}

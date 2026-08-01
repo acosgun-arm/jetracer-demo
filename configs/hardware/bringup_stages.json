@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "profile_id": "jetracer-pro-bringup-v1",
+  "stages": [
+    {
+      "stage_id": "electronics_only",
+      "order": 1,
+      "display_name": "Electronics only",
+      "movement_allowed": false,
+      "requires_preflight": false,
+      "maximum_speed_mps": 0.0,
+      "maximum_abs_steering_rad": 0.0,
+      "required_evidence": [
+        "platform_configuration",
+        "camera_inventory",
+        "emergency_stop"
+      ]
+    },
+    {
+      "stage_id": "wheels_raised",
+      "order": 2,
+      "display_name": "Wheels raised",
+      "movement_allowed": true,
+      "requires_preflight": true,
+      "maximum_speed_mps": 0.25,
+      "maximum_abs_steering_rad": 0.15,
+      "required_evidence": [
+        "neutral",
+        "motor_direction",
+        "steering_direction",
+        "watchdog",
+        "process_exit",
+        "emergency_stop"
+      ]
+    },
+    {
+      "stage_id": "restrained_low_speed",
+      "order": 3,
+      "display_name": "Restrained low speed",
+      "movement_allowed": true,
+      "requires_preflight": true,
+      "maximum_speed_mps": 0.35,
+      "maximum_abs_steering_rad": 0.18,
+      "required_evidence": [
+        "restraint",
+        "speed_state",
+        "emergency_stop"
+      ]
+    },
+    {
+      "stage_id": "open_floor_manual_stop",
+      "order": 4,
+      "display_name": "Open floor manual stop",
+      "movement_allowed": true,
+      "requires_preflight": true,
+      "maximum_speed_mps": 0.45,
+      "maximum_abs_steering_rad": 0.22,
+      "required_evidence": [
+        "clear_floor",
+        "manual_stop_distance",
+        "emergency_stop"
+      ]
+    },
+    {
+      "stage_id": "waveshare_lane_following",
+      "order": 5,
+      "display_name": "Waveshare mat lane following",
+      "movement_allowed": true,
+      "requires_preflight": true,
+      "maximum_speed_mps": 0.8,
+      "maximum_abs_steering_rad": 0.35,
+      "required_evidence": [
+        "waveshare_track",
+        "lane_metrics",
+        "emergency_stop"
+      ]
+    },
+    {
+      "stage_id": "stop_signs",
+      "order": 6,
+      "display_name": "Stop-sign behavior",
+      "movement_allowed": true,
+      "requires_preflight": true,
+      "maximum_speed_mps": 0.7,
+      "maximum_abs_steering_rad": 0.35,
+      "required_evidence": [
+        "stop_sign_detections",
+        "complete_stops",
+        "emergency_stop"
+      ]
+    },
+    {
+      "stage_id": "obstacle_avoidance",
+      "order": 7,
+      "display_name": "Obstacle avoidance",
+      "movement_allowed": true,
+      "requires_preflight": true,
+      "maximum_speed_mps": 0.6,
+      "maximum_abs_steering_rad": 0.4,
+      "required_evidence": [
+        "pedestrian_obstacle",
+        "clearance",
+        "safe_stop_fallback",
+        "emergency_stop"
+      ]
+    }
+  ]
+}

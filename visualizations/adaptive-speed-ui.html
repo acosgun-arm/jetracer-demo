@@ -1,0 +1,411 @@
+<section id="jetracer-ui-concept">
+  <style>
+    #jetracer-ui-concept { color: var(--foreground); width: 100%; }
+    #jetracer-ui-concept .demo-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.75fr);
+      gap: 16px;
+      align-items: start;
+    }
+    #jetracer-ui-concept .camera-stage {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+    }
+    #jetracer-ui-concept .camera-stage canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    #jetracer-ui-concept .side-panel { display: grid; gap: 14px; }
+    #jetracer-ui-concept .section-label { margin-bottom: 7px; font-weight: 500; }
+    #jetracer-ui-concept .model-list { display: grid; gap: 7px; }
+    #jetracer-ui-concept .indicator-field {
+      min-height: 170px;
+      display: grid;
+      align-items: center;
+    }
+    #jetracer-ui-concept .indicator-field svg {
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+    #jetracer-ui-concept .gauge-track,
+    #jetracer-ui-concept .gauge-value {
+      fill: none;
+      stroke-width: 16;
+      stroke-linecap: round;
+    }
+    #jetracer-ui-concept .gauge-track { stroke: var(--muted); }
+    #jetracer-ui-concept .gauge-value {
+      stroke: var(--viz-series-1);
+      transition: stroke-dasharray 260ms ease;
+    }
+    #jetracer-ui-concept .gauge-needle {
+      stroke: var(--foreground);
+      stroke-width: 3;
+      stroke-linecap: round;
+      transition: transform 260ms ease;
+      transform-origin: 160px 148px;
+    }
+    #jetracer-ui-concept .gauge-hub { fill: var(--foreground); }
+    #jetracer-ui-concept .chart-label { fill: var(--muted-foreground); }
+    #jetracer-ui-concept .chart-value { fill: var(--foreground); font-weight: 500; }
+    #jetracer-ui-concept .bar-track { fill: var(--muted); }
+    #jetracer-ui-concept .bar-value {
+      fill: var(--viz-series-1);
+      transition: width 260ms ease;
+    }
+    #jetracer-ui-concept .camera-target {
+      stroke: var(--viz-series-2);
+      stroke-width: 2;
+    }
+    #jetracer-ui-concept .live-marker {
+      fill: var(--foreground);
+      stroke: var(--background);
+      stroke-width: 2;
+      transition: cx 260ms ease;
+    }
+    #jetracer-ui-concept .vehicle-speed svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    #jetracer-ui-concept .speed-track { fill: var(--muted); }
+    #jetracer-ui-concept .speed-value {
+      fill: var(--viz-series-3);
+      transition: width 180ms linear;
+    }
+    #jetracer-ui-concept .speed-target {
+      stroke: var(--viz-series-2);
+      stroke-width: 3;
+      transition: x1 260ms ease, x2 260ms ease;
+    }
+    #jetracer-ui-concept .metrics { margin-top: 16px; }
+    @media (max-width: 650px) {
+      #jetracer-ui-concept .demo-layout { grid-template-columns: 1fr; }
+      #jetracer-ui-concept .model-list { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      #jetracer-ui-concept .model-list { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #jetracer-ui-concept .gauge-value,
+      #jetracer-ui-concept .gauge-needle,
+      #jetracer-ui-concept .bar-value,
+      #jetracer-ui-concept .live-marker,
+      #jetracer-ui-concept .speed-value,
+      #jetracer-ui-concept .speed-target { transition: none; }
+    }
+  </style>
+
+  <div class="demo-layout">
+    <div class="camera-stage">
+      <canvas id="jetracer-feed" width="960" height="540" role="img"
+        aria-label="Simulated road camera with segmentation and stop-sign detection overlays"></canvas>
+    </div>
+
+    <div class="side-panel">
+      <div>
+        <div class="section-label">Vision model</div>
+        <div class="model-list" role="group" aria-label="Vision model">
+          <button type="button" class="btn btn-block model-choice" data-model="tiny" aria-pressed="true">Tiny INT8 · 220 FPS</button>
+          <button type="button" class="btn btn-block model-choice" data-model="small" aria-pressed="false">Small FP16 · 125 FPS</button>
+          <button type="button" class="btn btn-block model-choice" data-model="large" aria-pressed="false">Large FP32 · 42 FPS</button>
+          <button type="button" class="btn btn-block model-choice" data-model="remote" aria-pressed="false">Remote DGX · 18 FPS</button>
+        </div>
+      </div>
+
+      <div class="viz-controls" aria-label="Processed video overlays">
+        <label class="form-check form-switch">
+          <input class="form-check-input" id="segmentation-toggle" type="checkbox" checked>
+          <span class="form-check-label">Segmentation</span>
+        </label>
+        <label class="form-check form-switch">
+          <input class="form-check-input" id="boxes-toggle" type="checkbox" checked>
+          <span class="form-check-label">Boxes</span>
+        </label>
+      </div>
+
+      <div>
+        <div class="viz-controls" aria-label="FPS indicator style">
+          <span class="section-label">FPS indicator</span>
+          <button type="button" class="btn indicator-choice" data-view="gauge" aria-pressed="true">Gauge</button>
+          <button type="button" class="btn indicator-choice" data-view="bar" aria-pressed="false">Bar</button>
+        </div>
+        <div class="indicator-field">
+          <svg id="fps-gauge" viewBox="0 0 320 180" role="img" aria-labelledby="gauge-title gauge-desc">
+            <title id="gauge-title">Selected model theoretical throughput</title>
+            <desc id="gauge-desc">Tiny INT8 is selected at 220 theoretical frames per second.</desc>
+            <path class="gauge-track" pathLength="100" d="M40 148 A120 120 0 0 1 280 148"></path>
+            <path id="gauge-value" class="gauge-value" pathLength="100" stroke-dasharray="91.7 100" d="M40 148 A120 120 0 0 1 280 148"></path>
+            <line id="gauge-needle" class="gauge-needle" x1="160" y1="148" x2="69" y2="148"></line>
+            <circle class="gauge-hub" cx="160" cy="148" r="6"></circle>
+            <text class="chart-label text-small" x="38" y="170">0</text>
+            <text class="chart-label text-small" x="148" y="42">120</text>
+            <text class="chart-label text-small" x="264" y="170">240</text>
+            <text id="gauge-number" class="chart-value" x="160" y="112" text-anchor="middle">220 FPS</text>
+            <text id="gauge-live" class="chart-label text-small" x="160" y="132" text-anchor="middle">live ≈ 200 FPS</text>
+          </svg>
+
+          <svg id="fps-bar" viewBox="0 0 360 120" role="img" aria-labelledby="bar-title bar-desc" hidden>
+            <title id="bar-title">Selected model theoretical throughput</title>
+            <desc id="bar-desc">Tiny INT8 is selected at 220 theoretical frames per second.</desc>
+            <rect class="bar-track" x="20" y="42" width="320" height="18" rx="9"></rect>
+            <rect id="bar-value" class="bar-value" x="20" y="42" width="293" height="18" rx="9"></rect>
+            <line class="camera-target" x1="287" y1="28" x2="287" y2="72"></line>
+            <circle id="bar-live" class="live-marker" cx="287" cy="51" r="6"></circle>
+            <text class="chart-label text-small" x="20" y="84">0</text>
+            <text class="chart-label text-small" x="287" y="20" text-anchor="middle">camera 200</text>
+            <text class="chart-label text-small" x="340" y="84" text-anchor="end">240 FPS</text>
+            <text id="bar-number" class="chart-value" x="20" y="108">220 theoretical · 200 live</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="vehicle-speed">
+        <div class="viz-row">
+          <span class="section-label">Car speed</span>
+          <span id="car-speed-value" class="viz-badge">1.80 m/s</span>
+          <span id="car-speed-target" class="text-small">permitted 1.80 m/s</span>
+        </div>
+        <svg viewBox="0 0 360 78" role="img" aria-labelledby="speed-title speed-desc">
+          <title id="speed-title">Adaptive car speed</title>
+          <desc id="speed-desc">The car is travelling at 1.8 metres per second, matching the permitted speed.</desc>
+          <rect class="speed-track" x="20" y="24" width="320" height="16" rx="8"></rect>
+          <rect id="speed-value" class="speed-value" x="20" y="24" width="230" height="16" rx="8"></rect>
+          <line id="speed-target" class="speed-target" x1="250" y1="16" x2="250" y2="49"></line>
+          <text class="chart-label text-small" x="20" y="66">0</text>
+          <text id="speed-target-label" class="chart-label text-small" x="250" y="12" text-anchor="middle">limit</text>
+          <text class="chart-label text-small" x="340" y="66" text-anchor="end">2.5 m/s</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="viz-grid metrics">
+    <div class="card viz-stat">
+      <div>Theoretical throughput</div>
+      <div id="rated-stat" class="viz-stat-value">220 FPS</div>
+      <div class="text-small">selected model profile</div>
+    </div>
+    <div class="card viz-stat">
+      <div>Measured live</div>
+      <div id="live-stat" class="viz-stat-value">200 FPS</div>
+      <div class="text-small">latest-frame processing</div>
+    </div>
+    <div class="card viz-stat">
+      <div>Result age</div>
+      <div id="age-stat" class="viz-stat-value">8 ms</div>
+      <div id="limit-stat" class="text-small">camera-rate ceiling</div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.getElementById('jetracer-ui-concept');
+      const canvas = root.querySelector('#jetracer-feed');
+      const context = canvas.getContext('2d');
+      const segmentationToggle = root.querySelector('#segmentation-toggle');
+      const boxesToggle = root.querySelector('#boxes-toggle');
+      const gauge = root.querySelector('#fps-gauge');
+      const bar = root.querySelector('#fps-bar');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const models = {
+        tiny: {name: 'Tiny INT8', rated: 220, live: 200, speed: 1.80, age: 8, limit: 'camera-rate ceiling'},
+        small: {name: 'Small FP16', rated: 125, live: 112, speed: 1.01, age: 14, limit: 'model throughput'},
+        large: {name: 'Large FP32', rated: 42, live: 38, speed: 0.34, age: 36, limit: 'model throughput'},
+        remote: {name: 'Remote DGX', rated: 18, live: 16, speed: 0.15, age: 78, limit: 'network + result age'}
+      };
+      let selected = models.tiny;
+      let animatedRated = selected.rated;
+      let actualSpeed = selected.speed;
+      let roadOffset = 0;
+
+      function css(name) {
+        return getComputedStyle(root).getPropertyValue(name).trim();
+      }
+
+      function updateReadouts() {
+        root.querySelector('#rated-stat').textContent = `${selected.rated} FPS`;
+        root.querySelector('#live-stat').textContent = `${selected.live} FPS`;
+        root.querySelector('#age-stat').textContent = `${selected.age} ms`;
+        root.querySelector('#limit-stat').textContent = selected.limit;
+        root.querySelector('#car-speed-target').textContent = `permitted ${selected.speed.toFixed(2)} m/s`;
+        root.querySelector('#gauge-live').textContent = `live ≈ ${selected.live} FPS`;
+        root.querySelector('#bar-number').textContent = `${selected.rated} theoretical · ${selected.live} live`;
+        root.querySelector('#gauge-desc').textContent = `${selected.name} is selected at ${selected.rated} theoretical frames per second.`;
+        root.querySelector('#bar-desc').textContent = root.querySelector('#gauge-desc').textContent;
+      }
+
+      function updateIndicator() {
+        const proportion = Math.max(0, Math.min(animatedRated / 240, 1));
+        const liveProportion = Math.max(0, Math.min(selected.live / 240, 1));
+        root.querySelector('#gauge-value').setAttribute('stroke-dasharray', `${proportion * 100} 100`);
+        root.querySelector('#gauge-needle').style.transform = `rotate(${proportion * 180}deg)`;
+        root.querySelector('#gauge-number').textContent = `${Math.round(animatedRated)} FPS`;
+        root.querySelector('#bar-value').setAttribute('width', String(320 * proportion));
+        root.querySelector('#bar-live').setAttribute('cx', String(20 + 320 * liveProportion));
+      }
+
+      function updateSpeedIndicator() {
+        const actualProportion = Math.max(0, Math.min(actualSpeed / 2.5, 1));
+        const targetProportion = Math.max(0, Math.min(selected.speed / 2.5, 1));
+        const targetX = 20 + 320 * targetProportion;
+        root.querySelector('#speed-value').setAttribute('width', String(320 * actualProportion));
+        root.querySelector('#speed-target').setAttribute('x1', String(targetX));
+        root.querySelector('#speed-target').setAttribute('x2', String(targetX));
+        root.querySelector('#speed-target-label').setAttribute('x', String(targetX));
+        root.querySelector('#car-speed-value').textContent = `${actualSpeed.toFixed(2)} m/s`;
+        root.querySelector('#speed-desc').textContent = `The car is travelling at ${actualSpeed.toFixed(2)} metres per second with a permitted speed of ${selected.speed.toFixed(2)} metres per second.`;
+      }
+
+      function drawFeed() {
+        const width = canvas.width;
+        const height = canvas.height;
+        const horizon = height * 0.36;
+        context.fillStyle = css('--card');
+        context.fillRect(0, 0, width, horizon);
+        context.fillStyle = css('--muted');
+        context.fillRect(0, horizon, width, height - horizon);
+
+        context.fillStyle = css('--secondary');
+        context.beginPath();
+        context.moveTo(width * 0.43, horizon);
+        context.lineTo(width * 0.05, height);
+        context.lineTo(width * 0.95, height);
+        context.lineTo(width * 0.57, horizon);
+        context.closePath();
+        context.fill();
+
+        if (segmentationToggle.checked) {
+          context.globalAlpha = 0.28;
+          context.fillStyle = css('--viz-series-1');
+          context.beginPath();
+          context.moveTo(width * 0.435, horizon + 3);
+          context.lineTo(width * 0.08, height);
+          context.lineTo(width * 0.92, height);
+          context.lineTo(width * 0.565, horizon + 3);
+          context.closePath();
+          context.fill();
+          context.globalAlpha = 1;
+        }
+
+        context.strokeStyle = css('--foreground');
+        context.lineWidth = 5;
+        context.beginPath();
+        context.moveTo(width * 0.455, horizon);
+        context.lineTo(width * 0.22, height);
+        context.moveTo(width * 0.545, horizon);
+        context.lineTo(width * 0.78, height);
+        context.stroke();
+
+        roadOffset = (roadOffset + actualSpeed * 2.6) % 72;
+        context.globalAlpha = 0.62;
+        context.strokeStyle = css('--border');
+        context.lineWidth = 2;
+        for (let step = -1; step < 7; step += 1) {
+          const fraction = ((step * 72 + roadOffset) / 500 + 1) % 1;
+          const eased = fraction * fraction;
+          const y = horizon + eased * (height - horizon);
+          const halfWidth = width * (0.07 + eased * 0.38);
+          context.beginPath();
+          context.moveTo(width / 2 - halfWidth, y);
+          context.lineTo(width / 2 + halfWidth, y);
+          context.stroke();
+        }
+        context.globalAlpha = 1;
+
+        const signX = width * 0.69;
+        const signY = height * 0.32;
+        context.fillStyle = css('--destructive');
+        context.beginPath();
+        for (let point = 0; point < 8; point += 1) {
+          const angle = Math.PI / 8 + point * Math.PI / 4;
+          const x = signX + Math.cos(angle) * 24;
+          const y = signY + Math.sin(angle) * 24;
+          if (point === 0) context.moveTo(x, y); else context.lineTo(x, y);
+        }
+        context.closePath();
+        context.fill();
+        context.fillStyle = css('--background');
+        context.font = '500 13px system-ui';
+        context.textAlign = 'center';
+        context.fillText('STOP', signX, signY + 5);
+
+        if (boxesToggle.checked) {
+          context.strokeStyle = css('--viz-series-2');
+          context.lineWidth = 3;
+          context.strokeRect(signX - 34, signY - 34, 68, 68);
+          context.fillStyle = css('--viz-series-2');
+          context.fillRect(signX - 34, signY - 57, 154, 23);
+          context.fillStyle = css('--background');
+          context.font = '500 14px system-ui';
+          context.textAlign = 'left';
+          context.fillText('stop sign · 0.94', signX - 28, signY - 41);
+        }
+
+        context.globalAlpha = 0.82;
+        context.fillStyle = css('--card');
+        context.fillRect(16, 16, 318, 66);
+        context.globalAlpha = 1;
+        context.fillStyle = css('--card-foreground');
+        context.font = '500 18px system-ui';
+        context.textAlign = 'left';
+        context.fillText(`${selected.name} · ${selected.live} FPS live`, 30, 44);
+        context.font = '400 15px system-ui';
+        context.fillStyle = css('--card-foreground');
+        context.fillText(`result age ${selected.age} ms · car speed ${actualSpeed.toFixed(2)} m/s`, 30, 68);
+      }
+
+      root.querySelectorAll('.model-choice').forEach(button => {
+        button.addEventListener('click', () => {
+          selected = models[button.dataset.model];
+          root.querySelectorAll('.model-choice').forEach(peer => {
+            peer.setAttribute('aria-pressed', String(peer === button));
+          });
+          updateReadouts();
+          if (reducedMotion) {
+            animatedRated = selected.rated;
+            actualSpeed = selected.speed;
+          }
+          updateIndicator();
+          updateSpeedIndicator();
+          drawFeed();
+        });
+      });
+
+      root.querySelectorAll('.indicator-choice').forEach(button => {
+        button.addEventListener('click', () => {
+          const showGauge = button.dataset.view === 'gauge';
+          gauge.hidden = !showGauge;
+          bar.hidden = showGauge;
+          root.querySelectorAll('.indicator-choice').forEach(peer => {
+            peer.setAttribute('aria-pressed', String(peer === button));
+          });
+        });
+      });
+
+      segmentationToggle.addEventListener('change', drawFeed);
+      boxesToggle.addEventListener('change', drawFeed);
+
+      function animate() {
+        animatedRated += (selected.rated - animatedRated) * 0.12;
+        if (Math.abs(selected.rated - animatedRated) < 0.1) animatedRated = selected.rated;
+        const speedDifference = selected.speed - actualSpeed;
+        const speedStep = speedDifference < 0 ? 0.035 : 0.012;
+        actualSpeed += Math.sign(speedDifference) * Math.min(Math.abs(speedDifference), speedStep);
+        updateIndicator();
+        updateSpeedIndicator();
+        drawFeed();
+        if (!reducedMotion) requestAnimationFrame(animate);
+      }
+
+      updateReadouts();
+      updateIndicator();
+      updateSpeedIndicator();
+      drawFeed();
+      if (!reducedMotion) requestAnimationFrame(animate);
+    })();
+  </script>
+</section>

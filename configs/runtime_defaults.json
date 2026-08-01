@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "governor": {
+    "minimum_speed_mps": 0.0,
+    "maximum_speed_mps": 2.5,
+    "baseline_distance_per_frame_m": 0.010,
+    "maximum_perception_age_distance_m": 0.050,
+    "capacity_safety_factor": 0.90,
+    "maximum_acceleration_mps2": 0.8,
+    "maximum_deceleration_mps2": 3.0
+  },
+  "numpy_road_segmentation": {
+    "max_channel_spread": 34,
+    "minimum_brightness": 28,
+    "maximum_brightness": 255,
+    "road_class_id": 1
+  },
+  "inference_pipeline": {
+    "telemetry_alpha": 0.2
+  },
+  "yolo_detection": {
+    "input_width": 640,
+    "input_height": 640,
+    "output_format": "yolov8",
+    "output_index": 0,
+    "score_threshold": 0.25,
+    "iou_threshold": 0.45,
+    "class_names": [],
+    "letterbox_value": 114,
+    "input_scale": 0.00392156862745098
+  },
+  "detection_pipeline": {
+    "telemetry_alpha": 0.2
+  },
+  "onnx_segmentation": {
+    "output_layout": "nchw_logits",
+    "output_index": 0,
+    "road_class_id": 1,
+    "source_road_class_ids": [],
+    "input_scale": 0.00392156862745098,
+    "mean_rgb": [0.0, 0.0, 0.0],
+    "std_rgb": [1.0, 1.0, 1.0],
+    "binary_threshold": 0.5
+  },
+  "coreml_segmentation": {
+    "input_name": "pixel_values",
+    "output_name": "logits",
+    "road_class_id": 1,
+    "source_road_class_ids": [6],
+    "input_scale": 0.00392156862745098,
+    "mean_rgb": [0.485, 0.456, 0.406],
+    "std_rgb": [0.229, 0.224, 0.225],
+    "compute_units": "all"
+  },
+  "pretrained_segmentation": {
+    "model_name": "nvidia/segformer-b0-finetuned-ade-512-512",
+    "source_road_labels": ["road"],
+    "output_road_class_id": 1,
+    "device": "auto",
+    "precision": "fp32"
+  },
+  "realtime_worker": {
+    "stop_timeout_s": 2.0,
+    "result_timeout_s": 1.0,
+    "simulator_semantic_road_class_id": 1
+  },
+  "frame_source": {
+    "read_timeout_s": 1.0,
+    "stop_timeout_s": 2.0,
+    "live_camera": {
+      "backend": "avfoundation",
+      "buffer_size": 1,
+      "fourcc": null,
+      "maximum_consecutive_read_failures": 3,
+      "failure_retry_s": 0.005
+    },
+    "recorded_video": {
+      "realtime_pacing": true,
+      "loop": false
+    }
+  },
+  "recorded_clip_benchmark": {
+    "warmup_iterations": 3,
+    "maximum_duration_s": 0.0,
+    "read_timeout_s": 1.0,
+    "realtime_pacing": true,
+    "output_directory": "benchmarks/recorded_clips",
+    "sha256_chunk_bytes": 1048576
+  },
+  "realtime_demo": {
+    "camera_profile": "stress",
+    "scene_seed": 42,
+    "scene_obstacle_count": 8,
+    "scene_stop_sign_count": 4,
+    "initial_model_key": 1,
+    "requested_speed_mps": 2.5,
+    "maximum_requested_speed_mps": 2.5,
+    "speed_adjustment_step_mps": 0.25,
+    "tracking_full_confidence": 0.5,
+    "display_fps": 30.0,
+    "duration_s": 0.0,
+    "switch_every_s": 0.0,
+    "viewer": "browser",
+    "open_browser": false,
+    "viewer_port": 8765,
+    "browser_jpeg_quality": 84,
+    "browser_stream_wait_timeout_s": 1.0,
+    "browser_stop_timeout_s": 2.0,
+    "source_rate_window_s": 1.0,
+    "frame_read_timeout_s": 1.0,
+    "maximum_control_dt_s": 0.1,
+    "maximum_detector_age_s": 0.25,
+    "telemetry_flush_interval_s": 1.0,
+    "maximum_control_catch_up_steps": 5,
+    "maximum_opencv_window_width": 1280,
+    "paused_loop_sleep_s": 0.002,
+    "maximum_active_loop_sleep_s": 0.001
+  },
+  "closed_loop_example": {
+    "camera_profile": "stress",
+    "camera_width": 320,
+    "camera_height": 180,
+    "scene_seed": 42,
+    "scene_obstacle_count": 8,
+    "scene_stop_sign_count": 4,
+    "requested_speed_mps": 1.8,
+    "pure_pursuit_gain": 1.55,
+    "lateral_error_gain": 0.0,
+    "laps": 1,
+    "maximum_simulation_time_per_lap_s": 35.0,
+    "tracking_full_confidence": 0.5
+  },
+  "stop_sign_example": {
+    "camera_profile": "stress",
+    "camera_width": 320,
+    "camera_height": 180,
+    "scene_seed": 42,
+    "scene_obstacle_count": 0,
+    "scene_stop_sign_count": 4,
+    "detection_distance_m": 4.5,
+    "stop_hold_s": 0.5,
+    "cooldown_s": 1.0,
+    "detection_timeout_s": 0.6,
+    "cruise_speed_mps": 1.4,
+    "maximum_simulation_time_s": 20.0,
+    "detection_confidence": 1.0,
+    "detector_stop_sign_class_id": 11,
+    "resume_speed_threshold_mps": 0.5,
+    "complete_stop_threshold_mps": 0.05
+  },
+  "road_steering": {
+    "road_class_id": 1,
+    "minimum_row_fraction": 0.24,
+    "row_stride_pixels": 3,
+    "minimum_run_pixels": 6,
+    "maximum_gap_fraction": 0.07,
+    "maximum_centre_jump_fraction": 0.24,
+    "confidence_full_row_count": 18,
+    "base_lookahead_m": 0.55,
+    "speed_lookahead_s": 0.48,
+    "minimum_lookahead_m": 0.45,
+    "maximum_lookahead_m": 1.65,
+    "pure_pursuit_gain": 1.55,
+    "lateral_error_gain": 0.0,
+    "lateral_speed_softening_mps": 0.50,
+    "lost_steering_hold_s": 0.15,
+    "steering_smoothing_time_s": 0.035,
+    "maximum_steering_rate_rad_s": 4.0
+  },
+  "stop_sign": {
+    "stop_class_ids": [11],
+    "minimum_confidence": 0.35,
+    "detection_distance_m": 4.0,
+    "commit_distance_m": 2.0,
+    "stop_distance_m": 0.80,
+    "comfortable_deceleration_mps2": 1.5,
+    "stopped_speed_threshold_mps": 0.05,
+    "stop_hold_s": 2.0,
+    "cooldown_s": 2.0,
+    "detection_timeout_s": 0.25
+  },
+  "obstacle_avoidance": {
+    "obstacle_class_ids": [4],
+    "trigger_distance_m": 2.0,
+    "central_corridor_fraction": 0.42,
+    "lateral_offset_m": 0.12,
+    "offset_time_constant_s": 0.12,
+    "hold_after_loss_s": 0.30,
+    "preferred_pass_side": "left",
+    "slow_distance_m": 1.0,
+    "minimum_speed_scale": 0.38
+  },
+  "dataset_export": {
+    "camera_profile": "stress",
+    "scene_count": 4,
+    "frames_per_scene": 100,
+    "first_seed": 1000,
+    "sample_fps": 20.0,
+    "cruise_speed_mps": 1.2,
+    "obstacle_count": 16,
+    "stop_sign_count": 4,
+    "image_format": "jpg",
+    "jpeg_quality": 92,
+    "road_class_id": 1,
+    "yolo_local_stop_sign_class_id": 0,
+    "pretrained_yolo_stop_sign_class_id": 11
+  },
+  "segmentation_evaluation": {
+    "source_road_labels": ["road"],
+    "ground_truth_class_ids": [1, 2],
+    "device": "auto",
+    "precision": "fp32",
+    "frame_stride": 1,
+    "warmup_frames": 2
+  },
+  "model_benchmark": {
+    "camera_profile": "stress",
+    "iterations": 100,
+    "warmup_iterations": 10
+  },
+  "coreml_export": {
+    "minimum_macos_target": "macOS13",
+    "smoke_warmup_iterations": 2,
+    "smoke_iterations": 5
+  },
+  "system_health": {
+    "probe_interval_s": 1.0,
+    "temperature_globs": [
+      "/sys/class/thermal/thermal_zone*/temp"
+    ],
+    "raw_to_celsius_scale": 0.001
+  },
+  "int8_quantization": {
+    "source_model_id": "segformer-b0-ade20k-cpu-fp32",
+    "target_model_id": "segformer-b0-ade20k-tensorrt-int8",
+    "calibration_split": "evaluation",
+    "calibration_samples": 100,
+    "random_seed": 42,
+    "quant_format": "QDQ",
+    "activation_type": "QInt8",
+    "weight_type": "QInt8",
+    "per_channel": true,
+    "reduce_range": false,
+    "sha256_chunk_bytes": 1048576
+  }
+}

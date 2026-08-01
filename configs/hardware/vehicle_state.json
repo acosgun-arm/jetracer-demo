@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "profile_id": "jetracer-pro-speed-state-provisional",
+  "selected_source": "command_response_model",
+  "available_sources": {
+    "wheel_encoder": "unknown",
+    "motor_controller_feedback": "unknown",
+    "imu": "unknown",
+    "visual_odometry": "not_configured",
+    "command_response_model": "configured"
+  },
+  "validated_for_motion": false,
+  "freshness": {
+    "maximum_sample_age_s": 0.1,
+    "minimum_confidence": 0.7
+  },
+  "acceptance": {
+    "minimum_samples": 100,
+    "minimum_duration_s": 10.0,
+    "maximum_mean_absolute_speed_error_mps": 0.15,
+    "maximum_rms_speed_error_mps": 0.2,
+    "latency_percentile": 0.95,
+    "maximum_p95_latency_s": 0.05
+  },
+  "evidence": {
+    "sensor_inventory_report": null,
+    "speed_validation_report": null
+  }
+}

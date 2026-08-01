@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "models": [
+    {
+      "key": 1,
+      "model_id": "sim-tiny-int8-3ms",
+      "display_name": "Tiny INT8",
+      "backend": "tensorrt-sim",
+      "precision": "int8",
+      "compression": "quantized",
+      "adapter": {
+        "kind": "simulator_semantic",
+        "minimum_latency_s": 0.003
+      }
+    },
+    {
+      "key": 2,
+      "model_id": "sim-small-fp16-8ms",
+      "display_name": "Small FP16",
+      "backend": "tensorrt-sim",
+      "precision": "fp16",
+      "compression": "none",
+      "adapter": {
+        "kind": "simulator_semantic",
+        "minimum_latency_s": 0.008
+      }
+    },
+    {
+      "key": 3,
+      "model_id": "sim-large-fp32-25ms",
+      "display_name": "Large FP32",
+      "backend": "onnx-sim",
+      "precision": "fp32",
+      "compression": "none",
+      "adapter": {
+        "kind": "simulator_semantic",
+        "minimum_latency_s": 0.025
+      }
+    },
+    {
+      "key": 4,
+      "model_id": "sim-remote-dgx-55ms",
+      "display_name": "Remote DGX + network",
+      "backend": "remote-sim",
+      "precision": "fp16",
+      "compression": "network-delay",
+      "adapter": {
+        "kind": "simulator_semantic",
+        "minimum_latency_s": 0.055
+      }
+    }
+  ]
+}

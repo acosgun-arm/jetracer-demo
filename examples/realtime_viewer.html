@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JetRacer adaptive perception</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #0b0e14;
+      --panel: #141923;
+      --panel-raised: #1b2230;
+      --border: #2a3447;
+      --foreground: #f3f6fb;
+      --muted: #9ba8ba;
+      --blue: #52a8ff;
+      --cyan: #4fd1c5;
+      --amber: #f6bd60;
+      --danger: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font: 15px/1.4 system-ui, sans-serif;
+    }
+    button { font: inherit; }
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(290px, 0.7fr);
+      gap: 14px;
+      max-width: 1500px;
+      margin: auto;
+      padding: 14px;
+    }
+    .feed-column { min-width: 0; }
+    .feed-frame {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #000;
+    }
+    .feed-frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+    }
+    .sidebar { display: grid; gap: 12px; align-content: start; }
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      padding: 13px;
+    }
+    .label-row,
+    .value-row,
+    .scale-row,
+    .status-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .kicker {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .model-name { margin: 3px 0 10px; font-size: 20px; font-weight: 650; }
+    .model-list { display: grid; gap: 7px; }
+    .model-button,
+    .control-button {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel-raised);
+      color: var(--foreground);
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    .model-button { width: 100%; text-align: left; }
+    .model-button:hover,
+    .control-button:hover { border-color: var(--blue); }
+    .model-button.active,
+    .control-button.active {
+      border-color: var(--blue);
+      background: color-mix(in srgb, var(--blue) 18%, var(--panel-raised));
+    }
+    .hero-value {
+      margin: 3px 0 1px;
+      font-size: clamp(30px, 4vw, 48px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 650;
+      letter-spacing: -.03em;
+    }
+    .unit { color: var(--muted); font-size: 15px; font-weight: 500; }
+    .subvalue { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .rail {
+      position: relative;
+      height: 16px;
+      margin: 20px 0 7px;
+      border-radius: 8px;
+      background: var(--panel-raised);
+    }
+    .rail-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0;
+      border-radius: inherit;
+      transition: width 180ms linear;
+    }
+    #fps-rated-fill { background: var(--blue); opacity: .65; }
+    #speed-actual-fill { background: var(--cyan); }
+    .marker {
+      position: absolute;
+      top: -7px;
+      bottom: -7px;
+      width: 3px;
+      border-radius: 2px;
+      transform: translateX(-1px);
+      transition: left 180ms linear;
+    }
+    #fps-camera-marker { background: var(--amber); }
+    #speed-permitted-marker { background: var(--amber); }
+    .dot {
+      position: absolute;
+      top: 50%;
+      width: 11px;
+      height: 11px;
+      border: 2px solid var(--background);
+      border-radius: 50%;
+      background: var(--foreground);
+      transform: translate(-50%, -50%);
+      transition: left 180ms linear;
+    }
+    .scale-row { color: var(--muted); font-size: 12px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 9px; }
+    .legend span { color: var(--muted); white-space: nowrap; }
+    .swatch {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 5px;
+      border-radius: 50%;
+    }
+    .swatch.rated { background: var(--blue); }
+    .swatch.live { background: var(--foreground); }
+    .swatch.actual { background: var(--cyan); }
+    .swatch.limit { background: var(--amber); }
+    .reason {
+      margin-top: 11px;
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+    .benchmark-evidence {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 12px;
+    }
+    .benchmark-evidence[hidden] { display: none; }
+    .evidence-card {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel-raised);
+      padding: 8px 9px;
+    }
+    .evidence-value {
+      display: block;
+      margin-top: 2px;
+      font-size: 17px;
+      font-variant-numeric: tabular-nums;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .feed-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .status-row { margin-bottom: 8px; }
+    .status {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: .06em;
+    }
+    .status.paused { color: var(--amber); }
+    .connection { color: var(--muted); font-size: 12px; }
+    @media (max-width: 820px) {
+      .dashboard { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .model-panel { grid-row: span 2; }
+    }
+    @media (max-width: 560px) {
+      .dashboard { padding: 8px; }
+      .sidebar { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .rail-fill, .marker, .dot { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard">
+    <section class="feed-column" aria-label="Processed camera feed">
+      <div class="status-row">
+        <span class="kicker">Processed camera feed</span>
+        <span id="run-status" class="status">STARTING</span>
+      </div>
+      <div class="feed-frame">
+        <img src="/stream.mjpg" alt="JetRacer camera with segmentation and detection overlays">
+      </div>
+      <div class="feed-controls">
+        <button class="control-button" data-key="[">− Requested speed</button>
+        <button class="control-button" data-key="]">+ Requested speed</button>
+        <button id="pause-button" class="control-button" data-key="p">Pause</button>
+        <button id="overlay-button" class="control-button active" data-key="l">Mask overlay</button>
+        <button class="control-button" data-key="r">Reset</button>
+        <button class="control-button" data-key=" ">Stop</button>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel model-panel">
+        <div class="kicker">Vision model</div>
+        <div id="active-model-name" class="model-name">Waiting for telemetry</div>
+        <div id="model-detail" class="subvalue">—</div>
+        <div id="model-list" class="model-list" role="group"
+          aria-label="Vision model">
+          <span class="subvalue">Loading model registry…</span>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Vision throughput">
+        <div class="label-row">
+          <span class="kicker">Model throughput</span>
+          <strong id="benchmark-fps">— benchmarked</strong>
+        </div>
+        <div class="value-row">
+          <span id="live-fps" class="hero-value">—</span>
+          <span class="unit">live FPS</span>
+        </div>
+        <div id="fps-rail" class="rail" role="img" aria-label="Model and camera throughput comparison">
+          <div id="fps-rated-fill" class="rail-fill"></div>
+          <div id="fps-camera-marker" class="marker"></div>
+          <div id="fps-live-marker" class="dot"></div>
+        </div>
+        <div class="scale-row"><span>0</span><span>350 FPS</span></div>
+        <div class="legend">
+          <span><i class="swatch rated"></i>benchmarked</span>
+          <span><i class="swatch live"></i>live</span>
+          <span><i class="swatch limit"></i>camera ceiling</span>
+        </div>
+        <div class="reason">
+          Latency <span id="inference-latency">—</span> · result age
+          <span id="result-age">—</span>
+        </div>
+        <div class="reason">
+          Registry: <span id="benchmark-source">waiting</span>
+        </div>
+        <div id="detector-status" class="reason" hidden>
+          Detector: <span id="detector-name">—</span> ·
+          <span id="detector-fps">—</span> FPS · age
+          <span id="detector-age">—</span> · objects
+          <span id="detector-objects">—</span>
+        </div>
+        <div id="stop-status" class="reason" hidden>
+          Stop controller: <span id="stop-state">—</span> · range
+          <span id="stop-range">—</span>
+        </div>
+        <div id="clip-benchmark-evidence" class="benchmark-evidence" hidden>
+          <div class="evidence-card">
+            <span class="kicker">Clip processed</span>
+            <strong id="clip-processing-ratio" class="evidence-value">—</strong>
+          </div>
+          <div class="evidence-card">
+            <span class="kicker">Frames replaced</span>
+            <strong id="clip-replaced-frames" class="evidence-value">—</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Adaptive vehicle speed">
+        <div class="label-row">
+          <span class="kicker">Car speed</span>
+          <span>permitted <strong id="permitted-speed">—</strong></span>
+        </div>
+        <div class="value-row">
+          <span id="actual-speed" class="hero-value">—</span>
+          <span class="unit">m/s actual</span>
+        </div>
+        <div id="speed-rail" class="rail" role="progressbar"
+          aria-label="Actual car speed" aria-valuemin="0"
+          aria-valuemax="2.5" aria-valuenow="0">
+          <div id="speed-actual-fill" class="rail-fill"></div>
+          <div id="speed-permitted-marker" class="marker"></div>
+        </div>
+        <div class="scale-row"><span>0</span><span>2.5 m/s</span></div>
+        <div class="legend">
+          <span><i class="swatch actual"></i>actual</span>
+          <span><i class="swatch limit"></i>permitted</span>
+        </div>
+        <div class="reason">
+          Command <span id="commanded-speed">—</span> · requested
+          <span id="requested-speed">—</span>
+        </div>
+        <div class="reason">Limiter: <span id="limit-reason">waiting for perception</span></div>
+      </section>
+
+      <section class="panel">
+        <div class="kicker">Session</div>
+        <div class="controls">
+          <button class="control-button" data-key="q">Quit</button>
+        </div>
+        <div id="connection" class="connection">Connecting to telemetry…</div>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    let maximumFps = 250;
+    const maximumSpeed = 2.5;
+    const accepted = new Set([
+      '1', '2', '3', '4', '5', '6', '7', '8', '9', '[', ']',
+      '-', '=', '+', 'p', 'P', 'l', 'L', 'r', 'R', ' ', 'q', 'Q'
+    ]);
+
+    function clampPercent(value, maximum) {
+      return `${Math.max(0, Math.min(value / maximum, 1)) * 100}%`;
+    }
+
+    function number(value, digits = 1) {
+      return Number.isFinite(value) ? value.toFixed(digits) : '—';
+    }
+
+    function send(key) {
+      fetch(`/action?key=${encodeURIComponent(key)}`, {method: 'POST'}).catch(() => {});
+    }
+
+    function wireButton(button) {
+      button.addEventListener('click', () => send(button.dataset.key));
+    }
+
+    document.querySelectorAll('[data-key]').forEach(wireButton);
+
+    window.addEventListener('keydown', event => {
+      if (accepted.has(event.key)) {
+        event.preventDefault();
+        send(event.key);
+      }
+    });
+
+    let modelCatalogSignature = '';
+
+    function renderModelCatalog(models, cameraFps) {
+      const signature = JSON.stringify(models);
+      if (signature !== modelCatalogSignature) {
+        modelCatalogSignature = signature;
+        const list = document.querySelector('#model-list');
+        list.replaceChildren();
+        models.forEach(model => {
+          const button = document.createElement('button');
+          button.className = 'model-button';
+          button.dataset.modelKey = String(model.key);
+          button.dataset.key = String(model.key);
+          button.setAttribute('aria-pressed', 'false');
+          const fps = model.benchmark_fps == null
+            ? 'not benchmarked'
+            : `${number(model.benchmark_fps, 1)} FPS`;
+          button.textContent = `${model.key} · ${model.display_name} · ${fps}`;
+          wireButton(button);
+          list.append(button);
+        });
+      }
+      const capacities = models
+        .map(model => model.benchmark_fps)
+        .filter(Number.isFinite);
+      maximumFps = Math.max(50, cameraFps, ...capacities);
+      maximumFps = Math.ceil(maximumFps * 1.1 / 50) * 50;
+      document.querySelector('#fps-rail + .scale-row span:last-child')
+        .textContent = `${maximumFps} FPS`;
+    }
+
+    function renderTelemetry(data) {
+      renderModelCatalog(data.available_models, data.camera_target_fps);
+      document.querySelector('#active-model-name').textContent =
+        data.active_model_name;
+      document.querySelector('#model-detail').textContent =
+        `${data.model_backend} · ${data.model_precision} · ` +
+        data.model_compression;
+      document.querySelector('#benchmark-fps').textContent =
+        data.benchmark_fps == null
+          ? 'not benchmarked'
+          : `${number(data.benchmark_fps, 1)} benchmarked`;
+      document.querySelector('#live-fps').textContent =
+        number(data.effective_inference_fps, 1);
+      document.querySelector('#inference-latency').textContent =
+        data.ewma_inference_latency_s == null
+          ? 'waiting'
+          : `${number(data.ewma_inference_latency_s * 1000, 1)} ms`;
+      document.querySelector('#result-age').textContent =
+        data.perception_age_s == null
+          ? 'waiting'
+          : `${number(data.perception_age_s * 1000, 1)} ms`;
+      document.querySelector('#benchmark-source').textContent =
+        data.benchmark_source == null
+          ? 'none'
+          : data.benchmark_source.replaceAll('_', ' ');
+      const detectorEnabled = data.detector_model_id != null;
+      document.querySelector('#detector-status').hidden = !detectorEnabled;
+      document.querySelector('#stop-status').hidden = !detectorEnabled;
+      if (detectorEnabled) {
+        document.querySelector('#detector-name').textContent =
+          data.detector_model_name;
+        document.querySelector('#detector-fps').textContent =
+          number(data.detector_effective_fps, 1);
+        document.querySelector('#detector-age').textContent =
+          data.detector_age_s == null
+            ? 'waiting'
+            : `${number(data.detector_age_s * 1000, 1)} ms`;
+        document.querySelector('#detector-objects').textContent =
+          String(data.detected_object_count);
+        document.querySelector('#stop-state').textContent =
+          data.stop_state == null
+            ? 'waiting'
+            : data.stop_state.replaceAll('_', ' ');
+        document.querySelector('#stop-range').textContent =
+          data.stop_range_m == null
+            ? '—'
+            : `${number(data.stop_range_m, 2)} m`;
+      }
+      const benchmarkDetails = data.benchmark_details ?? {};
+      const processingRatio = benchmarkDetails.processing_ratio;
+      const replacedFrames = benchmarkDetails.replaced_frames;
+      const hasClipEvidence = Number.isFinite(processingRatio) &&
+        Number.isFinite(replacedFrames);
+      const clipEvidence = document.querySelector('#clip-benchmark-evidence');
+      clipEvidence.hidden = !hasClipEvidence;
+      if (hasClipEvidence) {
+        const processedFrames = benchmarkDetails.processed_frames;
+        const publishedFrames = benchmarkDetails.published_frames;
+        const frameCounts = Number.isFinite(processedFrames) &&
+          Number.isFinite(publishedFrames)
+          ? ` (${processedFrames}/${publishedFrames})`
+          : '';
+        document.querySelector('#clip-processing-ratio').textContent =
+          `${number(processingRatio * 100, 1)}%${frameCounts}`;
+        document.querySelector('#clip-replaced-frames').textContent =
+          String(replacedFrames);
+      }
+      document.querySelector('#fps-rated-fill').style.width =
+        clampPercent(data.benchmark_fps ?? 0, maximumFps);
+      document.querySelector('#fps-live-marker').style.left =
+        clampPercent(data.effective_inference_fps, maximumFps);
+      document.querySelector('#fps-camera-marker').style.left =
+        clampPercent(data.camera_target_fps, maximumFps);
+
+      document.querySelector('#actual-speed').textContent =
+        number(data.actual_speed_mps, 2);
+      document.querySelector('#permitted-speed').textContent =
+        `${number(data.permitted_speed_mps, 2)} m/s`;
+      document.querySelector('#commanded-speed').textContent =
+        `${number(data.commanded_speed_mps, 2)} m/s`;
+      document.querySelector('#requested-speed').textContent =
+        `${number(data.requested_speed_mps, 2)} m/s`;
+      document.querySelector('#limit-reason').textContent =
+        data.speed_limit_reason.replaceAll('_', ' ');
+      document.querySelector('#speed-actual-fill').style.width =
+        clampPercent(data.actual_speed_mps, maximumSpeed);
+      document.querySelector('#speed-permitted-marker').style.left =
+        clampPercent(data.permitted_speed_mps, maximumSpeed);
+      const speedRail = document.querySelector('#speed-rail');
+      speedRail.setAttribute('aria-valuenow', String(data.actual_speed_mps));
+      speedRail.setAttribute(
+        'aria-valuetext',
+        `${number(data.actual_speed_mps, 2)} metres per second; ` +
+          `permitted ${number(data.permitted_speed_mps, 2)}`
+      );
+
+      document.querySelectorAll('.model-button').forEach(button => {
+        const active = Number(button.dataset.modelKey) === data.active_model_key;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      const runStatus = document.querySelector('#run-status');
+      runStatus.textContent = data.paused ? 'PAUSED' : 'RUNNING';
+      runStatus.classList.toggle('paused', data.paused);
+      document.querySelector('#pause-button').classList.toggle(
+        'active', data.paused
+      );
+      document.querySelector('#overlay-button').classList.toggle(
+        'active', data.show_labels
+      );
+      document.querySelector('#connection').textContent =
+        `Camera ${number(data.measured_camera_fps, 1)} / ` +
+        `${number(data.camera_target_fps, 0)} FPS · dropped ` +
+        data.replaced_pending_frames;
+    }
+
+    async function pollTelemetry() {
+      try {
+        const response = await fetch('/telemetry', {cache: 'no-store'});
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        renderTelemetry(await response.json());
+      } catch (error) {
+        document.querySelector('#connection').textContent = 'Telemetry disconnected';
+      }
+      window.setTimeout(pollTelemetry, 100);
+    }
+
+    pollTelemetry();
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "platform_id": "sim",
+  "mode": "sim",
+  "runtime_config": "../runtime_defaults.json",
+  "driving_config": "../driving_benchmarks.json",
+  "model_config": "../off_the_shelf_models.json",
+  "benchmark_registry": "../../benchmarks/off_the_shelf_model_benchmarks.json",
+  "hardware": {
+    "camera_profiles": "../hardware/cameras.json",
+    "actuator_profile": "../hardware/actuator.json",
+    "state_profile": "../hardware/vehicle_state.json",
+    "deployment_policy": "../hardware/jetson_deployment.json",
+    "preflight_configuration": "../hardware/preflight.json",
+    "bringup_plan": "../hardware/bringup_stages.json"
+  },
+  "camera": {
+    "driver": "simulator",
+    "profile": "stress",
+    "width": 1280,
+    "height": 720,
+    "fps_numerator": 200,
+    "fps_denominator": 1
+  },
+  "vehicle": {
+    "driver": "simulator",
+    "motors_enabled": false,
+    "watchdog_timeout_s": 0.25,
+    "limits": {
+      "minimum_speed_mps": 0.0,
+      "maximum_speed_mps": 2.5,
+      "maximum_steering_rad": 0.52
+    }
+  },
+  "state": {
+    "driver": "simulator"
+  },
+  "simulation": {
+    "scene_seed": 42,
+    "obstacle_count": 8,
+    "stop_sign_count": 4
+  }
+}

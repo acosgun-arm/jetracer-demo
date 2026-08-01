@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "profile_id": "jetracer-pro-preflight-v1",
+  "checks": {
+    "software_compatible": true,
+    "jetson_target_match": true,
+    "camera_measurement_passed": true,
+    "actuator_controller_identified": true,
+    "actuator_calibration_complete": true,
+    "actuator_physical_test_authorized": true,
+    "actuator_dry_run_passed": true,
+    "state_validated_for_motion": true,
+    "model_deployment_ready": true,
+    "storage_available": true,
+    "power_mode_observed": true,
+    "temperature_safe": true
+  },
+  "storage": {
+    "path": ".",
+    "minimum_free_bytes": 5368709120
+  },
+  "thermal": {
+    "temperature_globs": [
+      "/sys/class/thermal/thermal_zone*/temp"
+    ],
+    "raw_to_celsius_scale": 0.001,
+    "maximum_temperature_c": 80.0
+  },
+  "power": {
+    "query_command": [
+      "nvpmodel",
+      "--query"
+    ],
+    "command_timeout_s": 10.0,
+    "output_limit_characters": 4096
+  },
+  "report": {
+    "maximum_age_s": 3600.0
+  }
+}

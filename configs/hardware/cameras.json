@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "probe": {
+    "command_timeout_s": 20.0,
+    "output_limit_characters": 65536,
+    "capture_warmup_s": 1.0,
+    "frame_read_timeout_s": 1.0
+  },
+  "profiles": [
+    {
+      "profile_id": "elp_112",
+      "display_name": "ELP 2.3 MP global-shutter USB camera, 112 degree lens",
+      "interface": "usb_uvc",
+      "identity": {
+        "match_substrings": [
+          "ELP",
+          "USB Camera"
+        ],
+        "serial_number": null
+      },
+      "requested_mode": {
+        "width": 1920,
+        "height": 1200,
+        "fps_numerator": 120000480,
+        "fps_denominator": 1000000,
+        "pixel_format": null,
+        "jetson_verified": false
+      },
+      "geometry": {
+        "lens_model": "fisheye_equidistant",
+        "nominal_hfov_degrees": 112.0,
+        "shutter": "global",
+        "intrinsics": null,
+        "distortion": null,
+        "calibration_image_size": null,
+        "calibration_rms_reprojection_error_px": null,
+        "calibration_status": "nominal"
+      },
+      "mount": {
+        "x_m": null,
+        "y_m": null,
+        "z_m": null,
+        "roll_rad": null,
+        "pitch_down_rad": null,
+        "yaw_rad": null,
+        "status": "unmeasured"
+      },
+      "controls": {
+        "exposure_mode": null,
+        "exposure_value": null,
+        "gain": null,
+        "status": "unmeasured"
+      },
+      "acceptance": {
+        "measurement_duration_s": 10.0,
+        "minimum_delivered_rate_fraction": 0.95,
+        "maximum_drop_fraction": 0.01,
+        "maximum_reprojection_error_px": 1.0,
+        "maximum_capture_buffer_frames": 1
+      },
+      "evidence": {
+        "macos_measurement": "1920x1200 at approximately 120.00048 FPS",
+        "jetson_measurement_report": null,
+        "calibration_report": null
+      }
+    },
+    {
+      "profile_id": "imx219_160",
+      "display_name": "JetRacer Pro IMX219 camera, nominal 160 degree lens",
+      "interface": "csi",
+      "identity": {
+        "match_substrings": [
+          "imx219"
+        ],
+        "serial_number": null
+      },
+      "requested_mode": {
+        "width": 1280,
+        "height": 720,
+        "fps_numerator": 60,
+        "fps_denominator": 1,
+        "pixel_format": null,
+        "jetson_verified": false
+      },
+      "geometry": {
+        "lens_model": "fisheye_equidistant",
+        "nominal_hfov_degrees": 160.0,
+        "shutter": "rolling",
+        "intrinsics": null,
+        "distortion": null,
+        "calibration_image_size": null,
+        "calibration_rms_reprojection_error_px": null,
+        "calibration_status": "nominal"
+      },
+      "mount": {
+        "x_m": null,
+        "y_m": null,
+        "z_m": null,
+        "roll_rad": null,
+        "pitch_down_rad": null,
+        "yaw_rad": null,
+        "status": "unmeasured"
+      },
+      "controls": {
+        "exposure_mode": null,
+        "exposure_value": null,
+        "gain": null,
+        "status": "unmeasured"
+      },
+      "acceptance": {
+        "measurement_duration_s": 10.0,
+        "minimum_delivered_rate_fraction": 0.95,
+        "maximum_drop_fraction": 0.01,
+        "maximum_reprojection_error_px": 1.0,
+        "maximum_capture_buffer_frames": 1
+      },
+      "evidence": {
+        "macos_measurement": null,
+        "jetson_measurement_report": null,
+        "calibration_report": null
+      }
+    }
+  ]
+}

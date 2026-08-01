@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "vehicle": {
+    "wheelbase_m": 0.20,
+    "body_width_m": 0.19,
+    "front_overhang_m": 0.055,
+    "rear_overhang_m": 0.045,
+    "max_steering_rad": 0.52,
+    "steering_time_constant_s": 0.06,
+    "motor_time_constant_s": 0.12,
+    "geometry_status": "provisional_pending_physical_measurement"
+  },
+  "baseline": {
+    "laps": 5,
+    "camera_profile": "stress",
+    "camera_width": 320,
+    "camera_height": 180,
+    "track_ids": [
+      "waveshare_3x2",
+      "open_oval",
+      "technical_chicane",
+      "tight_hairpin"
+    ]
+  },
+  "runner": {
+    "maximum_time_distance_multiplier": 5.0,
+    "stop_time_allowance_s": 2.0,
+    "progress_wrap_fraction": 0.5,
+    "collision_recovery_distance_m": 0.45,
+    "moving_speed_threshold_mps": 0.05,
+    "stop_sign_ahead_minimum_m": 0.04,
+    "stop_sign_ahead_maximum_m": 2.0,
+    "perfect_detection_confidence": 1.0,
+    "road_boundary_tolerance_m": 0.0,
+    "atlas_pixels_per_metre": 100.0
+  },
+  "geometry_sampling": {
+    "minimum_centerline_points": 32,
+    "curvature_evaluation_samples": 100
+  },
+  "road_steering": {
+    "road_class_id": 1,
+    "minimum_row_fraction": 0.24,
+    "row_stride_pixels": 3,
+    "minimum_run_pixels": 6,
+    "maximum_gap_fraction": 0.07,
+    "maximum_centre_jump_fraction": 0.24,
+    "confidence_full_row_count": 18,
+    "base_lookahead_m": 0.30,
+    "speed_lookahead_s": 0.24,
+    "minimum_lookahead_m": 0.24,
+    "maximum_lookahead_m": 0.80,
+    "pure_pursuit_gain": 1.75,
+    "lateral_error_gain": 0.25,
+    "lateral_speed_softening_mps": 0.50,
+    "lost_steering_hold_s": 0.15,
+    "steering_smoothing_time_s": 0.035,
+    "maximum_steering_rate_rad_s": 4.0
+  },
+  "stop_sign_controller": {
+    "stop_class_ids": [11],
+    "minimum_confidence": 0.35,
+    "detection_distance_m": 1.8,
+    "commit_distance_m": 0.95,
+    "stop_distance_m": 0.55,
+    "comfortable_deceleration_mps2": 1.25,
+    "stopped_speed_threshold_mps": 0.05,
+    "stop_hold_s": 0.35,
+    "cooldown_s": 0.9,
+    "detection_timeout_s": 0.45
+  },
+  "obstacle_avoidance": {
+    "obstacle_class_ids": [4],
+    "trigger_distance_m": 2.0,
+    "central_corridor_fraction": 0.42,
+    "lateral_offset_m": 0.12,
+    "offset_time_constant_s": 0.12,
+    "hold_after_loss_s": 0.30,
+    "preferred_pass_side": "left",
+    "slow_distance_m": 1.0,
+    "minimum_speed_scale": 0.38
+  },
+  "objects": {
+    "stop_sign": {
+      "shoulder_offset_m": 0.16,
+      "width_m": 0.24,
+      "depth_m": 0.018,
+      "height_m": 0.38,
+      "bgr": [32, 32, 205],
+      "placement_side": "right"
+    },
+    "pedestrian": {
+      "track_fraction": 0.38,
+      "width_m": 0.10,
+      "depth_m": 0.10,
+      "height_m": 0.55,
+      "bgr": [40, 120, 220]
+    }
+  },
+  "scenarios": {
+    "lane_following": {
+      "stop_sign_count": 0,
+      "pedestrian_on_road": false,
+      "enable_obstacle_avoidance": false
+    },
+    "stop_signs": {
+      "track_id": "waveshare_3x2",
+      "stop_sign_count": 2,
+      "pedestrian_on_road": false,
+      "enable_obstacle_avoidance": false
+    },
+    "pedestrian_no_avoidance": {
+      "track_id": "open_oval",
+      "stop_sign_count": 0,
+      "pedestrian_on_road": true,
+      "enable_obstacle_avoidance": false
+    },
+    "pedestrian_avoidance": {
+      "track_id": "open_oval",
+      "stop_sign_count": 0,
+      "pedestrian_on_road": true,
+      "enable_obstacle_avoidance": true
+    }
+  },
+  "tracks": [
+    {
+      "track_id": "waveshare_3x2",
+      "display_name": "Waveshare 3 x 2 m mat",
+      "difficulty": "medium",
+      "arena_width_m": 3.0,
+      "arena_height_m": 2.0,
+      "road_width_m": 0.55,
+      "recommended_speed_mps": 0.90,
+      "seed": 3200,
+      "source_url": "https://www.waveshare.com/jetracer-ai-kit.htm",
+      "geometry": {
+        "kind": "stadium",
+        "straight_half_length_m": 0.55,
+        "radius_m": 0.60,
+        "arc_samples": 80,
+        "straight_samples": 40,
+        "resample_spacing_m": 0.025
+      }
+    },
+    {
+      "track_id": "open_oval",
+      "display_name": "Open oval",
+      "difficulty": "easy",
+      "arena_width_m": 5.5,
+      "arena_height_m": 3.0,
+      "road_width_m": 0.85,
+      "recommended_speed_mps": 1.65,
+      "seed": 1001,
+      "geometry": {
+        "kind": "stadium",
+        "straight_half_length_m": 1.25,
+        "radius_m": 1.00,
+        "arc_samples": 80,
+        "straight_samples": 40,
+        "resample_spacing_m": 0.025
+      }
+    },
+    {
+      "track_id": "technical_chicane",
+      "display_name": "Technical three-lobe chicane",
+      "difficulty": "medium",
+      "arena_width_m": 5.5,
+      "arena_height_m": 4.1,
+      "road_width_m": 0.65,
+      "recommended_speed_mps": 1.15,
+      "seed": 2002,
+      "geometry": {
+        "kind": "polar_harmonic",
+        "radius_m": 2.05,
+        "y_scale": 0.70,
+        "harmonic": 3,
+        "harmonic_amplitude_m": 0.24,
+        "raw_samples": 720,
+        "resample_spacing_m": 0.03
+      }
+    },
+    {
+      "track_id": "tight_hairpin",
+      "display_name": "Tight hairpin oval",
+      "difficulty": "hard",
+      "arena_width_m": 3.1,
+      "arena_height_m": 1.5,
+      "road_width_m": 0.50,
+      "recommended_speed_mps": 0.65,
+      "seed": 3003,
+      "geometry": {
+        "kind": "stadium",
+        "straight_half_length_m": 0.76,
+        "radius_m": 0.42,
+        "arc_samples": 80,
+        "straight_samples": 40,
+        "resample_spacing_m": 0.025
+      }
+    }
+  ]
+}

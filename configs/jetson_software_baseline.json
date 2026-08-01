@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "baseline_id": "jetson-provisional-v1",
+  "status": "provisional_pending_hardware_inventory",
+  "target": {
+    "system": "Linux",
+    "machines": [
+      "aarch64",
+      "arm64"
+    ],
+    "require_jetson_model": true,
+    "require_l4t_release": true
+  },
+  "requirements": {
+    "python": {
+      "minimum": "3.10"
+    },
+    "cmake": {
+      "minimum": "3.22"
+    },
+    "opencv": {
+      "minimum": "4.5",
+      "required_components": [
+        "core",
+        "imgproc",
+        "imgcodecs"
+      ]
+    },
+    "cxx_standard": 20,
+    "compiler_required": true,
+    "python_packages": {
+      "numpy": {
+        "minimum": "1.26"
+      }
+    }
+  },
+  "delivered_stack": {
+    "jetson_module": null,
+    "jetpack": null,
+    "l4t": null,
+    "cuda": null,
+    "tensorrt": null,
+    "opencv": null,
+    "gstreamer": null
+  },
+  "fallbacks": {
+    "simulator_renderer": "cpu",
+    "hardware_acceleration_required_for_build": false,
+    "native_cli_required_for_headless_runtime": false
+  },
+  "probe": {
+    "command_timeout_seconds": 20.0,
+    "output_limit_characters": 4096,
+    "temporary_directory_prefix": "jetracer-jetson-probe-",
+    "jetson_model_path": "/proc/device-tree/model",
+    "l4t_release_path": "/etc/nv_tegra_release",
+    "os_release_path": "/etc/os-release",
+    "compiler_commands": [
+      "c++",
+      "g++",
+      "clang++"
+    ],
+    "optional_commands": {
+      "gstreamer": [
+        "gst-launch-1.0",
+        "--version"
+      ],
+      "v4l2": [
+        "v4l2-ctl",
+        "--version"
+      ],
+      "cuda_compiler": [
+        "nvcc",
+        "--version"
+      ],
+      "tensorrt_runner": [
+        "trtexec",
+        "--version"
+      ]
+    },
+    "system_packages": {
+      "jetpack": "nvidia-jetpack",
+      "tensorrt": "tensorrt"
+    },
+    "optional_python_packages": [
+      "onnxruntime",
+      "tensorrt"
+    ]
+  },
+  "bootstrap": {
+    "python_command": "python3",
+    "default_venv": ".venv-jetson",
+    "apt_packages": [
+      "build-essential",
+      "cmake",
+      "ninja-build",
+      "pkg-config",
+      "python3-dev",
+      "python3-venv",
+      "libopencv-dev"
+    ],
+    "cmake_defines": {
+      "JETRACER_SIM_BUILD_NATIVE_CLI": "OFF"
+    }
+  },
+  "notes": [
+    "Exact JetPack and accelerator versions must be recorded from the delivered module before this baseline can be marked supported.",
+    "The baseline deliberately does not install or replace JetPack, CUDA, TensorRT, or camera drivers.",
+    "The CPU renderer and headless package build do not require CUDA or TensorRT."
+  ]
+}

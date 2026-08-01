@@ -1,0 +1,25 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "jetracer-sim"
+version = "0.1.0"
+description = "High-rate camera simulator for JetRacer perception and control"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+export = ["Pillow>=10"]
+onnx = ["onnxruntime>=1.18"]
+coreml-export = ["coremltools"]
+pretrained = [
+  "Pillow>=10",
+  "torch>=2.2",
+  "transformers>=4.40",
+]
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+wheel.packages = ["python/jetracer_sim"]

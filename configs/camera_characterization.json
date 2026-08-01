@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "capture": {
+    "width": 1920,
+    "height": 1200,
+    "fps": 120.0,
+    "duration_s": 10.0,
+    "warmup_s": 1.0,
+    "pixel_format": "420v",
+    "discard_late_frames": true,
+    "allow_built_in_camera": false
+  },
+  "recording": {
+    "codec": "h264",
+    "average_bitrate_bps": 30000000,
+    "keyframe_interval_frames": 120,
+    "finish_timeout_s": 15.0
+  },
+  "output": {
+    "directory": "benchmarks/cameras"
+  }
+}

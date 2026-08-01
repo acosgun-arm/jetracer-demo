@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "target_id": "jetson-pro",
+  "target_host": {
+    "system": "Linux",
+    "machines": [
+      "aarch64",
+      "arm64"
+    ]
+  },
+  "tasks": {
+    "segmentation": {
+      "minimum_selectable_variants": 1
+    },
+    "object_detection": {
+      "minimum_selectable_variants": 1
+    }
+  },
+  "policy": {
+    "allowed_adapter_kinds": [
+      "onnx",
+      "yolo_onnx",
+      "tensorrt"
+    ],
+    "allowed_execution_providers": [
+      "TensorrtExecutionProvider",
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "require_artifact_sha256": true,
+    "require_target_benchmark": true,
+    "minimum_benchmark_iterations": 100,
+    "benchmark_environment_substrings": [
+      "Linux",
+      "aarch64"
+    ],
+    "sha256_chunk_bytes": 1048576,
+    "runtime_probe_timeout_s": 30.0,
+    "runtime_probe_output_limit_characters": 4096
+  },
+  "status": "pending_jetson_runtime_and_benchmarks"
+}

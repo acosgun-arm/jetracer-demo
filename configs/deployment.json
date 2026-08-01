@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "repository_root": "..",
+  "deployment_id": "jetracer-pro",
+  "project_distribution": "jetracer-sim",
+  "platform_config": "configs/platforms/jetracer-pro.json",
+  "release": {
+    "root": "build/deployment/releases",
+    "current_link": "build/deployment/current",
+    "previous_link": "build/deployment/previous",
+    "input_globs": [
+      "configs/**/*.json",
+      "benchmarks/off_the_shelf_model_benchmarks.json",
+      "models/*.onnx",
+      "models/*.onnx.json",
+      "examples/realtime_demo.py",
+      "examples/realtime_viewer.html",
+      "tools/run_deployed_runtime.py"
+    ],
+    "deployed_platform_relative": "configs/platforms/deployed.json",
+    "wheelhouse_directory_name": "wheelhouse",
+    "venv_directory_name": "venv",
+    "manifest_name": "release-manifest.json",
+    "runtime_state_name": "runtime-state.json",
+    "requirements_lock_name": "requirements.lock",
+    "sha256_chunk_bytes": 1048576,
+    "git_probe_timeout_s": 2.0,
+    "prepare_command_timeout_s": 900.0
+  },
+  "state": {
+    "preflight_report": "build/hardware/preflight.json",
+    "bringup_state": "build/hardware/bringup.json",
+    "status_report": "build/deployment/status.json",
+    "pid_file": "build/deployment/runtime.pid",
+    "log_directory": "build/deployment/logs",
+    "cache_directory": "build/deployment/cache"
+  },
+  "runtime": {
+    "python_command": "python3",
+    "standby_check_interval_s": 5.0,
+    "shutdown_timeout_s": 10.0,
+    "shutdown_poll_s": 0.1,
+    "drive_duration_s": 60.0,
+    "requested_speed_mps": 0.2,
+    "model_key": 1,
+    "switch_every_s": 0.0,
+    "enable_detector": true,
+    "detector_model_id": "yolo11n-coco-onnx-fp32",
+    "telemetry_log_name": "realtime.jsonl",
+    "write_bytecode": false
+  },
+  "systemd": {
+    "unit_name": "jetracer-standby.service",
+    "description": "JetRacer verified standby supervisor",
+    "restart_policy": "on-failure",
+    "restart_delay_s": 5.0,
+    "stop_timeout_s": 15.0,
+    "private_devices": true,
+    "no_new_privileges": true
+  }
+}
