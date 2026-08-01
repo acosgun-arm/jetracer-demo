@@ -4,30 +4,44 @@
     {
       "model_id": "segformer-b0-ade20k-cpu-fp16",
       "source": "measured_model",
-      "measured_fps": 19.412985945720642,
-      "mean_latency_s": 0.051511910779518076,
-      "p50_latency_s": 0.05105670800548978,
-      "p95_latency_s": 0.05659422114549669,
-      "p99_latency_s": 0.06190800699405373,
-      "maximum_latency_s": 0.06336479098536074,
+      "measured_fps": 19.979151230848384,
+      "mean_latency_s": 0.05005217631347478,
+      "p50_latency_s": 0.05004837497835979,
+      "p95_latency_s": 0.05230095440056175,
+      "p99_latency_s": 0.05276953381486238,
+      "maximum_latency_s": 0.055025125038810074,
       "iterations": 100,
       "warmup_iterations": 10,
       "environment": "Darwin 25.5.0 arm64; Python 3.14.6",
-      "recorded_at_utc": "2026-08-01T14:49:25.453924+00:00"
+      "recorded_at_utc": "2026-08-01T20:25:28.584477+00:00"
     },
     {
       "model_id": "segformer-b0-ade20k-cpu-fp32",
       "source": "measured_model",
-      "measured_fps": 21.046211921685497,
-      "mean_latency_s": 0.047514488769811576,
-      "p50_latency_s": 0.04714979146956466,
-      "p95_latency_s": 0.05168373098131269,
-      "p99_latency_s": 0.054288977369433285,
-      "maximum_latency_s": 0.05694320797920227,
+      "measured_fps": 21.40744211608473,
+      "mean_latency_s": 0.04671272703097202,
+      "p50_latency_s": 0.04659272951539606,
+      "p95_latency_s": 0.04920060764416121,
+      "p99_latency_s": 0.05020665917545557,
+      "maximum_latency_s": 0.05025954102165997,
       "iterations": 100,
       "warmup_iterations": 10,
       "environment": "Darwin 25.5.0 arm64; Python 3.14.6",
-      "recorded_at_utc": "2026-08-01T14:49:19.679764+00:00"
+      "recorded_at_utc": "2026-08-01T20:25:23.027597+00:00"
+    },
+    {
+      "model_id": "yolo11n-coco-onnx-fp32",
+      "source": "measured_detector",
+      "measured_fps": 52.93329891062705,
+      "mean_latency_s": 0.01889169994276017,
+      "p50_latency_s": 0.019038312486372888,
+      "p95_latency_s": 0.02086255652247928,
+      "p99_latency_s": 0.02164073913823814,
+      "maximum_latency_s": 0.02305862493813038,
+      "iterations": 100,
+      "warmup_iterations": 10,
+      "environment": "Darwin 25.5.0 arm64; Python 3.14.6",
+      "recorded_at_utc": "2026-08-01T20:26:05.063098+00:00"
     }
   ]
 }
