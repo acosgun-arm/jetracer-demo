@@ -282,6 +282,17 @@ def _validate_runtime_document(document: dict[str, Any]) -> None:
         raise ValueError("real-time demo viewer must be browser or opencv")
     if not isinstance(realtime_demo.get("open_browser"), bool):
         raise ValueError("real-time demo open_browser must be a boolean")
+    preferred_model_keys = realtime_demo.get("preferred_model_keys")
+    if (
+        not isinstance(preferred_model_keys, list)
+        or not preferred_model_keys
+        or any(int(value) <= 0 for value in preferred_model_keys)
+        or len({int(value) for value in preferred_model_keys})
+        != len(preferred_model_keys)
+    ):
+        raise ValueError(
+            "real-time demo preferred model keys must be unique positive integers"
+        )
     if min(
         float(realtime_demo.get("frame_read_timeout_s", 0.0)),
         float(realtime_demo.get("maximum_control_dt_s", 0.0)),

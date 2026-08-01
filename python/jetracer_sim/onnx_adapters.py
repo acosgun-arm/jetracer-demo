@@ -66,17 +66,32 @@ class OnnxSegmentationAdapter(SegmentationAdapter):
         *,
         model_id: str = "onnx-segmentation-fp32",
         display_name: str = "ONNX segmentation",
+        backend: str = "onnxruntime",
         precision: str = "fp32",
         compression: str = "none",
         providers: tuple[ExecutionProvider, ...] | None = None,
+        required_execution_provider: str | None = None,
         session: Any | None = None,
     ) -> None:
         if session is None and model_path is None:
             raise ValueError("model_path is required when no ONNX session is supplied")
         self.config = config
         self._session = (
-            session if session is not None else _create_session(model_path, providers)
+            session
+            if session is not None
+            else _create_session(
+                model_path,
+                providers,
+                required_execution_provider=required_execution_provider,
+            )
         )
+        if required_execution_provider is not None:
+            active_providers = set(self._session.get_providers())
+            if required_execution_provider not in active_providers:
+                raise RuntimeError(
+                    "required ONNX execution provider is inactive: "
+                    f"{required_execution_provider}"
+                )
         inputs = self._session.get_inputs()
         if not inputs:
             raise ValueError("ONNX model has no inputs")
@@ -84,7 +99,7 @@ class OnnxSegmentationAdapter(SegmentationAdapter):
         self._metadata = ModelMetadata(
             model_id=model_id,
             display_name=display_name,
-            backend="onnxruntime",
+            backend=backend,
             precision=precision,
             compression=compression,
             input_width=config.input_width,
@@ -178,6 +193,8 @@ def _image_tensor(
 def _create_session(
     model_path: str | Path | None,
     providers: tuple[ExecutionProvider, ...] | None,
+    *,
+    required_execution_provider: str | None = None,
 ) -> Any:
     try:
         import onnxruntime as ort
@@ -186,6 +203,14 @@ def _create_session(
             "onnxruntime is required to load an ONNX model; install the optional "
             "runtime or inject a compatible session"
         ) from error
+    if (
+        required_execution_provider is not None
+        and required_execution_provider not in ort.get_available_providers()
+    ):
+        raise RuntimeError(
+            "required ONNX execution provider is unavailable: "
+            f"{required_execution_provider}"
+        )
     if providers is None:
         return ort.InferenceSession(str(model_path))
     return ort.InferenceSession(str(model_path), providers=list(providers))

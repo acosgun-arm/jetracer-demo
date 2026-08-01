@@ -92,7 +92,7 @@
     "scene_seed": 42,
     "scene_obstacle_count": 8,
     "scene_stop_sign_count": 4,
-    "initial_model_key": 1,
+    "preferred_model_keys": [9, 8, 6, 5, 2, 1],
     "requested_speed_mps": 2.5,
     "maximum_requested_speed_mps": 2.5,
     "speed_adjustment_step_mps": 0.25,
@@ -229,7 +229,7 @@
     "warmup_frames": 2
   },
   "synthetic_clip_evaluation": {
-    "model_keys": [1, 2],
+    "model_keys": [8, 9],
     "frame_stride": 10,
     "maximum_frames": 200,
     "warmup_frames": 2,

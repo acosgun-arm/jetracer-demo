@@ -44,6 +44,10 @@ def parse_arguments() -> argparse.Namespace:
     configured, _ = config_parser.parse_known_args()
     platform = sim.load_platform_configuration(configured.platform_config)
     runtime_config = configured.runtime_config or platform.runtime_config_path
+    model_config = configured.model_config or platform.model_config_path
+    model_keys = tuple(
+        variant.key for variant in sim.load_model_variants(model_config)
+    )
     defaults = sim.runtime_config_section(
         "realtime_demo", runtime_config
     )
@@ -65,13 +69,14 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--model",
         type=int,
-        choices=range(1, 10),
-        default=int(defaults["initial_model_key"]),
+        choices=model_keys,
+        default=None,
+        help="model key; defaults to the first available configured preference",
     )
     parser.add_argument(
         "--model-config",
         type=Path,
-        default=configured.model_config or platform.model_config_path,
+        default=model_config,
     )
     parser.add_argument(
         "--benchmark-registry",
@@ -213,6 +218,22 @@ def make_adapters(
         )
         raise RuntimeError(f"no segmentation model could be loaded: {details}")
     return tuple(available_models), adapters, failures
+
+
+def preferred_model_index(
+    models: tuple[sim.ModelVariant, ...],
+    explicit_key: int | None,
+    preferred_keys: tuple[int, ...],
+) -> int:
+    available = {model.key: index for index, model in enumerate(models)}
+    if explicit_key is not None:
+        if explicit_key not in available:
+            raise ValueError(f"model key {explicit_key} is unavailable")
+        return available[explicit_key]
+    for key in preferred_keys:
+        if key in available:
+            return available[key]
+    raise ValueError("none of the preferred model keys are available")
 
 
 def select_detector(
@@ -388,12 +409,14 @@ def run(arguments: argparse.Namespace) -> None:
         for model_id, message in model_failures.items():
             print(f"model unavailable: {model_id}: {message}")
         try:
-            active_index = next(
-                index
-                for index, model in enumerate(models)
-                if model.key == arguments.model
+            active_index = preferred_model_index(
+                models,
+                arguments.model,
+                tuple(int(key) for key in settings["preferred_model_keys"]),
             )
-        except StopIteration as error:
+        except ValueError as error:
+            if arguments.model is None:
+                raise
             failure = model_failures.get(
                 next(
                     (
@@ -405,9 +428,7 @@ def run(arguments: argparse.Namespace) -> None:
                 )
             )
             suffix = "" if failure is None else f": {failure}"
-            raise ValueError(
-                f"model key {arguments.model} is unavailable{suffix}"
-            ) from error
+            raise ValueError(f"{error}{suffix}") from error
 
         pipeline_settings = sim.runtime_config_section(
             "inference_pipeline", arguments.runtime_config

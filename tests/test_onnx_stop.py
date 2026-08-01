@@ -16,12 +16,20 @@ class InputDescription:
 
 
 class FakeSession:
-    def __init__(self, output: np.ndarray) -> None:
+    def __init__(
+        self,
+        output: np.ndarray,
+        providers: tuple[str, ...] = ("CPUExecutionProvider",),
+    ) -> None:
         self.output = output
         self.last_inputs = None
+        self.providers = providers
 
     def get_inputs(self):
         return [InputDescription()]
+
+    def get_providers(self):
+        return list(self.providers)
 
     def run(self, output_names, inputs):
         assert output_names is None
@@ -52,6 +60,31 @@ def test_onnx_segmentation() -> None:
     assert np.all(prediction.labels[:, :6] == 9)
     assert np.all(prediction.labels[:, 6:] == 0)
     assert prediction.road_class_id == 9
+
+    accelerated = sim.OnnxSegmentationAdapter(
+        None,
+        sim.OnnxSegmentationConfig(input_width=6, input_height=4),
+        session=FakeSession(
+            logits,
+            providers=(
+                "CoreMLExecutionProvider",
+                "CPUExecutionProvider",
+            ),
+        ),
+        backend="onnxruntime-coreml",
+        required_execution_provider="CoreMLExecutionProvider",
+    )
+    assert accelerated.metadata.backend == "onnxruntime-coreml"
+    try:
+        sim.OnnxSegmentationAdapter(
+            None,
+            sim.OnnxSegmentationConfig(input_width=6, input_height=4),
+            session=FakeSession(logits),
+            required_execution_provider="CoreMLExecutionProvider",
+        )
+        raise AssertionError("inactive required provider was accepted")
+    except RuntimeError as error:
+        assert "CoreMLExecutionProvider" in str(error)
 
 
 def test_yolo_and_detection_pipeline() -> None:

@@ -147,6 +147,10 @@ python examples/realtime_demo.py \
   --detector-config configs/off_the_shelf_models.json
 ```
 
+The demo automatically prefers Core ML/Neural Engine FP16 on macOS and
+TensorRT FP16 on NVIDIA, with CPU as a fallback. Use `--model KEY` to override
+the selected variant.
+
 Unavailable variants are reported and skipped. The simulator-delay models above
 remain the fastest way to exercise the complete application without external
 downloads.

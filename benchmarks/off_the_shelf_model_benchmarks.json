@@ -30,6 +30,34 @@
       "recorded_at_utc": "2026-08-01T20:25:23.027597+00:00"
     },
     {
+      "model_id": "segformer-b0-ade20k-ort-coreml-fp16",
+      "source": "measured_model",
+      "measured_fps": 50.11876382656164,
+      "mean_latency_s": 0.019952607040759174,
+      "p50_latency_s": 0.020245791994966567,
+      "p95_latency_s": 0.02095527680357918,
+      "p99_latency_s": 0.021054870465304704,
+      "maximum_latency_s": 0.021314290934242308,
+      "iterations": 100,
+      "warmup_iterations": 10,
+      "environment": "Darwin 25.5.0 arm64; Python 3.14.6",
+      "recorded_at_utc": "2026-08-01T21:19:31.741160+00:00"
+    },
+    {
+      "model_id": "segformer-b0-ade20k-ort-coreml-fp32",
+      "source": "measured_model",
+      "measured_fps": 20.820438597319544,
+      "mean_latency_s": 0.04802972787176259,
+      "p50_latency_s": 0.048313104489352554,
+      "p95_latency_s": 0.04935005028382875,
+      "p99_latency_s": 0.05081178884021938,
+      "maximum_latency_s": 0.05085691704880446,
+      "iterations": 100,
+      "warmup_iterations": 10,
+      "environment": "Darwin 25.5.0 arm64; Python 3.14.6",
+      "recorded_at_utc": "2026-08-01T21:19:26.564956+00:00"
+    },
+    {
       "model_id": "yolo11n-coco-onnx-fp32",
       "source": "measured_detector",
       "measured_fps": 52.93329891062705,

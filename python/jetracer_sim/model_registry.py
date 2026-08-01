@@ -529,9 +529,15 @@ def build_segmentation_adapter(variant: ModelVariant) -> SegmentationAdapter:
             config,
             model_id=variant.model_id,
             display_name=variant.display_name,
+            backend=variant.backend,
             precision=variant.precision,
             compression=variant.compression,
             providers=providers,
+            required_execution_provider=(
+                None
+                if options.get("required_execution_provider") is None
+                else str(options["required_execution_provider"])
+            ),
         )
     except (KeyError, TypeError, ValueError) as error:
         raise ValueError("invalid ONNX adapter configuration") from error

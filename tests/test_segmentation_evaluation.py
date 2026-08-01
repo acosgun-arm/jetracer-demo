@@ -60,13 +60,15 @@ def main() -> None:
     variants = sim.load_model_variants(
         repository_root / "configs" / "off_the_shelf_models.json"
     )
-    assert len(variants) == 7
-    assert [variant.key for variant in variants] == [1, 2, 3, 4, 5, 6, 7]
+    assert len(variants) == 9
+    assert [variant.key for variant in variants] == list(range(1, 10))
     assert [variant.adapter_kind for variant in variants] == [
         "onnx",
         "onnx",
         "coreml_native",
         "coreml_native",
+        "onnx",
+        "onnx",
         "onnx",
         "onnx",
         "onnx",
@@ -93,6 +95,13 @@ def main() -> None:
     )
     assert variants[6].adapter_options["runtime_disabled_reason"]
     assert variants[3].precision == "fp16"
+    assert variants[7].backend == "onnxruntime-coreml"
+    assert variants[7].adapter_options["required_execution_provider"] == (
+        "CoreMLExecutionProvider"
+    )
+    assert variants[8].adapter_options["providers"][0]["name"] == (
+        "CoreMLExecutionProvider"
+    )
     try:
         _validate_pytorch_runtime_safety(
             platform_name="darwin",

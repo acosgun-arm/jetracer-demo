@@ -188,6 +188,12 @@ def test_browser_speed_telemetry_contract() -> None:
         demo.DEFAULT_MODEL_CONFIG,
         demo.DEFAULT_BENCHMARK_REGISTRY,
     )
+    assert demo.preferred_model_index(
+        models, None, (models[-1].key, models[0].key)
+    ) == len(models) - 1
+    assert demo.preferred_model_index(
+        models, models[0].key, (models[-1].key,)
+    ) == 0
 
     scene = sim.Scene.generate(sim.SceneConfig())
     camera = sim.CameraProfile.stress_720p_200()
