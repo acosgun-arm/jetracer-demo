@@ -516,6 +516,7 @@ OSType pixel_format(const std::string& name) {
   NSInteger _droppedCallbacks;
   NSMutableDictionary<NSString*, NSNumber*>* _dropReasons;
   JRMovieRecorder* _recorder;
+  BOOL _discardNextFrame;
 }
 - (void)startWithRecorder:(JRMovieRecorder*)recorder;
 - (JRCaptureSnapshot*)stopAndSnapshot;
@@ -531,6 +532,10 @@ OSType pixel_format(const std::string& name) {
   _droppedCallbacks = 0;
   _dropReasons = [NSMutableDictionary dictionary];
   _recorder = recorder;
+  // A UVC sample from the pre-reconfiguration stream can still be delivered
+  // after the delegate is armed. Do not let that stale timestamp define the
+  // measurement or movie timeline.
+  _discardNextFrame = YES;
 }
 
 - (JRCaptureSnapshot*)stopAndSnapshot {
@@ -551,6 +556,10 @@ OSType pixel_format(const std::string& name) {
     didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
            fromConnection:(AVCaptureConnection*)connection {
   if (!_measuring) return;
+  if (_discardNextFrame) {
+    _discardNextFrame = NO;
+    return;
+  }
   _arrivalTimes.push_back(NSProcessInfo.processInfo.systemUptime);
   const double timestamp = CMTimeGetSeconds(
       CMSampleBufferGetPresentationTimeStamp(sampleBuffer));
@@ -752,7 +761,42 @@ int run_capture(const Arguments& arguments) {
       choose_format(device, width, height, requested_fps);
   NSDictionary* before_start = selected_capture_record(selection);
 
+  AVCaptureSession* session = [[AVCaptureSession alloc] init];
+  [session beginConfiguration];
   NSError* error = nil;
+  AVCaptureDeviceInput* input =
+      [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
+  if (input == nil || ![session canAddInput:input]) {
+    throw std::runtime_error("capture session rejected the camera input: " +
+                             std_string(error.localizedDescription));
+  }
+  [session addInput:input];
+
+  AVCaptureVideoDataOutput* output = [[AVCaptureVideoDataOutput alloc] init];
+  output.alwaysDiscardsLateVideoFrames = discard_late_frames;
+  output.videoSettings = @{
+    (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey :
+        @(pixel_format(output_pixel_format)),
+  };
+  if (![session canAddOutput:output]) {
+    throw std::runtime_error("capture session rejected the video output");
+  }
+  [session addOutput:output];
+
+  dispatch_queue_t queue = dispatch_queue_create(
+      "jetracer.camera.characterization", DISPATCH_QUEUE_SERIAL);
+  JRCaptureCollector* collector = [[JRCaptureCollector alloc] init];
+  [output setSampleBufferDelegate:collector queue:queue];
+  [session commitConfiguration];
+
+  [session startRunning];
+  if (!session.running) {
+    throw std::runtime_error("capture session did not start");
+  }
+
+  // The macOS UVC session applies its default mode during startRunning. Apply
+  // the requested mode live only after that final negotiation, before frames
+  // are accepted for measurement or recording.
   if (![device lockForConfiguration:&error]) {
     throw std::runtime_error("cannot configure camera: " +
                              std_string(error.localizedDescription));
@@ -765,37 +809,26 @@ int run_capture(const Arguments& arguments) {
     [device unlockForConfiguration];
   }
 
-  AVCaptureSession* session = [[AVCaptureSession alloc] init];
-  [session beginConfiguration];
-  AVCaptureDeviceInput* input =
-      [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
-  if (input == nil || ![session canAddInput:input]) {
-    throw std::runtime_error("capture session rejected the camera input: " +
-                             std_string(error.localizedDescription));
-  }
-  [session addInput:input];
-  AVCaptureVideoDataOutput* output = [[AVCaptureVideoDataOutput alloc] init];
-  output.alwaysDiscardsLateVideoFrames = discard_late_frames;
-  output.videoSettings = @{
-    (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey :
-        @(pixel_format(output_pixel_format)),
-  };
-  if (![session canAddOutput:output]) {
-    throw std::runtime_error("capture session rejected the video output");
-  }
-  [session addOutput:output];
-  dispatch_queue_t queue = dispatch_queue_create(
-      "jetracer.camera.characterization", DISPATCH_QUEUE_SERIAL);
-  JRCaptureCollector* collector = [[JRCaptureCollector alloc] init];
-  [output setSampleBufferDelegate:collector queue:queue];
-  [session commitConfiguration];
-
-  [session startRunning];
-  if (!session.running) {
-    throw std::runtime_error("capture session did not start");
-  }
   NSDictionary* after_start = active_capture_record(device);
   const double active_fps = [after_start[@"fps"] doubleValue];
+  const double configured_fps = [before_start[@"configured_fps"] doubleValue];
+  const double fps_tolerance = std::max(configured_fps * 1e-6, 1e-6);
+  const bool active_mode_matches =
+      [after_start[@"width"] intValue] == width &&
+      [after_start[@"height"] intValue] == height &&
+      [after_start[@"media_subtype"]
+          isEqualToString:before_start[@"media_subtype"]] &&
+      std::abs(active_fps - configured_fps) <= fps_tolerance;
+  if (!active_mode_matches) {
+    [session stopRunning];
+    throw std::runtime_error(
+        "camera changed active mode after start; requested " +
+        std::to_string(width) + "x" + std::to_string(height) + " at " +
+        std::to_string(configured_fps) + " FPS but got " +
+        std::to_string([after_start[@"width"] intValue]) + "x" +
+        std::to_string([after_start[@"height"] intValue]) + " at " +
+        std::to_string(active_fps) + " FPS");
+  }
   if (warmup > 0.0) [NSThread sleepForTimeInterval:warmup];
 
   JRMovieRecorder* recorder = nil;

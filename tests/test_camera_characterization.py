@@ -26,6 +26,7 @@ def test_configured_headless_commands() -> None:
     tool = load_tool()
     configuration = tool.load_configuration(tool.DEFAULT_CONFIG_PATH)
     assert configuration["capture"]["allow_built_in_camera"] is False
+    assert configuration["capture"]["fps"] == 120.00048000192001
 
     parser = tool.parser_for(configuration)
     listed = parser.parse_args(["list", "--include-built-in"])
@@ -67,9 +68,23 @@ def test_native_source_has_no_gui_path() -> None:
     assert "range.minFrameDuration" in source
 
 
+def test_native_source_configures_and_validates_active_mode() -> None:
+    source = NATIVE_SOURCE_PATH.read_text(encoding="utf-8")
+    begin = source.index("[session beginConfiguration]")
+    add_input = source.index("[session addInput:input]", begin)
+    add_output = source.index("[session addOutput:output]", add_input)
+    commit = source.index("[session commitConfiguration]", add_output)
+    start = source.index("[session startRunning]", commit)
+    set_format = source.index("device.activeFormat = selection.format", start)
+    assert begin < add_input < add_output < commit < start < set_format
+    assert "camera changed active mode after start" in source
+    assert "_discardNextFrame = YES" in source
+
+
 def main() -> None:
     test_configured_headless_commands()
     test_native_source_has_no_gui_path()
+    test_native_source_configures_and_validates_active_mode()
 
 
 if __name__ == "__main__":

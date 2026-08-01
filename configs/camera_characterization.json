@@ -3,7 +3,7 @@
   "capture": {
     "width": 1920,
     "height": 1200,
-    "fps": 120.0,
+    "fps": 120.00048000192001,
     "duration_s": 10.0,
     "warmup_s": 1.0,
     "pixel_format": "420v",
