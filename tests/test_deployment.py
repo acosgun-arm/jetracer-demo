@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+from hashlib import sha256
+import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import Iterator
 
 import jetracer_sim as sim
 
@@ -23,12 +28,41 @@ def jetson_capabilities() -> sim.RuntimeCapabilities:
     )
 
 
-def test_existing_artifact_hashes_are_valid() -> None:
+@contextmanager
+def materialized_model_manifest() -> Iterator[Path]:
+    """Create deterministic stand-ins for ignored deployment artifacts."""
+
+    with TemporaryDirectory() as directory:
+        root = Path(directory)
+        config_directory = root / "configs"
+        config_directory.mkdir()
+        document = json.loads(MODELS.read_text(encoding="utf-8"))
+        for section in ("models", "detectors"):
+            for entry in document[section]:
+                adapter = entry["adapter"]
+                model_path = adapter.get("model_path")
+                if model_path is None or adapter.get("artifact_sha256") is None:
+                    continue
+                artifact = (config_directory / model_path).resolve()
+                payload = f"deployment-test:{artifact.name}".encode()
+                artifact.parent.mkdir(parents=True, exist_ok=True)
+                artifact.write_bytes(payload)
+                adapter["artifact_sha256"] = sha256(payload).hexdigest()
+        manifest = config_directory / "models.json"
+        manifest.write_text(
+            json.dumps(document, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        yield manifest
+
+
+def test_valid_artifact_hashes_are_accepted() -> None:
     policy = sim.load_deployment_policy()
     policy["policy"]["require_target_benchmark"] = False
-    report = sim.evaluate_deployment(
-        MODELS, BENCHMARKS, policy, jetson_capabilities()
-    )
+    with materialized_model_manifest() as models:
+        report = sim.evaluate_deployment(
+            models, BENCHMARKS, policy, jetson_capabilities()
+        )
     assert report.target_match
     assert report.ready
     assert set(report.selectable_model_ids) == {
@@ -57,7 +91,13 @@ def test_tensorrt_variants_require_observed_tensorrt_provider() -> None:
         ),
         tensorrt_version="test",
     )
-    report = sim.evaluate_deployment(MODELS, BENCHMARKS, policy, capabilities)
+    with materialized_model_manifest() as models:
+        report = sim.evaluate_deployment(
+            models,
+            BENCHMARKS,
+            policy,
+            capabilities,
+        )
     assert "segformer-b0-ade20k-tensorrt-fp32" in report.selectable_model_ids
     assert "segformer-b0-ade20k-tensorrt-fp16" in report.selectable_model_ids
     assert "yolo11n-coco-tensorrt-fp16" in report.selectable_model_ids
@@ -66,9 +106,10 @@ def test_tensorrt_variants_require_observed_tensorrt_provider() -> None:
 
 def test_real_policy_requires_jetson_benchmarks() -> None:
     policy = sim.load_deployment_policy()
-    report = sim.evaluate_deployment(
-        MODELS, BENCHMARKS, policy, jetson_capabilities()
-    )
+    with materialized_model_manifest() as models:
+        report = sim.evaluate_deployment(
+            models, BENCHMARKS, policy, jetson_capabilities()
+        )
     assert not report.ready
     assert not report.selectable_model_ids
     assert all(
@@ -87,7 +128,7 @@ def test_int8_export_is_isolated_and_provenance_aware() -> None:
 
 
 def main() -> None:
-    test_existing_artifact_hashes_are_valid()
+    test_valid_artifact_hashes_are_accepted()
     test_tensorrt_variants_require_observed_tensorrt_provider()
     test_real_policy_requires_jetson_benchmarks()
     test_int8_export_is_isolated_and_provenance_aware()
