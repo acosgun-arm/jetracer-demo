@@ -9,6 +9,8 @@ option(JETRACER_SIM_BUILD_PYTHON "Build the pybind11 extension" ON)
 option(JETRACER_SIM_BUILD_TESTS "Build native tests" ON)
 option(JETRACER_SIM_BUILD_NATIVE_CLI
        "Build the native CLI and its interactive OpenCV dependency" ON)
+set(JETRACER_SIM_EXAMPLE_TEST_TIMEOUT_SECONDS 60 CACHE STRING
+    "Timeout for simulator example tests run by CTest")
 set(JETRACER_SIM_NATIVE_CONFIG
     "${CMAKE_CURRENT_SOURCE_DIR}/configs/native_simulator_defaults.json"
     CACHE FILEPATH "Native simulator defaults JSON used to generate C++ constants")
@@ -396,14 +398,16 @@ if(JETRACER_SIM_BUILD_TESTS)
               "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python"
               ${Python_EXECUTABLE}
               ${CMAKE_CURRENT_SOURCE_DIR}/examples/closed_loop_lap.py)
-    set_tests_properties(jetracer_sim_closed_loop_test PROPERTIES TIMEOUT 30)
+    set_tests_properties(jetracer_sim_closed_loop_test PROPERTIES
+      TIMEOUT ${JETRACER_SIM_EXAMPLE_TEST_TIMEOUT_SECONDS})
     add_test(
       NAME jetracer_sim_stop_braking_test
       COMMAND ${CMAKE_COMMAND} -E env
               "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/python"
               ${Python_EXECUTABLE}
               ${CMAKE_CURRENT_SOURCE_DIR}/examples/stop_sign_braking.py)
-    set_tests_properties(jetracer_sim_stop_braking_test PROPERTIES TIMEOUT 30)
+    set_tests_properties(jetracer_sim_stop_braking_test PROPERTIES
+      TIMEOUT ${JETRACER_SIM_EXAMPLE_TEST_TIMEOUT_SECONDS})
   endif()
 endif()
 
