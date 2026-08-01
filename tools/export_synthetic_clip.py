@@ -50,7 +50,7 @@ def main() -> None:
         "synthetic_clip_export", arguments.runtime_config
     )
     output = arguments.output or unique_output_path(
-        Path(defaults["output_directory"]), arguments.track
+        Path(defaults["output_directory"]), arguments.track, arguments.profile
     )
     config = sim.SyntheticClipExportConfig(
         output_dir=output,
@@ -86,12 +86,12 @@ def main() -> None:
     print(f"wall_time_s={summary.wall_time_s:.3f}")
 
 
-def unique_output_path(root: Path, track_id: str) -> Path:
+def unique_output_path(root: Path, track_id: str, profile: str) -> Path:
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    candidate = root / f"{track_id}-elp-{timestamp}"
+    candidate = root / f"{track_id}-{profile}-{timestamp}"
     suffix = 1
     while candidate.exists():
-        candidate = root / f"{track_id}-elp-{timestamp}-{suffix}"
+        candidate = root / f"{track_id}-{profile}-{timestamp}-{suffix}"
         suffix += 1
     return candidate
 

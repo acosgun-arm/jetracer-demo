@@ -12,6 +12,9 @@ import numpy as np
 import jetracer_sim as sim
 
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+
+
 class FakeVideoSink:
     def __init__(self, path: Path, kind: str, counts: dict[str, int]) -> None:
         self.path = path
@@ -31,6 +34,8 @@ class FakeVideoSink:
 
 
 def main() -> None:
+    tool_source = (REPOSITORY_ROOT / "tools/export_synthetic_clip.py").read_text()
+    assert 'f"{track_id}-{profile}-{timestamp}"' in tool_source
     with tempfile.TemporaryDirectory(prefix="jetracer-synthetic-clip-") as directory:
         output = Path(directory) / "clip"
         camera = sim.CameraProfile.elp_112()

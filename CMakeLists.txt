@@ -58,13 +58,14 @@ target_include_directories(jetracer_sim_core
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${JETRACER_SIM_GENERATED_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(jetracer_sim_core PUBLIC ${OpenCV_LIBS})
+target_link_libraries(jetracer_sim_core
+  PUBLIC opencv_core opencv_imgproc opencv_imgcodecs)
 target_compile_options(jetracer_sim_core PRIVATE
   $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-Wall;-Wextra;-Wpedantic>)
 
 if(JETRACER_SIM_BUILD_NATIVE_CLI)
   add_executable(jetracer-sim src/cli.cpp)
-  target_link_libraries(jetracer-sim PRIVATE jetracer_sim_core)
+  target_link_libraries(jetracer-sim PRIVATE jetracer_sim_core opencv_highgui)
   if(APPLE)
     target_link_libraries(jetracer-sim PRIVATE "-framework ApplicationServices")
   endif()
