@@ -60,6 +60,7 @@ def load_runtime_configuration(
             "dataset_export",
             "synthetic_clip_export",
             "segmentation_evaluation",
+            "synthetic_clip_evaluation",
             "model_benchmark",
         ),
     )
@@ -359,6 +360,28 @@ def _validate_runtime_document(document: dict[str, Any]) -> None:
             raise ValueError(f"synthetic clip {name} must not be empty")
     if int(synthetic_clip.get("sha256_chunk_bytes", 0)) <= 0:
         raise ValueError("synthetic clip hash chunk size must be positive")
+    clip_evaluation = document["synthetic_clip_evaluation"]
+    if not isinstance(clip_evaluation, dict):
+        raise ValueError("synthetic clip evaluation configuration must be an object")
+    if min(
+        int(clip_evaluation.get("frame_stride", 0)),
+        int(clip_evaluation.get("maximum_frames", 0)),
+    ) <= 0:
+        raise ValueError("synthetic clip evaluation limits must be positive")
+    if int(clip_evaluation.get("warmup_frames", -1)) < 0:
+        raise ValueError("synthetic clip evaluation warmup must not be negative")
+    class_ids = clip_evaluation.get("ground_truth_class_ids")
+    if not isinstance(class_ids, list) or not class_ids or any(
+        not 0 <= int(value) <= 255 for value in class_ids
+    ):
+        raise ValueError("synthetic clip ground-truth classes are invalid")
+    model_keys = clip_evaluation.get("model_keys")
+    if not isinstance(model_keys, list) or not model_keys or any(
+        int(value) <= 0 for value in model_keys
+    ):
+        raise ValueError("synthetic clip evaluation model keys are invalid")
+    if not str(clip_evaluation.get("output_directory", "")):
+        raise ValueError("synthetic clip evaluation output directory is empty")
 
 
 def _validate_native_document(document: dict[str, Any]) -> None:

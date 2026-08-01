@@ -275,6 +275,7 @@ from .synthetic_clip import (  # noqa: F401
 from .evaluation import (  # noqa: F401
     SEGMENTATION_EVALUATION_SCHEMA_VERSION,
     SegmentationEvaluationResult,
+    evaluate_segmentation_clip,
     evaluate_segmentation_dataset,
     save_segmentation_evaluation,
 )

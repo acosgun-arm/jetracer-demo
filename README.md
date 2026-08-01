@@ -109,6 +109,11 @@ python tools/export_synthetic_clip.py
 
 Outputs are written under `benchmarks/synthetic_clips/`. Use `--track`,
 `--duration`, `--speed`, or `--profile` to override the configured defaults.
+Evaluate the configured off-the-shelf segmenters against an exported clip:
+
+```bash
+python tools/evaluate_synthetic_clip.py benchmarks/synthetic_clips/CLIP_DIRECTORY
+```
 
 ## Build and test
 

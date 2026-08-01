@@ -35,6 +35,26 @@ class BlueMaskAdapter(sim.SegmentationAdapter):
         )
 
 
+class FakeCapture:
+    def __init__(self, frames: list[np.ndarray]) -> None:
+        self.frames = frames
+        self.index = 0
+        self.released = False
+
+    def isOpened(self) -> bool:
+        return True
+
+    def read(self) -> tuple[bool, np.ndarray | None]:
+        if self.index >= len(self.frames):
+            return False, None
+        frame = self.frames[self.index]
+        self.index += 1
+        return True, frame.copy()
+
+    def release(self) -> None:
+        self.released = True
+
+
 def main() -> None:
     repository_root = Path(__file__).resolve().parents[1]
     variants = sim.load_model_variants(
@@ -249,6 +269,51 @@ def main() -> None:
             pass
         else:
             raise AssertionError("evaluation result was overwritten")
+
+        clip_root = Path(temporary_directory) / "synthetic-clip"
+        clip_root.mkdir()
+        (clip_root / "rgb.mp4").write_bytes(b"fake rgb")
+        (clip_root / "semantic.mkv").write_bytes(b"fake semantic")
+        (clip_root / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "purpose": "deterministic_synthetic_track_replay",
+                    "capture": {"frame_count": 2},
+                    "files": {
+                        "rgb_video": "rgb.mp4",
+                        "semantic_video": "semantic.mkv",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        rgb_frames = []
+        semantic_frames = []
+        for truth, predicted in zip(truth_masks, predicted_masks, strict=True):
+            image = np.zeros((2, 2, 3), dtype=np.uint8)
+            image[:, :, 0] = predicted * 255
+            rgb_frames.append(image)
+            semantic_frames.append(np.repeat(truth[:, :, None], 3, axis=2))
+        captures: list[FakeCapture] = []
+
+        def capture_factory(path: str) -> FakeCapture:
+            frames = rgb_frames if path.endswith("rgb.mp4") else semantic_frames
+            value = FakeCapture(frames)
+            captures.append(value)
+            return value
+
+        clip_adapter = BlueMaskAdapter()
+        clip_result = sim.evaluate_segmentation_clip(
+            clip_root,
+            clip_adapter,
+            ground_truth_class_ids=(1, 2),
+            warmup_frames=1,
+            capture_factory=capture_factory,
+        )
+        assert clip_adapter.calls == 3
+        assert clip_result.evaluated_frames == 2
+        assert clip_result.road_iou == 0.5
+        assert all(capture.released for capture in captures)
 
 
 if __name__ == "__main__":

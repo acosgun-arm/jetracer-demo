@@ -228,6 +228,14 @@
     "frame_stride": 1,
     "warmup_frames": 2
   },
+  "synthetic_clip_evaluation": {
+    "model_keys": [1, 2],
+    "frame_stride": 10,
+    "maximum_frames": 200,
+    "warmup_frames": 2,
+    "ground_truth_class_ids": [1, 2],
+    "output_directory": "benchmarks/recorded_clips"
+  },
   "model_benchmark": {
     "camera_profile": "stress",
     "iterations": 100,
