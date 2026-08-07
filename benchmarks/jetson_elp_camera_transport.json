@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-07",
+  "platform": {
+    "device": "Jetson Nano",
+    "jetpack": "4.6.6",
+    "l4t": "32.7.6",
+    "kernel": "4.9.337-tegra"
+  },
+  "camera": {
+    "profile_id": "elp_112",
+    "usb_vendor_id": "32e4",
+    "usb_product_id": "5234",
+    "serial_number": "2601240001",
+    "mounted_upside_down": true,
+    "rotation_degrees_clockwise": 180
+  },
+  "configuration": {
+    "device": "/dev/video0",
+    "format": "MJPG",
+    "width": 1280,
+    "height": 720,
+    "requested_fps": 200,
+    "duration_s": 10.0,
+    "v4l2_mmap_buffer_count": 4,
+    "startup_timeout_ms": 5000,
+    "frame_timeout_ms": 1000,
+    "decode_enabled": false
+  },
+  "result": {
+    "negotiated_fps": 200.0,
+    "measured_duration_s": 10.000006,
+    "startup_s": 1.429282,
+    "frames": 1996,
+    "sequence_gaps": 0,
+    "delivered_fps": 199.499888,
+    "mean_interval_ms": 5.012534,
+    "interval_std_ms": 1.727108,
+    "maximum_interval_ms": 8.110729,
+    "transport_mib_per_s": 10.22033,
+    "passes_rate_gate": true,
+    "passes_drop_gate": true
+  },
+  "gpu_preprocess_configuration": {
+    "decoder": "nvjpegdec",
+    "transform": "nvvidconv",
+    "memory": "NVMM",
+    "output_format": "RGBA",
+    "output_width": 512,
+    "output_height": 512,
+    "flip_method": 2,
+    "rotation_degrees_clockwise": 180,
+    "duration_s": 10.0,
+    "appsink_max_buffers": 1,
+    "appsink_drop": true
+  },
+  "gpu_preprocess_result": {
+    "measured_duration_s": 10.002607,
+    "startup_s": 1.461177,
+    "frames": 1997,
+    "buffer_offset_gaps": 0,
+    "delivered_fps": 199.547972,
+    "mean_interval_ms": 5.011326,
+    "interval_std_ms": 1.795827,
+    "maximum_interval_ms": 15.705625,
+    "passes_rate_gate": true,
+    "passes_drop_gate": true
+  },
+  "notes": [
+    "The transport result measures compressed USB/V4L2 delivery without decoding or inference.",
+    "The GPU preprocess result includes NVIDIA MJPEG decoding, 180-degree rotation, and resize to the selected TensorRT model's 512x512 input, but not normalization or inference.",
+    "The four mmap buffers are continuously drained by the capture loop and are separate from the latest-frame application mailbox."
+  ]
+}

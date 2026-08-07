@@ -315,8 +315,10 @@
         ],
         "range_estimation": {
           "class_widths_m": {
+            "0": 0.45,
             "11": 0.24
-          }
+          },
+          "class_distance_scales": {}
         }
       }
     },
@@ -369,8 +371,10 @@
         ],
         "range_estimation": {
           "class_widths_m": {
+            "0": 0.45,
             "11": 0.24
-          }
+          },
+          "class_distance_scales": {}
         }
       }
     }

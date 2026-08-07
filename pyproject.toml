@@ -12,8 +12,10 @@ dependencies = ["numpy>=1.26"]
 
 [project.optional-dependencies]
 export = ["Pillow>=10"]
+visualization = ["matplotlib>=3.8"]
+classical-vision = ["opencv-python-headless>=4.8"]
 onnx = ["onnxruntime>=1.18"]
-coreml-export = ["coremltools"]
+coreml-export = ["coremltools; python_version < '3.14'"]
 pretrained = [
   "Pillow>=10",
   "torch>=2.2",

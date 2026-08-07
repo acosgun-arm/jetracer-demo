@@ -38,6 +38,7 @@ SEMANTIC_CLASSES = (
     {"id": 2, "name": "lane_marking"},
     {"id": 3, "name": "stop_sign"},
     {"id": 4, "name": "obstacle"},
+    {"id": 5, "name": "center_marking"},
 )
 
 
@@ -519,6 +520,7 @@ def _camera_record(camera: CameraProfile) -> dict[str, Any]:
             "roll_rad": float(camera.mount_roll_rad),
             "pitch_down_rad": float(camera.mount_pitch_down_rad),
             "yaw_rad": float(camera.mount_yaw_rad),
+            "provisional": bool(camera.mount_provisional),
         },
         "exposure_s": float(camera.exposure_s),
         "rolling_readout_s": float(camera.rolling_readout_s),

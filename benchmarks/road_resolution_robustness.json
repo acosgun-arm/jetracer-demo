@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-02T00:07:47Z",
+  "platform_config": "configs/platforms/sim.json",
+  "model_config": "configs/road_segmentation_models.json",
+  "scenario": "lane_following",
+  "detector_enabled": false,
+  "laps_per_track": 5,
+  "track_ids": [
+    "waveshare_3x2",
+    "open_oval",
+    "technical_chicane",
+    "tight_hairpin"
+  ],
+  "comparison": [
+    {
+      "model_key": 4,
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+      "input_resolution": [384, 384],
+      "source_report": "build/benchmarks/road-resolution-384-five-lap-all.json",
+      "requested_laps": 20,
+      "completed_laps": 20.001312746437872,
+      "completed_tracks": 4,
+      "offroad_events": 0,
+      "recoveries": 0,
+      "simulation_time_s": 171.9350000000226,
+      "requested_distance_m": 171.49748994115362,
+      "distance_over_time_speed_mps": 0.9974553752355895,
+      "frame_weighted_mean_center_deviation_m": 0.026705081689795275,
+      "maximum_center_deviation_m": 0.11136007894534367,
+      "segmentation_completion_fps": 131.4390310135021,
+      "segmentation_submitted_frames": 34387,
+      "segmentation_replaced_frames": 11783,
+      "tracks": [
+        {
+          "track_id": "waveshare_3x2",
+          "completed_laps": 5.0003225283256265,
+          "offroad_events": 0,
+          "mean_center_deviation_m": 0.0361459141875821,
+          "p95_center_deviation_m": 0.0827527401610029,
+          "average_speed_mps": 0.8802295272326284,
+          "segmentation_completion_fps": 133.15574898116785
+        },
+        {
+          "track_id": "open_oval",
+          "completed_laps": 5.000517821720074,
+          "offroad_events": 0,
+          "mean_center_deviation_m": 0.023907248000897302,
+          "p95_center_deviation_m": 0.0502851258392285,
+          "average_speed_mps": 1.158675009839804,
+          "segmentation_completion_fps": 132.267263181638
+        },
+        {
+          "track_id": "technical_chicane",
+          "completed_laps": 5.000143369673711,
+          "offroad_events": 0,
+          "mean_center_deviation_m": 0.025629903638490718,
+          "p95_center_deviation_m": 0.08937133412190594,
+          "average_speed_mps": 1.1264575151016467,
+          "segmentation_completion_fps": 130.8433722868706
+        },
+        {
+          "track_id": "tight_hairpin",
+          "completed_laps": 5.000329026718461,
+          "offroad_events": 0,
+          "mean_center_deviation_m": 0.024073192968615903,
+          "p95_center_deviation_m": 0.06972019175968547,
+          "average_speed_mps": 0.6419283764886392,
+          "segmentation_completion_fps": 129.94399209838122
+        }
+      ]
+    },
+    {
+      "model_key": 3,
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+      "input_resolution": [256, 256],
+      "source_report": "build/benchmarks/road-resolution-256-five-lap-all.json",
+      "requested_laps": 20,
+      "completed_laps": 20.00179105254589,
+      "completed_tracks": 4,
+      "offroad_events": 14,
+      "recoveries": 14,
+      "simulation_time_s": 178.9900000000261,
+      "requested_distance_m": 171.49748994115362,
+      "distance_over_time_speed_mps": 0.9581400633618001,
+      "frame_weighted_mean_center_deviation_m": 0.05921806538695806,
+      "maximum_center_deviation_m": 0.29340044420001943,
+      "segmentation_completion_fps": 199.35154916229914,
+      "segmentation_submitted_frames": 35784,
+      "segmentation_replaced_frames": 99,
+      "tracks": [
+        {
+          "track_id": "waveshare_3x2",
+          "completed_laps": 5.000660539890608,
+          "offroad_events": 0,
+          "mean_center_deviation_m": 0.03859712641136761,
+          "p95_center_deviation_m": 0.09291684239091999,
+          "average_speed_mps": 0.881372814568213,
+          "segmentation_completion_fps": 199.57247717785611
+        },
+        {
+          "track_id": "open_oval",
+          "completed_laps": 5.000272943631636,
+          "offroad_events": 6,
+          "mean_center_deviation_m": 0.10548392946409633,
+          "p95_center_deviation_m": 0.24484006781417003,
+          "average_speed_mps": 1.3459008833213826,
+          "segmentation_completion_fps": 199.52053560728478
+        },
+        {
+          "track_id": "technical_chicane",
+          "completed_laps": 5.000275498726061,
+          "offroad_events": 4,
+          "mean_center_deviation_m": 0.05702115545878497,
+          "p95_center_deviation_m": 0.14819423921837566,
+          "average_speed_mps": 1.0602909758166064,
+          "segmentation_completion_fps": 198.70826640299464
+        },
+        {
+          "track_id": "tight_hairpin",
+          "completed_laps": 5.000582070297588,
+          "offroad_events": 4,
+          "mean_center_deviation_m": 0.032729625640030145,
+          "p95_center_deviation_m": 0.07445501996470891,
+          "average_speed_mps": 0.6126151570654186,
+          "segmentation_completion_fps": 199.7814493898113
+        }
+      ]
+    }
+  ],
+  "recommendation": {
+    "default_model_key": 4,
+    "reason": "The 384-pixel model completed all 20 laps without an off-road event and had less than half the aggregate center deviation of the 256-pixel model.",
+    "high_rate_demo_model_key": 3,
+    "high_rate_limitation": "The 256-pixel model sustained approximately 200 FPS but produced 14 off-road recoveries outside the Waveshare track."
+  }
+}

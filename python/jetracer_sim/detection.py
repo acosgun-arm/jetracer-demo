@@ -29,6 +29,12 @@ class ObjectDetection:
     bbox_xyxy: tuple[float, float, float, float]
     label: str = ""
     range_m: float | None = None
+    instance_id: int | None = None
+    forward_m: float | None = None
+    lateral_m: float | None = None
+    vehicle_forward_m: float | None = None
+    vehicle_lateral_m: float | None = None
+    road_curvature_per_m: float | None = None
 
     def __post_init__(self) -> None:
         x0, y0, x1, y1 = self.bbox_xyxy
@@ -38,6 +44,24 @@ class ObjectDetection:
             raise ValueError("detection box must have positive area")
         if self.range_m is not None and self.range_m <= 0.0:
             raise ValueError("detection range must be positive")
+        if self.instance_id is not None and self.instance_id < 0:
+            raise ValueError("detection instance ID must not be negative")
+        if self.forward_m is not None and not np.isfinite(self.forward_m):
+            raise ValueError("detection forward distance must be finite")
+        if self.lateral_m is not None and not np.isfinite(self.lateral_m):
+            raise ValueError("detection lateral distance must be finite")
+        if self.vehicle_forward_m is not None and not np.isfinite(
+            self.vehicle_forward_m
+        ):
+            raise ValueError("vehicle-relative forward distance must be finite")
+        if self.vehicle_lateral_m is not None and not np.isfinite(
+            self.vehicle_lateral_m
+        ):
+            raise ValueError("vehicle-relative lateral distance must be finite")
+        if self.road_curvature_per_m is not None and not np.isfinite(
+            self.road_curvature_per_m
+        ):
+            raise ValueError("detection road curvature must be finite")
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,12 +69,24 @@ class TimedDetections:
     detections: tuple[ObjectDetection, ...]
     metrics: InferenceMetrics
 
+    def age_s(self, now_s: float) -> float:
+        captured_at_s = self.metrics.captured_at_s
+        if captured_at_s is not None:
+            return max(0.0, now_s - captured_at_s)
+        return self.metrics.end_to_end_latency_s + max(
+            0.0, now_s - self.metrics.completed_at_s
+        )
+
 
 class DetectionAdapter(ABC):
     @property
     @abstractmethod
     def metadata(self) -> ModelMetadata:
         raise NotImplementedError
+
+    @property
+    def class_names(self) -> tuple[str, ...]:
+        return ()
 
     @abstractmethod
     def infer(self, image_bgr: np.ndarray) -> tuple[ObjectDetection, ...]:
@@ -72,13 +108,24 @@ class RangeEstimator(Protocol):
 class ApparentWidthRangeEstimator:
     """Estimate face-on object range from calibrated focal length and width."""
 
-    def __init__(self, focal_length_pixels: float, class_widths_m: Mapping[int, float]):
+    def __init__(
+        self,
+        focal_length_pixels: float,
+        class_widths_m: Mapping[int, float],
+        class_distance_scales: Mapping[int, float] | None = None,
+    ):
         if focal_length_pixels <= 0.0:
             raise ValueError("focal length must be positive")
         if any(class_id < 0 or width <= 0.0 for class_id, width in class_widths_m.items()):
             raise ValueError("invalid class width mapping")
+        scales = {} if class_distance_scales is None else dict(class_distance_scales)
+        if any(class_id < 0 or scale <= 0.0 for class_id, scale in scales.items()):
+            raise ValueError("invalid class distance-scale mapping")
+        if not scales.keys() <= class_widths_m.keys():
+            raise ValueError("distance scales require configured class widths")
         self.focal_length_pixels = focal_length_pixels
         self.class_widths_m = dict(class_widths_m)
+        self.class_distance_scales = scales
 
     def __call__(
         self,
@@ -92,7 +139,11 @@ class ApparentWidthRangeEstimator:
             return None
         pixel_width = bbox_xyxy[2] - bbox_xyxy[0]
         angular_width = pixel_width / self.focal_length_pixels
-        return object_width / max(2.0 * tan(angular_width * 0.5), 1e-9)
+        uncalibrated = object_width / max(
+            2.0 * tan(angular_width * 0.5),
+            1e-9,
+        )
+        return uncalibrated * self.class_distance_scales.get(class_id, 1.0)
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,9 +185,11 @@ class YoloOnnxAdapter(DetectionAdapter):
         *,
         model_id: str = "yolo-onnx-fp32",
         display_name: str = "YOLO ONNX",
+        backend: str = "onnxruntime",
         precision: str = "fp32",
         compression: str = "none",
         providers: tuple[ExecutionProvider, ...] | None = None,
+        required_execution_provider: str | None = None,
         range_estimator: RangeEstimator | None = None,
         session: Any | None = None,
     ) -> None:
@@ -144,8 +197,21 @@ class YoloOnnxAdapter(DetectionAdapter):
             raise ValueError("model_path is required when no ONNX session is supplied")
         self.config = config or YoloConfig()
         self._session = (
-            session if session is not None else _create_session(model_path, providers)
+            session
+            if session is not None
+            else _create_session(
+                model_path,
+                providers,
+                required_execution_provider=required_execution_provider,
+            )
         )
+        if required_execution_provider is not None and (
+            required_execution_provider not in self._session.get_providers()
+        ):
+            raise RuntimeError(
+                "required ONNX execution provider is inactive: "
+                f"{required_execution_provider}"
+            )
         inputs = self._session.get_inputs()
         if not inputs:
             raise ValueError("ONNX model has no inputs")
@@ -154,7 +220,7 @@ class YoloOnnxAdapter(DetectionAdapter):
         self._metadata = ModelMetadata(
             model_id=model_id,
             display_name=display_name,
-            backend="onnxruntime",
+            backend=backend,
             precision=precision,
             compression=compression,
             input_width=self.config.input_width,
@@ -164,6 +230,10 @@ class YoloOnnxAdapter(DetectionAdapter):
     @property
     def metadata(self) -> ModelMetadata:
         return self._metadata
+
+    @property
+    def class_names(self) -> tuple[str, ...]:
+        return self.config.class_names
 
     def infer(self, image_bgr: np.ndarray) -> tuple[ObjectDetection, ...]:
         _validate_image(image_bgr)
@@ -396,6 +466,7 @@ class DetectionPipeline:
                 ewma_end_to_end_latency_s=state.ewma_end_to_end_s,
                 effective_fps=min(rate_limits),
                 completed_at_s=completed_at,
+                captured_at_s=captured_at_s,
             )
         return TimedDetections(detections=detections, metrics=metrics)
 

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-02T00:55:49Z",
+  "platform_config": "configs/platforms/sim.json",
+  "track_id": "open_oval",
+  "camera_resolution": [320, 180],
+  "segmentation_model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+  "detector_model_id": "yolo11n-coco-onnx-fp32",
+  "pedestrian_asset": {
+    "path": "configs/assets/pedestrian-abhinav-kamal-cc0.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Abhinav_kamal.jpg",
+    "license": "CC0-1.0",
+    "render_width_m": 0.24,
+    "render_height_m": 0.55,
+    "collision_width_m": 0.10,
+    "collision_depth_m": 0.10
+  },
+  "person_range_calibration": {
+    "platform_scoped": true,
+    "class_id": 0,
+    "distance_scale": 0.4036044431929783,
+    "sample_count": 8,
+    "mean_absolute_error_m": 0.0744594518,
+    "maximum_absolute_error_m": 0.1919318209
+  },
+  "unassisted_baseline": {
+    "source_report": "build/benchmarks/road-384-yolo-pedestrian-unassisted-final-one-lap.json",
+    "laps": 1,
+    "collision_events": 1,
+    "offroad_events": 0,
+    "minimum_obstacle_clearance_m": 0.0,
+    "average_speed_mps": 0.6752016089603542,
+    "segmentation_completion_fps": 82.06557868073106,
+    "detector_completion_fps": 51.190643134933076
+  },
+  "avoidance_validation": {
+    "source_report": "build/benchmarks/road-384-yolo-pedestrian-billboard-final-five-lap.json",
+    "laps": 5,
+    "collision_events": 0,
+    "offroad_events": 0,
+    "minimum_obstacle_clearance_m": 0.09759371777966412,
+    "avoidance_active_frames": 4169,
+    "mean_center_deviation_m": 0.059633828016013045,
+    "average_speed_mps": 0.7093765159504153,
+    "segmentation_completion_fps": 79.8971331901144,
+    "detector_completion_fps": 50.073031441492006
+  },
+  "conclusion": {
+    "person_detection_passed": true,
+    "range_calibration_passed": true,
+    "five_lap_clearance_passed": true
+  }
+}

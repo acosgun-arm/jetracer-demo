@@ -37,6 +37,18 @@ def main() -> None:
     assert not frame.semantic.flags.writeable
     assert not frame.instance.flags.writeable
     assert frame.to_bgr().shape == (180, 320, 3)
+    assert sim.ObjectType.BILLBOARD is not None
+    assert sim.ObjectType.CYLINDER is not None
+    assert np.count_nonzero(
+        frame.instance == sim.ROAD_LEFT_BOUNDARY_INSTANCE_ID
+    ) > 0
+    assert np.count_nonzero(
+        frame.instance == sim.ROAD_RIGHT_BOUNDARY_INSTANCE_ID
+    ) > 0
+    assert sim.ROAD_CENTER_DASH_INSTANCE_ID not in {
+        sim.ROAD_LEFT_BOUNDARY_INSTANCE_ID,
+        sim.ROAD_RIGHT_BOUNDARY_INSTANCE_ID,
+    }
 
     retained_view = frame.y_plane
     expected_sum = int(retained_view.sum())

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "heading_layer_cspace": {
+    "layer_count": 9,
+    "minimum_heading_degrees": -55.0,
+    "maximum_heading_degrees": 55.0,
+    "grid_resolution_m": 0.0025,
+    "obstacle_safety_margin_m": 0.005,
+    "road_safety_margin_m": 0.005,
+    "angular_discretization_padding_enabled": true,
+    "grid_cell_padding_enabled": true,
+    "transition_steering_fraction": 0.5,
+    "transition_sample_spacing_m": 0.0025
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "configuration_sources": {
+    "driving_benchmark": "driving_benchmarks.json",
+    "native_simulator": "native_simulator_defaults.json",
+    "platform": "platforms/sim.json"
+  },
+  "case_policy": {
+    "require_all_baseline_cases": true,
+    "reject_unexpected_current_cases": true,
+    "require_current_acceptance_passed": true,
+    "require_completed": true
+  },
+  "metrics": {
+    "offroad_events_per_lap": {
+      "display_name": "Off-road/lap",
+      "direction": "lower",
+      "absolute_tolerance": 0.0,
+      "relative_tolerance": 0.0
+    },
+    "collision_events_per_lap": {
+      "display_name": "Collisions/lap",
+      "direction": "lower",
+      "absolute_tolerance": 0.0,
+      "relative_tolerance": 0.0
+    },
+    "stop_violations_per_lap": {
+      "display_name": "Violations/lap",
+      "direction": "lower",
+      "absolute_tolerance": 0.0,
+      "relative_tolerance": 0.0
+    },
+    "completed_stop_fraction": {
+      "display_name": "Stop fraction",
+      "direction": "higher",
+      "absolute_tolerance": 0.0,
+      "relative_tolerance": 0.0
+    },
+    "minimum_obstacle_clearance_m": {
+      "display_name": "Clearance",
+      "direction": "higher",
+      "absolute_tolerance": 0.005,
+      "relative_tolerance": 0.0
+    },
+    "mean_center_deviation_m": {
+      "display_name": "Deviation",
+      "direction": "lower",
+      "absolute_tolerance": 0.005,
+      "relative_tolerance": 0.10
+    },
+    "average_speed_mps": {
+      "display_name": "Speed",
+      "direction": "higher",
+      "absolute_tolerance": 0.025,
+      "relative_tolerance": 0.05
+    }
+  }
+}

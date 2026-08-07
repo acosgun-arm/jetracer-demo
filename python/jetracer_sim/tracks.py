@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import atan2, cos, hypot, isfinite, pi, sin
+from pathlib import Path
+from random import Random
 
 from ._native import (
     CameraProfile,
@@ -24,6 +26,42 @@ WAVESHARE_JETRACER_PRODUCT_URL = (
 )
 _NUMERICAL_TOLERANCE = 1e-9
 _DISTANCE_COMPARISON_TOLERANCE_M = 1e-12
+
+
+@dataclass(frozen=True, slots=True)
+class CylinderScenarioConfig:
+    """Optional per-run overrides for one benchmark cylinder."""
+
+    placement_seed: int | None = None
+    track_fraction: float | None = None
+    lateral_offset_m: float | None = None
+    radius_m: float | None = None
+    collision_radius_m: float | None = None
+    height_m: float | None = None
+
+    def __post_init__(self) -> None:
+        if self.placement_seed is not None and (
+            isinstance(self.placement_seed, bool) or self.placement_seed < 0
+        ):
+            raise ValueError("cylinder placement seed must not be negative")
+        if self.track_fraction is not None and not (
+            0.0 <= self.track_fraction < 1.0
+        ):
+            raise ValueError("cylinder track fraction must be in [0, 1)")
+        if self.lateral_offset_m is not None and not isfinite(
+            self.lateral_offset_m
+        ):
+            raise ValueError("cylinder lateral offset must be finite")
+        dimensions = (
+            self.radius_m,
+            self.collision_radius_m,
+            self.height_m,
+        )
+        if any(
+            value is not None and (not isfinite(value) or value <= 0.0)
+            for value in dimensions
+        ):
+            raise ValueError("cylinder dimensions must be positive and finite")
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,10 +155,17 @@ def build_benchmark_scene(
     *,
     stop_sign_count: int = 0,
     pedestrian_on_road: bool = False,
+    cylinder_on_road: bool = False,
+    cylinder: CylinderScenarioConfig | None = None,
+    cylinders: tuple[CylinderScenarioConfig, ...] = (),
     configuration: DrivingBenchmarkSuiteConfiguration | None = None,
 ) -> Scene:
     if stop_sign_count < 0:
         raise ValueError("stop-sign count must not be negative")
+    if cylinder is not None and cylinders:
+        raise ValueError("single and multiple cylinder overrides conflict")
+    if len(cylinders) > 3:
+        raise ValueError("at most three cylinders are supported")
     suite = configuration or load_driving_benchmark_configuration()
     runner_config = suite.section("runner")
     object_config = suite.section("objects")
@@ -191,18 +236,119 @@ def build_benchmark_scene(
         centre, tangent = _point_and_tangent(track.centerline_xy_m, index)
         pedestrian = SceneObject()
         pedestrian.instance_id = instance_id
-        pedestrian.type = ObjectType.BOX
+        pedestrian.type = ObjectType.BILLBOARD
         pedestrian.semantic_class = SemanticClass.OBSTACLE
-        pedestrian.position.x = centre[0]
-        pedestrian.position.y = centre[1]
-        pedestrian.yaw_rad = tangent + pi * 0.5
+        lateral_offset_m = float(pedestrian_config["lateral_offset_m"])
+        pedestrian.position.x = centre[0] - sin(tangent) * lateral_offset_m
+        pedestrian.position.y = centre[1] + cos(tangent) * lateral_offset_m
+        pedestrian.yaw_rad = tangent + pi
         pedestrian.width_m = float(pedestrian_config["width_m"])
         pedestrian.depth_m = float(pedestrian_config["depth_m"])
         pedestrian.height_m = float(pedestrian_config["height_m"])
+        pedestrian.collision_width_m = float(
+            pedestrian_config["collision_width_m"]
+        )
+        pedestrian.collision_depth_m = float(
+            pedestrian_config["collision_depth_m"]
+        )
+        texture_path = Path(str(pedestrian_config["texture_path"]))
+        if not texture_path.is_absolute():
+            texture_path = suite.path.parent / texture_path
+        pedestrian.texture_path = str(texture_path.resolve())
         pedestrian.bgr = tuple(
             int(value) for value in pedestrian_config["bgr"]
         )
         objects.append(pedestrian)
+        instance_id += 1
+
+    if cylinder_on_road:
+        cylinder_config = object_config["cylinder"]
+        overrides = cylinders or (cylinder or CylinderScenarioConfig(),)
+        palette = cylinder_config.get(
+            "bgr_palette", [cylinder_config["bgr"]]
+        )
+        for cylinder_index, override in enumerate(overrides):
+            radius_m = (
+                float(cylinder_config["radius_m"])
+                if override.radius_m is None
+                else override.radius_m
+            )
+            collision_radius_m = (
+                float(cylinder_config["collision_radius_m"])
+                if override.collision_radius_m is None
+                else override.collision_radius_m
+            )
+            diameter_m = 2.0 * radius_m
+            minimum_offset_m = float(
+                cylinder_config["minimum_lateral_offset_m"]
+            )
+            maximum_offset_m = float(
+                cylinder_config["maximum_lateral_offset_m"]
+            )
+            configured_maximum_offset_m = (
+                max(abs(minimum_offset_m), abs(maximum_offset_m))
+                if override.lateral_offset_m is None
+                else abs(override.lateral_offset_m)
+            )
+            maximum_extent_m = configured_maximum_offset_m + max(
+                radius_m, collision_radius_m
+            )
+            if maximum_extent_m >= track.road_width_m * 0.5:
+                raise ValueError("configured cylinder placement leaves the road")
+            randomizer = Random()
+            placement_seed = (
+                int(cylinder_config["placement_seed"]) + cylinder_index
+                if override.placement_seed is None
+                else override.placement_seed
+            )
+            randomizer.seed(f"{placement_seed}:{track.seed}", version=2)
+            track_fraction = (
+                randomizer.uniform(
+                    float(cylinder_config["minimum_track_fraction"]),
+                    float(cylinder_config["maximum_track_fraction"]),
+                )
+                if override.track_fraction is None
+                else override.track_fraction
+            )
+            lateral_offset_m = (
+                randomizer.uniform(minimum_offset_m, maximum_offset_m)
+                if override.lateral_offset_m is None
+                else override.lateral_offset_m
+            )
+            index = int(track_fraction * len(track.centerline_xy_m)) % len(
+                track.centerline_xy_m
+            )
+            centre, tangent = _point_and_tangent(
+                track.centerline_xy_m, index
+            )
+            cylinder_object = SceneObject()
+            cylinder_object.instance_id = instance_id
+            cylinder_object.type = ObjectType.CYLINDER
+            cylinder_object.semantic_class = SemanticClass.OBSTACLE
+            cylinder_object.position.x = (
+                centre[0] - sin(tangent) * lateral_offset_m
+            )
+            cylinder_object.position.y = (
+                centre[1] + cos(tangent) * lateral_offset_m
+            )
+            cylinder_object.yaw_rad = tangent
+            cylinder_object.width_m = diameter_m
+            cylinder_object.depth_m = diameter_m
+            cylinder_object.height_m = (
+                float(cylinder_config["height_m"])
+                if override.height_m is None
+                else override.height_m
+            )
+            collision_diameter_m = 2.0 * collision_radius_m
+            cylinder_object.collision_width_m = collision_diameter_m
+            cylinder_object.collision_depth_m = collision_diameter_m
+            cylinder_object.radial_segments = int(
+                cylinder_config["radial_segments"]
+            )
+            colour = palette[cylinder_index % len(palette)]
+            cylinder_object.bgr = tuple(int(value) for value in colour)
+            objects.append(cylinder_object)
+            instance_id += 1
     scene.objects = objects
     scene.validate()
     return scene

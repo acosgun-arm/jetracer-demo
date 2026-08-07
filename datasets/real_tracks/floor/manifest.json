@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "purpose": "real_track_perception_evaluation",
+  "dataset_id": "floor-real-track-v1",
+  "status": "awaiting_capture",
+  "track": {
+    "track_id": "floor_v1",
+    "display_name": "Floor sticker track",
+    "arena_width_m": null,
+    "arena_height_m": null,
+    "road_width_m": null,
+    "road_width_status": "pending_track_design"
+  },
+  "camera_mount": {
+    "height_m": null,
+    "pitch_degrees": null,
+    "lateral_offset_m": null,
+    "rotation_degrees": 0,
+    "status": "pending_hardware_measurement"
+  },
+  "camera_modes": [
+    {
+      "camera_mode_id": "elp_720p_200",
+      "camera_id": "elp_global_shutter_112",
+      "width": 1280,
+      "height": 720,
+      "fps": 200.0,
+      "pixel_format": "nv12"
+    },
+    {
+      "camera_mode_id": "elp_1200p_120",
+      "camera_id": "elp_global_shutter_112",
+      "width": 1920,
+      "height": 1200,
+      "fps": 120.00048,
+      "pixel_format": "nv12"
+    },
+    {
+      "camera_mode_id": "imx219_720p_60",
+      "camera_id": "imx219_160",
+      "width": 1280,
+      "height": 720,
+      "fps": 60.0,
+      "pixel_format": "nv12"
+    },
+    {
+      "camera_mode_id": "imx219_1080p_30",
+      "camera_id": "imx219_160",
+      "width": 1920,
+      "height": 1080,
+      "fps": 30.0,
+      "pixel_format": "nv12"
+    }
+  ],
+  "object": {
+    "cylinder": {
+      "radius_m": 0.03,
+      "height_m": 0.07,
+      "colour": "matte_hot_magenta",
+      "geometry_status": "provisional_pending_physical_object"
+    }
+  },
+  "capture_protocol": {
+    "allowed_image_extensions": [".png", ".tif", ".tiff"],
+    "allowed_video_extensions": [".mov", ".mp4", ".mkv"],
+    "lighting_conditions": [
+      "daylight_diffuse", "strong_shadow", "indoor_warm", "indoor_cool",
+      "low_light", "glare"
+    ],
+    "track_sections": [
+      "overview", "straight", "left_curve", "right_curve", "mixed_lap"
+    ],
+    "scene_types": [
+      "empty_road", "cylinder_center", "cylinder_left", "cylinder_right"
+    ],
+    "required_lighting_conditions": [
+      "daylight_diffuse", "strong_shadow", "indoor_warm", "indoor_cool",
+      "low_light", "glare"
+    ],
+    "required_track_sections": [
+      "straight", "left_curve", "right_curve", "mixed_lap"
+    ],
+    "required_scene_types": [
+      "empty_road", "cylinder_center", "cylinder_left", "cylinder_right"
+    ],
+    "minimum_captures_per_split": {
+      "calibration": 24,
+      "development": 24,
+      "benchmark": 48
+    },
+    "minimum_annotated_benchmark_images": 24,
+    "video_fps_tolerance_fraction": 0.02,
+    "semantic_classes": [
+      {"id": 0, "name": "background"},
+      {"id": 1, "name": "drivable_surface"},
+      {"id": 2, "name": "boundary_marking"},
+      {"id": 3, "name": "magenta_cylinder"}
+    ],
+    "colour_calibration": {
+      "semantic_class_ids": [1, 2, 3],
+      "lower_percentile": 2.0,
+      "upper_percentile": 98.0,
+      "maximum_pixels_per_class": 1000000
+    }
+  },
+  "captures": []
+}

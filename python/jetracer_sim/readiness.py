@@ -163,6 +163,12 @@ def build_preflight_report(
             True,
         ),
         (
+            "speed_certification_ready",
+            bool(_nested(observations, "speed_certification", "ready")),
+            observations.get("speed_certification"),
+            True,
+        ),
+        (
             "storage_available",
             int(_nested(observations, "storage", "free_bytes") or 0)
             >= int(storage_config["minimum_free_bytes"]),
@@ -247,6 +253,21 @@ def preflight_authorizes_motion(
             or document.get("ready") is not True
         ):
             return False
+        checks = document.get("checks")
+        if not isinstance(checks, list):
+            return False
+        checks_by_id = {
+            check.get("id"): check
+            for check in checks
+            if isinstance(check, dict) and isinstance(check.get("id"), str)
+        }
+        for check_id, required in configuration["checks"].items():
+            if required and (
+                check_id not in checks_by_id
+                or checks_by_id[check_id].get("required") is not True
+                or checks_by_id[check_id].get("passed") is not True
+            ):
+                return False
         safety = document.get("safety", {})
         if any(
             safety.get(name) is not False

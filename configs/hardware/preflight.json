@@ -11,6 +11,7 @@
     "actuator_dry_run_passed": true,
     "state_validated_for_motion": true,
     "model_deployment_ready": true,
+    "speed_certification_ready": true,
     "storage_available": true,
     "power_mode_observed": true,
     "temperature_safe": true

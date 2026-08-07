@@ -39,6 +39,7 @@ class RuntimeCapabilities:
     onnxruntime_version: str | None
     onnx_execution_providers: tuple[str, ...]
     tensorrt_version: str | None
+    opencv_version: str | None = None
     probe_errors: tuple[str, ...] = ()
 
 
@@ -95,6 +96,7 @@ class DeploymentReport:
                     self.capabilities.onnx_execution_providers
                 ),
                 "tensorrt_version": self.capabilities.tensorrt_version,
+                "opencv_version": self.capabilities.opencv_version,
                 "probe_errors": list(self.capabilities.probe_errors),
             },
             "variants": [variant.to_dict() for variant in self.variants],
@@ -145,7 +147,7 @@ def collect_runtime_capabilities(
     probe_source = (
         "import json\n"
         "result = {'onnxruntime_version': None, 'onnx_execution_providers': [], "
-        "'tensorrt_version': None, 'errors': []}\n"
+        "'tensorrt_version': None, 'opencv_version': None, 'errors': []}\n"
         "try:\n"
         " import onnxruntime as ort\n"
         " result['onnxruntime_version'] = ort.__version__\n"
@@ -157,6 +159,11 @@ def collect_runtime_capabilities(
         " result['tensorrt_version'] = trt.__version__\n"
         "except BaseException as error:\n"
         " result['errors'].append('tensorrt: ' + type(error).__name__ + ': ' + str(error))\n"
+        "try:\n"
+        " import cv2\n"
+        " result['opencv_version'] = cv2.__version__\n"
+        "except BaseException as error:\n"
+        " result['errors'].append('opencv: ' + type(error).__name__ + ': ' + str(error))\n"
         "print(json.dumps(result))\n"
     )
     errors: list[str] = []
@@ -188,6 +195,7 @@ def collect_runtime_capabilities(
             str(value) for value in payload.get("onnx_execution_providers", [])
         ),
         tensorrt_version=payload.get("tensorrt_version"),
+        opencv_version=payload.get("opencv_version"),
         probe_errors=tuple(errors),
     )
 
@@ -197,6 +205,8 @@ def evaluate_deployment(
     benchmark_path: str | Path,
     policy: Mapping[str, Any],
     capabilities: RuntimeCapabilities,
+    *,
+    detector_configuration_path: str | Path | None = None,
 ) -> DeploymentReport:
     settings = policy["policy"]
     target = policy["target_host"]
@@ -208,7 +218,9 @@ def evaluate_deployment(
     segmentation = load_model_variants(
         model_configuration_path, benchmark_path
     )
-    detectors = load_detection_model_variants(model_configuration_path)
+    detectors = load_detection_model_variants(
+        detector_configuration_path or model_configuration_path
+    )
     statuses = tuple(
         [
             _evaluate_variant(
@@ -288,11 +300,14 @@ def _evaluate_variant(
     )
     model_path_value = options.get("model_path")
     model_path = None if model_path_value is None else Path(str(model_path_value))
+    requires_artifact = variant.adapter_kind != "color_lane"
     check(
         "artifact_exists",
-        model_path is not None and model_path.is_file(),
-        None if model_path is None else str(model_path),
-        "existing file",
+        not requires_artifact or (model_path is not None and model_path.is_file()),
+        "not required" if not requires_artifact else (
+            None if model_path is None else str(model_path)
+        ),
+        "not required" if not requires_artifact else "existing file",
     )
     expected_digest = options.get("artifact_sha256")
     require_digest = bool(settings["require_artifact_sha256"])
@@ -305,20 +320,34 @@ def _evaluate_variant(
         digest_matches = actual_digest == expected_digest
     check(
         "artifact_sha256",
-        digest_matches if require_digest else expected_digest is None or digest_matches,
+        (
+            True
+            if not requires_artifact
+            else digest_matches
+            if require_digest
+            else expected_digest is None or digest_matches
+        ),
         actual_digest,
-        expected_digest if expected_digest is not None else "recorded SHA-256",
+        (
+            "not required"
+            if not requires_artifact
+            else expected_digest
+            if expected_digest is not None
+            else "recorded SHA-256"
+        ),
     )
     available_providers = set(capabilities.onnx_execution_providers)
     allowed_providers = set(settings["allowed_execution_providers"])
     required_provider = options.get("required_execution_provider")
-    provider_ready = (
+    provider_ready = variant.adapter_kind == "color_lane" or (
         str(required_provider) in available_providers
         if required_provider is not None
         else bool(available_providers & allowed_providers)
     )
     runtime_ready = (
-        capabilities.onnxruntime_version is not None
+        capabilities.opencv_version is not None
+        if variant.adapter_kind == "color_lane"
+        else capabilities.onnxruntime_version is not None
         if variant.adapter_kind in {"onnx", "yolo_onnx"}
         else capabilities.tensorrt_version is not None
     )
@@ -328,6 +357,7 @@ def _evaluate_variant(
         {
             "onnxruntime": capabilities.onnxruntime_version,
             "tensorrt": capabilities.tensorrt_version,
+            "opencv": capabilities.opencv_version,
         },
         "runtime installed",
     )

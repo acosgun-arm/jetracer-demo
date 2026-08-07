@@ -41,6 +41,9 @@ class BrowserViewer:
         jpeg_quality: int,
         stream_wait_timeout_s: float,
         stop_timeout_s: float,
+        benchmark_catalog: dict[str, Any] | None = None,
+        capture_catalog: dict[str, Any] | None = None,
+        maximum_capture_request_bytes: int = 8192,
     ) -> None:
         if not viewer_html:
             raise ValueError("viewer HTML must not be empty")
@@ -48,6 +51,8 @@ class BrowserViewer:
             raise ValueError("browser JPEG quality must be in [1, 100]")
         if stream_wait_timeout_s <= 0.0 or stop_timeout_s <= 0.0:
             raise ValueError("browser timeouts must be positive")
+        if maximum_capture_request_bytes <= 0:
+            raise ValueError("capture request limit must be positive")
         self._cv2 = cv2
         self._viewer_html = bytes(viewer_html)
         self._jpeg_quality = jpeg_quality
@@ -57,6 +62,21 @@ class BrowserViewer:
         self._jpeg: bytes | None = None
         self._version = 0
         self._telemetry: dict[str, Any] = {}
+        self._benchmark_catalog = (
+            {} if benchmark_catalog is None else benchmark_catalog.copy()
+        )
+        self._capture_catalog = (
+            {"enabled": False}
+            if capture_catalog is None
+            else capture_catalog.copy()
+        )
+        self._capture_status: dict[str, Any] = {
+            "state": "disabled",
+            "message": "Real-track capture is not enabled for this platform",
+        }
+        self._maximum_capture_request_bytes = maximum_capture_request_bytes
+        self._capture_requests: deque[dict[str, Any]] = deque()
+        self._feed_mode = "processed"
         self._actions: deque[str] = deque()
         self._running = True
         viewer = self
@@ -77,18 +97,26 @@ class BrowserViewer:
                     self._stream()
                 elif parsed.path == "/telemetry":
                     self._send_telemetry()
+                elif parsed.path == "/benchmarks":
+                    self._send_benchmarks()
+                elif parsed.path == "/capture":
+                    self._send_capture()
                 else:
                     self.send_error(404)
 
             def do_POST(self) -> None:
                 parsed = urlparse(self.path)
-                if parsed.path != "/action":
+                if parsed.path == "/action":
+                    action = parse_qs(parsed.query).get("key", [""])[0]
+                    viewer._enqueue(action)
+                    self.send_response(204)
+                    self.end_headers()
+                elif parsed.path == "/feed":
+                    self._select_feed(parsed)
+                elif parsed.path == "/capture":
+                    self._request_capture()
+                else:
                     self.send_error(404)
-                    return
-                action = parse_qs(parsed.query).get("key", [""])[0]
-                viewer._enqueue(action)
-                self.send_response(204)
-                self.end_headers()
 
             def _stream(self) -> None:
                 self.send_response(200)
@@ -126,11 +154,77 @@ class BrowserViewer:
                 if not snapshot:
                     self.send_error(503, "telemetry not ready")
                     return
+                self._send_json(snapshot)
+
+            def _send_benchmarks(self) -> None:
+                self._send_json(viewer.benchmark_catalog_snapshot)
+
+            def _send_capture(self) -> None:
+                self._send_json(viewer.capture_snapshot)
+
+            def _select_feed(self, parsed: Any) -> None:
+                mode = parse_qs(parsed.query).get("mode", [""])[0]
+                if mode not in {"raw", "processed"}:
+                    self._send_json(
+                        {"error": "feed mode must be raw or processed"},
+                        status=400,
+                    )
+                    return
+                viewer.select_feed(mode)
+                self._send_json({"feed_mode": mode})
+
+            def _request_capture(self) -> None:
+                if not viewer.capture_snapshot["catalog"].get("enabled", False):
+                    self._send_json(
+                        {"error": "capture is disabled for this platform"},
+                        status=409,
+                    )
+                    return
+                length_text = self.headers.get("Content-Length", "")
+                try:
+                    length = int(length_text)
+                except ValueError:
+                    length = -1
+                if length <= 0:
+                    self._send_json(
+                        {"error": "capture request body is required"},
+                        status=400,
+                    )
+                    return
+                if length > viewer._maximum_capture_request_bytes:
+                    self._send_json(
+                        {"error": "capture request is too large"},
+                        status=413,
+                    )
+                    return
+                try:
+                    request = json.loads(self.rfile.read(length))
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    self._send_json(
+                        {"error": "capture request must be valid JSON"},
+                        status=400,
+                    )
+                    return
+                if not isinstance(request, dict):
+                    self._send_json(
+                        {"error": "capture request must be an object"},
+                        status=400,
+                    )
+                    return
+                viewer._enqueue_capture(request)
+                self._send_json({"accepted": True}, status=202)
+
+            def _send_json(
+                self,
+                snapshot: dict[str, Any],
+                *,
+                status: int = 200,
+            ) -> None:
                 encoded = json.dumps(
                     snapshot,
                     separators=(",", ":"),
                 ).encode()
-                self.send_response(200)
+                self.send_response(status)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(encoded)))
                 self.send_header("Cache-Control", "no-store")
@@ -160,10 +254,19 @@ class BrowserViewer:
         if open_browser:
             webbrowser.open(self.url)
 
-    def publish(self, image: np.ndarray) -> None:
+    def publish(
+        self,
+        image: np.ndarray,
+        *,
+        raw_image: np.ndarray | None = None,
+    ) -> None:
+        with self._condition:
+            selected = raw_image if self._feed_mode == "raw" else image
+        if selected is None:
+            selected = image
         success, encoded = self._cv2.imencode(
             ".jpg",
-            image,
+            selected,
             (self._cv2.IMWRITE_JPEG_QUALITY, self._jpeg_quality),
         )
         if not success:
@@ -177,16 +280,50 @@ class BrowserViewer:
         with self._condition:
             self._telemetry = telemetry.copy()
 
+    def update_benchmark_catalog(self, catalog: dict[str, Any]) -> None:
+        with self._condition:
+            self._benchmark_catalog = catalog.copy()
+
+    def update_capture_status(self, status: dict[str, Any]) -> None:
+        with self._condition:
+            self._capture_status = status.copy()
+
+    def select_feed(self, mode: str) -> None:
+        if mode not in {"raw", "processed"}:
+            raise ValueError("feed mode must be raw or processed")
+        with self._condition:
+            self._feed_mode = mode
+
     @property
     def telemetry_snapshot(self) -> dict[str, Any]:
         with self._condition:
             return self._telemetry.copy()
+
+    @property
+    def benchmark_catalog_snapshot(self) -> dict[str, Any]:
+        with self._condition:
+            return self._benchmark_catalog.copy()
+
+    @property
+    def capture_snapshot(self) -> dict[str, Any]:
+        with self._condition:
+            return {
+                "catalog": self._capture_catalog.copy(),
+                "status": self._capture_status.copy(),
+                "feed_mode": self._feed_mode,
+            }
 
     def actions(self) -> list[str]:
         with self._condition:
             actions = list(self._actions)
             self._actions.clear()
             return actions
+
+    def capture_requests(self) -> list[dict[str, Any]]:
+        with self._condition:
+            requests = list(self._capture_requests)
+            self._capture_requests.clear()
+            return requests
 
     def stop(self) -> None:
         with self._condition:
@@ -200,6 +337,10 @@ class BrowserViewer:
         if action:
             with self._condition:
                 self._actions.append(action)
+
+    def _enqueue_capture(self, request: dict[str, Any]) -> None:
+        with self._condition:
+            self._capture_requests.append(request.copy())
 
 
 class RollingRate:
@@ -262,10 +403,7 @@ def detector_result_age_s(
 ) -> float | None:
     if result is None:
         return None
-    return result.metrics.end_to_end_latency_s + max(
-        0.0,
-        now_s - result.metrics.completed_at_s,
-    )
+    return result.age_s(now_s)
 
 
 def unique_log_path() -> Path:
@@ -297,6 +435,9 @@ def draw_display(
     requested_speed_mps: float,
     paused: bool,
     show_labels: bool,
+    control_method_id: str = "pure_pursuit",
+    path_planner_id: str = "centerline",
+    speed_certification_status: str = "unknown",
 ) -> np.ndarray:
     image = np.array(frame.image_bgr, copy=True)
     if show_labels and latest is not None:
@@ -350,17 +491,26 @@ def draw_display(
         if vehicle_state.speed_mps is None
         else f"{vehicle_state.speed_mps:.2f}"
     )
+    certified_limit_text = (
+        "none"
+        if speed.certified_speed_limit_mps is None
+        else f"{speed.certified_speed_limit_mps:.2f}"
+    )
     lines = [
         f"{platform_id}  [{active_model.key}] {active_model.display_name}  "
         f"{benchmark_text}  "
         f"{active_model.precision}/{active_model.compression}",
+        f"control {control_method_id.replace('_', ' ')}  path "
+        f"{path_planner_id.replace('-', ' ')}  certification "
+        f"{speed_certification_status.replace('_', ' ')}",
         f"camera {source_fps:6.1f}/{camera.fps:.0f} FPS   "
         f"inference {inference_fps:6.1f} FPS  {inference_ms:5.1f} ms   "
         f"result age {age_text}   dropped {statistics.replaced_pending_frames}",
         f"speed actual {actual_speed_text}  command "
         f"{speed.commanded_speed_mps:.2f}  permitted "
         f"{speed.permitted_speed_mps:.2f}  requested "
-        f"{requested_speed_mps:.2f} m/s   limit {speed.reason}",
+        f"{requested_speed_mps:.2f} m/s  certified {certified_limit_text}  "
+        f"limit {speed.reason}",
     ]
     if detection_statistics is not None:
         detection_metrics = (
@@ -475,6 +625,15 @@ def telemetry_record(
     actuator_status: sim.VehicleActuatorStatus | None = None,
     include_model_catalog: bool = False,
     system_health: sim.SystemHealthSnapshot | None = None,
+    active_control_method_id: str = "pure_pursuit",
+    available_control_methods: tuple[dict[str, str], ...] = (),
+    active_path_planner_id: str = "centerline",
+    available_path_planners: tuple[dict[str, str], ...] = (),
+    active_driving_mode: str = "hazards",
+    available_driving_modes: tuple[dict[str, str], ...] = (),
+    speed_certification_status: str = "unknown",
+    speed_certification_configuration_id: str | None = None,
+    speed_certification_authorized: bool = True,
 ) -> dict[str, Any]:
     metrics = latest.metrics if latest is not None else None
     detection_metrics = (
@@ -499,6 +658,14 @@ def telemetry_record(
         "model_backend": active_model.backend,
         "model_precision": active_model.precision,
         "model_compression": active_model.compression,
+        "active_control_method_id": active_control_method_id,
+        "active_path_planner_id": active_path_planner_id,
+        "active_driving_mode": active_driving_mode,
+        "speed_certification_status": speed_certification_status,
+        "speed_certification_configuration_id": (
+            speed_certification_configuration_id
+        ),
+        "speed_certification_authorized": speed_certification_authorized,
         "benchmark_fps": active_model.benchmark_fps,
         "benchmark_source": benchmark.source if benchmark is not None else None,
         "benchmark_p99_latency_s": (
@@ -517,6 +684,11 @@ def telemetry_record(
         "camera_fps": source_fps,
         "measured_camera_fps": source_fps,
         "camera_target_fps": camera.fps,
+        "camera_profile_id": str(platform.camera["profile"]),
+        "camera_runtime_mode_id": platform.camera.get("runtime_mode_id"),
+        "camera_display_name": platform.camera.get(
+            "display_name", str(platform.camera["profile"])
+        ),
         "effective_inference_fps": speed.effective_fps,
         "inference_latency_s": (
             metrics.inference_latency_s if metrics is not None else None
@@ -533,6 +705,8 @@ def telemetry_record(
         "governor_target_speed_mps": speed.target_speed_mps,
         "permitted_speed_mps": speed.permitted_speed_mps,
         "commanded_speed_mps": speed.commanded_speed_mps,
+        "certified_speed_limit_mps": speed.certified_speed_limit_mps,
+        "certified_speed_limited": speed.certified_speed_limited,
         "actual_speed_mps": vehicle_state.speed_mps,
         "actual_steering_rad": vehicle_state.steering_rad,
         "vehicle_state_source": vehicle_state.source,
@@ -550,11 +724,18 @@ def telemetry_record(
         "replaced_pending_frames": statistics.replaced_pending_frames,
         "discarded_results": statistics.discarded_results,
         "failed_frames": statistics.failed_frames,
+        "detector_active": (
+            active_detector is not None and active_driving_mode == "hazards"
+        ),
         "detector_model_id": (
-            active_detector.model_id if active_detector is not None else None
+            active_detector.model_id
+            if active_detector is not None and active_driving_mode == "hazards"
+            else None
         ),
         "detector_model_name": (
-            active_detector.display_name if active_detector is not None else None
+            active_detector.display_name
+            if active_detector is not None and active_driving_mode == "hazards"
+            else None
         ),
         "detector_effective_fps": (
             detection_metrics.effective_fps
@@ -574,6 +755,16 @@ def telemetry_record(
         ),
         "detector_replaced_pending_frames": (
             detection_statistics.replaced_pending_frames
+            if detection_statistics is not None
+            else 0
+        ),
+        "detector_submitted_frames": (
+            detection_statistics.submitted_frames
+            if detection_statistics is not None
+            else 0
+        ),
+        "detector_rate_limited_frames": (
+            detection_statistics.rate_limited_frames
             if detection_statistics is not None
             else 0
         ),
@@ -598,6 +789,26 @@ def telemetry_record(
         ),
         "stop_speed_limit_mps": (
             stop_decision.speed_limit_mps if stop_decision is not None else None
+        ),
+        "stop_trigger_distance_m": (
+            stop_decision.trigger_distance_m
+            if stop_decision is not None
+            else None
+        ),
+        "stop_detection_age_s": (
+            stop_decision.detection_age_s
+            if stop_decision is not None
+            else None
+        ),
+        "stop_latency_budget_s": (
+            stop_decision.latency_budget_s
+            if stop_decision is not None
+            else None
+        ),
+        "stop_required_deceleration_mps2": (
+            stop_decision.required_deceleration_mps2
+            if stop_decision is not None
+            else None
         ),
         "paused": paused,
         "show_labels": show_labels,
@@ -673,5 +884,14 @@ def telemetry_record(
                 ),
             }
             for model in available_models
+        ]
+        record["available_control_methods"] = [
+            dict(method) for method in available_control_methods
+        ]
+        record["available_path_planners"] = [
+            dict(planner) for planner in available_path_planners
+        ]
+        record["available_driving_modes"] = [
+            dict(mode) for mode in available_driving_modes
         ]
     return record

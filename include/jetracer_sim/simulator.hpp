@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 #include <memory>
-#include <numbers>
 #include <string>
 #include <vector>
 
@@ -24,8 +23,9 @@ enum class SemanticClass : std::uint8_t {
   LaneMarking = 2,
   StopSign = 3,
   Obstacle = 4,
+  CenterMarking = 5,
 };
-enum class ObjectType { Box, StopSign };
+enum class ObjectType { Box, Cylinder, StopSign, Billboard };
 
 struct Point2 {
   double x{0.0};
@@ -79,7 +79,7 @@ struct CameraProfile {
                           : ShutterType::Rolling};
   double nominal_hfov_rad{
       defaults::kCameraProfilesStressNominalHfovDegrees *
-      std::numbers::pi_v<double> / 180.0};
+      3.14159265358979323846 / 180.0};
   double fx{0.0};
   double fy{0.0};
   double cx{0.0};
@@ -91,6 +91,7 @@ struct CameraProfile {
   double mount_roll_rad{defaults::kCameraProfilesStressMountRollRad};
   double mount_pitch_down_rad{defaults::kCameraProfilesStressMountPitchDownRad};
   double mount_yaw_rad{defaults::kCameraProfilesStressMountYawRad};
+  bool mount_provisional{defaults::kCameraProfilesStressMountProvisional};
   double exposure_s{defaults::kCameraProfilesStressExposureS};
   double rolling_readout_s{defaults::kCameraProfilesStressRollingReadoutS};
   bool provisional{defaults::kCameraProfilesStressProvisional};
@@ -116,6 +117,10 @@ struct SceneObject {
   double width_m{defaults::kDefaultObjectWidthM};
   double depth_m{defaults::kDefaultObjectDepthM};
   double height_m{defaults::kDefaultObjectHeightM};
+  double collision_width_m{0.0};
+  double collision_depth_m{0.0};
+  int radial_segments{defaults::kRendererCylinderRadialSegments};
+  std::string texture_path{};
   std::array<std::uint8_t, 3> bgr{
       static_cast<std::uint8_t>(defaults::kDefaultObjectBgr[0]),
       static_cast<std::uint8_t>(defaults::kDefaultObjectBgr[1]),
@@ -164,6 +169,8 @@ struct Detection {
   std::array<int, 4> bbox_xyxy{};
   double visibility{0.0};
   double range_m{0.0};
+  double forward_m{0.0};
+  double lateral_m{0.0};
   double relative_yaw_rad{0.0};
 };
 

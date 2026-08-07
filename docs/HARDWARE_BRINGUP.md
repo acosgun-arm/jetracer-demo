@@ -56,6 +56,18 @@ The requested format, intrinsics, distortion, mounting transform and exposure
 values in `configs/hardware/cameras.json` remain provisional until replaced by
 these measurements.
 
+Runtime transport and mode selection live in `configs/cameras/`. The ELP and
+IMX219 files select AVFoundation, V4L2 or Jetson GStreamer independently of the
+vehicle platform. To add another camera, add its physical measurement entry to
+`configs/hardware/cameras.json`, create one runtime-profile JSON, and point the
+platform's `camera.profile_config` and `camera.mode_id` at it.
+
+Measure the camera optical centre from the rear-axle midpoint projected onto
+the ground: `x_m` is forward, `y_m` is left, and `z_m` is upward. Record roll,
+downward pitch, and yaw in radians. Set the mount `status` to `measured` only
+when all six values have been recorded; the real runtime then overrides the
+simulator's explicitly provisional mount transform.
+
 ## 2. Controller and state identification
 
 The shipped actuator profile deliberately has no guessed controller endpoints:
@@ -140,11 +152,11 @@ PYTHONPATH=build-jetson/python .venv-jetson/bin/python \
 ```
 
 It covers the Jetson software stack, camera acceptance, actuator identity and
-calibration, dry-run output, state validation, model deployment, disk space,
-power mode and temperature. The report records that no GUI, camera stream or
-physical output was opened. It is integrity-checked and expires after the
-configured interval. A failed, stale, edited or wrong-platform report cannot
-authorize motion.
+calibration, dry-run output, state validation, model deployment, exact speed
+certification, disk space, power mode and temperature. The report records that
+no GUI, camera stream or physical output was opened. It is integrity-checked
+and expires after the configured interval. A failed, stale, edited,
+wrong-platform or superseded report cannot authorize motion.
 
 ## 5. Ordered physical stages
 

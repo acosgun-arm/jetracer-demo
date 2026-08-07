@@ -31,6 +31,7 @@ def parse_arguments() -> argparse.Namespace:
         type=Path,
         default=DEFAULT_MODEL_CONFIG,
     )
+    parser.add_argument("--model-id")
     parser.add_argument("--model-name")
     parser.add_argument("--revision")
     parser.add_argument("--output", type=Path)
@@ -48,6 +49,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def onnx_segmentation_options(
     configuration_path: Path,
+    model_id: str | None,
 ) -> tuple[dict[str, Any], Path]:
     configuration = load_json(configuration_path)
     models = configuration.get("models")
@@ -57,12 +59,16 @@ def onnx_segmentation_options(
         if not isinstance(model, dict):
             continue
         adapter = model.get("adapter")
-        if isinstance(adapter, dict) and adapter.get("kind") == "onnx":
+        if (
+            isinstance(adapter, dict)
+            and adapter.get("kind") == "onnx"
+            and (model_id is None or model.get("model_id") == model_id)
+        ):
             output = Path(str(adapter["model_path"]))
             if not output.is_absolute():
                 output = configuration_path.parent / output
             return adapter, output.resolve()
-    raise ValueError("model configuration has no ONNX segmentation adapter")
+    raise ValueError(f"model configuration has no ONNX model matching {model_id!r}")
 
 
 def normalise_label(value: str) -> str:
@@ -105,8 +111,14 @@ def main() -> None:
     pretrained = runtime.get("pretrained_segmentation")
     if not isinstance(pretrained, dict):
         raise ValueError("runtime configuration has no pretrained segmentation")
-    adapter, configured_output = onnx_segmentation_options(arguments.models)
-    model_name = arguments.model_name or str(pretrained["model_name"])
+    adapter, configured_output = onnx_segmentation_options(
+        arguments.models,
+        arguments.model_id,
+    )
+    model_name = arguments.model_name or str(
+        adapter.get("source_model", pretrained["model_name"])
+    )
+    revision = arguments.revision or adapter.get("source_revision")
     output = (arguments.output or configured_output).expanduser().resolve()
     if output.exists() and not arguments.overwrite:
         raise FileExistsError(f"ONNX output already exists: {output}")
@@ -118,8 +130,8 @@ def main() -> None:
     load_options: dict[str, Any] = {
         "trust_remote_code": False,
     }
-    if arguments.revision is not None:
-        load_options["revision"] = arguments.revision
+    if revision is not None:
+        load_options["revision"] = str(revision)
     processor = AutoImageProcessor.from_pretrained(model_name, **load_options)
     model = AutoModelForSemanticSegmentation.from_pretrained(
         model_name,
@@ -129,19 +141,18 @@ def main() -> None:
 
     input_width = int(adapter["input_width"])
     input_height = int(adapter["input_height"])
-    processor_size = getattr(processor, "size", None)
-    if isinstance(processor_size, dict):
-        processor_width = processor_size.get("width")
-        processor_height = processor_size.get("height")
-        if (
-            isinstance(processor_width, int)
-            and isinstance(processor_height, int)
-            and (processor_width, processor_height)
-            != (input_width, input_height)
-        ):
-            raise ValueError(
-                "manifest input dimensions do not match the model processor"
-            )
+    if input_width <= 0 or input_height <= 0:
+        raise ValueError("manifest input dimensions must be positive")
+    raw_processor_size = getattr(processor, "size", None)
+    processor_size = (
+        dict(raw_processor_size)
+        if isinstance(raw_processor_size, Mapping)
+        else (
+            dict(vars(raw_processor_size))
+            if hasattr(raw_processor_size, "__dict__")
+            else raw_processor_size
+        )
+    )
 
     road_class_id = resolve_label_id(model.config.id2label, "road")
     configured_road_ids = tuple(
@@ -189,8 +200,9 @@ def main() -> None:
 
     metadata = {
         "source_model": model_name,
-        "source_revision": arguments.revision,
+        "source_revision": revision,
         "resolved_commit": getattr(model.config, "_commit_hash", None),
+        "source_processor_size": processor_size,
         "input_width": input_width,
         "input_height": input_height,
         "source_road_class_ids": list(configured_road_ids),

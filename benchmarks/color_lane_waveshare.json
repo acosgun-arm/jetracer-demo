@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-07",
+  "model_id": "color-lane-waveshare-white",
+  "configuration": "configs/road_segmentation_models.json#key=10",
+  "quality": {
+    "implementation": "native_cpp_python_binding",
+    "dataset": "benchmarks/synthetic_clips/waveshare_3x2-stress-20260801-215820",
+    "evaluated_frames": 100,
+    "frame_stride": 20,
+    "road_iou": 0.8390272890981503,
+    "road_precision": 0.8984901914333289,
+    "road_recall": 0.9268887378314136,
+    "p05_frame_iou": 0.6072468347999045,
+    "segformer_b0_coreml_384_road_iou": 0.587122084592568
+  },
+  "mac_runtime": {
+    "processing_resolution": [640, 360],
+    "implementation": "native_cpp_python_binding",
+    "inference_fps": 2083.42738143287,
+    "mean_latency_ms": 0.47997833229601383,
+    "p99_latency_ms": 0.6533571728505196
+  },
+  "closed_loop": {
+    "track": "waveshare_3x2",
+    "laps": 1,
+    "completed": true,
+    "offroad_events": 0,
+    "collision_events": 0,
+    "average_speed_mps": 0.8171334910100776,
+    "mean_center_deviation_m": 0.020418629481208782,
+    "segmentation_completion_fps": 200.04622057135668
+  },
+  "jetson_native": {
+    "device": "Jetson Nano",
+    "jetpack": "4.6.6",
+    "opencv": "4.1.1",
+    "kernel_benchmark": {
+      "iterations": 1000,
+      "mean_latency_ms": 3.055396,
+      "p99_latency_ms": 3.817410,
+      "maximum_latency_ms": 5.026302,
+      "throughput_fps": 327.289776
+    },
+    "live_camera_benchmark": {
+      "camera_input_resolution": [1280, 720],
+      "processing_resolution": [640, 360],
+      "requested_fps": 200,
+      "delivered_fps": 199.276651,
+      "frames": 1994,
+      "duration_s": 10.001172,
+      "buffer_offset_gaps": 0,
+      "mean_inference_latency_ms": 3.777526,
+      "p99_inference_latency_ms": 4.927641,
+      "inference_capacity_fps": 264.723537,
+      "fit_failures": 0,
+      "actuators_accessed": false
+    }
+  },
+  "assessment": {
+    "quality_gate_passed": true,
+    "sim_selectable": true,
+    "native_perception_ready": true,
+    "jetson_control_integration_ready": false,
+    "real_orange_profile_validated": false,
+    "birdseye_enabled": false,
+    "birdseye_reason": "requires measured camera-to-ground homography"
+  }
+}

@@ -57,6 +57,8 @@ def test_baseline_and_switching() -> None:
 
 def test_governor() -> None:
     config = sim.GovernorConfig(
+        baseline_distance_per_frame_m=0.010,
+        capacity_safety_factor=0.90,
         maximum_acceleration_mps2=10.0,
         maximum_deceleration_mps2=10.0,
     )
@@ -82,6 +84,49 @@ def test_governor() -> None:
     missing = governor.update(None, requested_speed_mps=2.5, dt_s=1.0)
     assert missing.commanded_speed_mps == 0.0
     assert missing.reason == "no_telemetry"
+
+
+def test_composable_longitudinal_controller() -> None:
+    governor = sim.LatencyAwareSpeedGovernor(
+        sim.GovernorConfig(
+            baseline_distance_per_frame_m=0.010,
+            capacity_safety_factor=0.90,
+            maximum_acceleration_mps2=10.0,
+            maximum_deceleration_mps2=10.0,
+        )
+    )
+    controller = sim.PerceptionAwareLongitudinalController(governor)
+    request = sim.LongitudinalControlRequest(
+        requested_cruise_speed_mps=2.5,
+        tracking_available=True,
+        tracking_confidence=0.25,
+        tracking_full_confidence=0.5,
+        avoidance_speed_scale=0.8,
+        external_speed_limit_mps=0.9,
+        perception_healthy=True,
+        perception_metrics=metrics(fps=200.0, latency_s=0.003),
+        dt_s=1.0,
+    )
+    decision = controller.update(request)
+    assert isinstance(controller, sim.LongitudinalController)
+    assert decision.tracking_scale == 0.5
+    assert decision.requested_speed_mps == 0.9
+    assert decision.commanded_speed_mps == 0.9
+    assert decision.governor_decision is not None
+
+    direct = sim.PerceptionAwareLongitudinalController().update(request)
+    assert direct.commanded_speed_mps == direct.requested_speed_mps == 0.9
+    assert direct.governor_decision is None
+
+    certified = sim.PerceptionAwareLongitudinalController(
+        governor, maximum_speed_mps=0.6
+    ).update(request)
+    assert certified.requested_speed_mps == 0.6
+    assert certified.commanded_speed_mps == 0.6
+    assert certified.reason == "certified_speed"
+    assert certified.governor_decision is not None
+    assert certified.governor_decision.certified_speed_limit_mps == 0.6
+    assert certified.governor_decision.certified_speed_limited
 
 
 def test_simulator_integration() -> None:
@@ -110,13 +155,19 @@ def test_simulator_integration() -> None:
     decision = governor.update(
         result.metrics, requested_speed_mps=2.0, dt_s=camera.frame_period_s
     )
-    assert 0.0 < decision.permitted_speed_mps <= 2.0
+    assert (
+        0.0
+        < decision.permitted_speed_mps
+        <= governor.config.maximum_speed_mps
+    )
+    assert 0.0 < decision.commanded_speed_mps <= 2.0
     assert decision.model_id == "numpy-road-baseline-uint8"
 
 
 def main() -> None:
     test_baseline_and_switching()
     test_governor()
+    test_composable_longitudinal_controller()
     test_simulator_integration()
 
 

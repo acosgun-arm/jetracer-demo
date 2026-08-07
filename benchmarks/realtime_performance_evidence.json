@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "profile_id": "mac-coreml-200hz",
+  "measurement": {
+    "record_count": 2652,
+    "unique_inference_count": 1885,
+    "warmup_s": 5.0,
+    "window_s": 24.992132917046547
+  },
+  "observed": {
+    "capture_failed_reads": 0.0,
+    "coreml_completed_fps": 77.66443970358726,
+    "discarded_results": 0.0,
+    "failed_frames": 0.0,
+    "p99_inference_latency_s": 0.02233011791482569,
+    "p99_perception_age_s": 0.05113882279023523,
+    "source_published_fps": 200.06295647498007
+  },
+  "source_fingerprints": {
+    "algorithm": "sha256-file-bytes-v1",
+    "files": {
+      "frame_source": "3e09cec1eba6a7dc928f2283a418a302920f7e152e3b16b65cd17145204f26be",
+      "gate_config": "56db25942f416decdd62e6be863f118d91b2ad845745e280544220d1db4d59e4",
+      "inference": "f9661115c8acdad3da79adaef837fd68fbe755ea0e2ca66d42d110d47ba265d4",
+      "model_registry": "824f27b54d786f8e510b908269041460259068c6224f59645fb2a498989ad0b5",
+      "native_bindings": "1f27297082464a19253e1f168c8c8fcc4d4d68044d4e2458bac23a0981225479",
+      "native_simulator": "5007708f1559fcf61bb7ee138a195243dcc4f6703d3a69a5223f05c3ba820123",
+      "native_simulator_config": "1a4fb89bbc8a2090f00cfa8f63a5bded432acd574d6142953d57307a8e199e97",
+      "platform": "c12518e2fd64f1d56d131b91c010b95fdefa06dc7aa84b1a6421641ca124bb1d",
+      "platform_runtime": "e2325db9ada7bd77c4acb5857a2df8f2f344397d8e85dd728971d7a9aa212b3f",
+      "realtime": "115d176c986712df9a1002c24cb75e5396e62cfb6aac6f9217638a5c6ecd2044",
+      "realtime_demo": "51191ed243bfbb935dbcaa1823cf0a20f898749afc25854578b9a559ded70c16",
+      "realtime_presentation": "e2be73b1b10d45e9caa5b59ecbe29daf2a280d639be26d3b5c2c1d0d568609e2",
+      "runtime": "417ac02a17b5ea64d1156b172f55dc67eca732e94980ae1b5182d4bbbb7450e0",
+      "segmentation_models": "51f672ad20fad85601ec421e29601a1ccc53754c1822dde6680c512562e20c05",
+      "simulator_header": "f4bade4a0346d7322e805cc051744385c674c8b048fd20c35e57e0f017e6d341"
+    }
+  }
+}

@@ -20,7 +20,8 @@
     "allowed_adapter_kinds": [
       "onnx",
       "yolo_onnx",
-      "tensorrt"
+      "tensorrt",
+      "color_lane"
     ],
     "allowed_execution_providers": [
       "TensorrtExecutionProvider",

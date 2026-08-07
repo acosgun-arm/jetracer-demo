@@ -57,6 +57,45 @@ class FakeCapture:
 
 def main() -> None:
     repository_root = Path(__file__).resolve().parents[1]
+    road_variants = sim.load_model_variants(
+        repository_root / "configs" / "road_segmentation_models.json"
+    )
+    assert len(road_variants) == 10
+    assert [variant.key for variant in road_variants] == list(range(1, 11))
+    assert all(
+        variant.adapter_options["source_road_class_ids"] == [0]
+        for variant in road_variants
+        if variant.adapter_kind != "color_lane"
+    )
+    assert road_variants[0].adapter_options["source_model"].startswith(
+        "nvidia/segformer-b1-finetuned-cityscapes"
+    )
+    assert road_variants[1].adapter_options["source_model"].startswith(
+        "nvidia/segformer-b0-finetuned-cityscapes"
+    )
+    assert road_variants[2].adapter_kind == "coreml_native"
+    assert road_variants[2].adapter_options["input_width"] == 256
+    assert road_variants[3].adapter_kind == "coreml_native"
+    assert road_variants[3].adapter_options["input_width"] == 384
+    assert road_variants[5].adapter_options[
+        "required_execution_provider"
+    ] == "TensorrtExecutionProvider"
+    assert road_variants[9].adapter_kind == "color_lane"
+    assert road_variants[9].adapter_options["profile_path"].endswith(
+        "waveshare-sim-white.json"
+    )
+    benchmarked_road_variants = sim.load_model_variants(
+        repository_root / "configs" / "road_segmentation_models.json",
+        repository_root / "benchmarks" / "road_model_benchmarks.json",
+    )
+    assert benchmarked_road_variants[2].benchmark_fps is not None
+    assert benchmarked_road_variants[2].benchmark.details[
+        "input_resolution"
+    ] == [256, 256]
+    assert benchmarked_road_variants[3].benchmark.details[
+        "input_resolution"
+    ] == [384, 384]
+
     variants = sim.load_model_variants(
         repository_root / "configs" / "off_the_shelf_models.json"
     )
@@ -119,6 +158,12 @@ def main() -> None:
     ).read_text(encoding="utf-8")
     assert "import jetracer_sim" not in exporter_source
     assert "import cv2" not in exporter_source
+    pidnet_exporter_source = (
+        repository_root / "tools" / "export_pidnet_onnx.py"
+    ).read_text(encoding="utf-8")
+    assert "import jetracer_sim" not in pidnet_exporter_source
+    assert "import cv2" not in pidnet_exporter_source
+    assert "fefa51716bddc13a4321af2c70a074367100645a" in pidnet_exporter_source
     converter_source = (
         repository_root / "tools" / "convert_segformer_fp16.py"
     ).read_text(encoding="utf-8")
@@ -130,6 +175,8 @@ def main() -> None:
     ).read_text(encoding="utf-8")
     assert "import jetracer_sim" not in coreml_exporter_source
     assert "import cv2" not in coreml_exporter_source
+    assert "_BlobStorageWriter" in coreml_exporter_source
+    assert "Python 3.13 Core ML exporter environment" in coreml_exporter_source
     coreml_compiler_source = (
         repository_root / "tools" / "compile_coreml_models.py"
     ).read_text(encoding="utf-8")

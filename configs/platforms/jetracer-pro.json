@@ -1,11 +1,21 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "platform_id": "jetracer-pro",
   "mode": "real",
   "runtime_config": "../runtime_defaults.json",
   "driving_config": "../driving_benchmarks.json",
-  "model_config": "../off_the_shelf_models.json",
-  "benchmark_registry": "../../benchmarks/off_the_shelf_model_benchmarks.json",
+  "model_config": "../road_segmentation_models.json",
+  "detector_config": "../off_the_shelf_models.json",
+  "benchmark_registry": "../../benchmarks/road_model_benchmarks.json",
+  "certified_speed_registry": "../../benchmarks/certified_speed_limits.json",
+  "speed_certification": {
+    "enforcement": "required"
+  },
+  "perception": {
+    "segmentation_model_key": 6,
+    "detector_enabled": true,
+    "detector_model_id": "yolo11n-coco-tensorrt-fp16"
+  },
   "hardware": {
     "camera_profiles": "../hardware/cameras.json",
     "actuator_profile": "../hardware/actuator.json",
@@ -15,19 +25,8 @@
     "bringup_plan": "../hardware/bringup_stages.json"
   },
   "camera": {
-    "driver": "opencv",
-    "profile": "elp",
-    "hardware_profile_id": "elp_112",
-    "device_index": 0,
-    "width": 1920,
-    "height": 1200,
-    "fps_numerator": 120000480,
-    "fps_denominator": 1000000,
-    "backend": "v4l2",
-    "buffer_size": 1,
-    "fourcc": null,
-    "maximum_consecutive_read_failures": 3,
-    "failure_retry_s": 0.005
+    "profile_config": "../cameras/elp-112.json",
+    "mode_id": "jetson_720p_200"
   },
   "vehicle": {
     "driver": "dry_run",
@@ -42,15 +41,15 @@
       "maximum_steering_rad": 0.52
     }
   },
-    "state": {
+  "state": {
     "driver": "command_estimate",
     "hardware_profile_id": "jetracer-pro-speed-state-provisional",
-        "validated_for_motion": false,
-        "require_fresh_for_motion": true,
-        "maximum_age_s": 0.1,
-        "speed_time_constant_s": 0.35,
-        "maximum_acceleration_mps2": 0.8,
-        "maximum_deceleration_mps2": 3.0,
-        "confidence": 0.25
-    }
+    "validated_for_motion": false,
+    "require_fresh_for_motion": true,
+    "maximum_age_s": 0.1,
+    "speed_time_constant_s": 0.35,
+    "maximum_acceleration_mps2": 0.8,
+    "maximum_deceleration_mps2": 3.0,
+    "confidence": 0.25
+  }
 }

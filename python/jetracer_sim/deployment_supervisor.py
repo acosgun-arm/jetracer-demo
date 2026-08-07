@@ -137,12 +137,6 @@ def build_drive_command(
         str(runner),
         "--platform-config",
         str(platform.path),
-        "--runtime-config",
-        str(platform.runtime_config_path),
-        "--model-config",
-        str(platform.model_config_path),
-        "--benchmark-registry",
-        str(platform.benchmark_registry_path),
         "--model",
         str(int(configuration.runtime["model_key"])),
         "--requested-speed",
@@ -156,10 +150,11 @@ def build_drive_command(
         str(telemetry_path),
     ]
     if bool(configuration.runtime["enable_detector"]):
-        command.extend(["--detector-config", str(platform.model_config_path)])
         detector_id = configuration.runtime.get("detector_model_id")
         if detector_id:
             command.extend(["--detector-model", str(detector_id)])
+    else:
+        command.append("--no-detector")
     return command
 
 

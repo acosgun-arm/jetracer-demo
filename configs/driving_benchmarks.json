@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "vehicle": {
-    "wheelbase_m": 0.20,
-    "body_width_m": 0.19,
-    "front_overhang_m": 0.055,
-    "rear_overhang_m": 0.045,
+    "wheelbase_m": 0.182625,
+    "body_width_m": 0.14,
+    "front_overhang_m": 0.0555,
+    "rear_overhang_m": 0.0185625,
     "max_steering_rad": 0.52,
     "steering_time_constant_s": 0.06,
     "motor_time_constant_s": 0.12,
-    "geometry_status": "provisional_pending_physical_measurement"
+    "geometry_status": "provisional_a4_physical_measurement"
   },
   "baseline": {
     "laps": 5,
@@ -23,14 +23,16 @@
     ]
   },
   "runner": {
-    "maximum_time_distance_multiplier": 5.0,
+    "maximum_time_distance_multiplier": 10.0,
     "stop_time_allowance_s": 2.0,
     "progress_wrap_fraction": 0.5,
     "collision_recovery_distance_m": 0.45,
     "moving_speed_threshold_mps": 0.05,
     "stop_sign_ahead_minimum_m": 0.04,
     "stop_sign_ahead_maximum_m": 2.0,
+    "obstacle_ahead_minimum_m": 0.0,
     "perfect_detection_confidence": 1.0,
+    "offroad_policy": "full_footprint_outside_road_corridor",
     "road_boundary_tolerance_m": 0.0,
     "atlas_pixels_per_metre": 100.0
   },
@@ -41,13 +43,19 @@
   "road_steering": {
     "road_class_id": 1,
     "minimum_row_fraction": 0.24,
-    "row_stride_pixels": 3,
+    "row_stride_pixels": 1,
     "minimum_run_pixels": 6,
     "maximum_gap_fraction": 0.07,
     "maximum_centre_jump_fraction": 0.24,
     "confidence_full_row_count": 18,
+    "single_boundary_reconstruction_enabled": false,
+    "known_road_width_m": null,
+    "single_boundary_confidence_scale": 0.65,
+    "boundary_class_id": 2,
+    "boundary_only_recovery_enabled": true,
+    "minimum_boundary_run_pixels": 2,
     "base_lookahead_m": 0.30,
-    "speed_lookahead_s": 0.24,
+    "speed_lookahead_s": 0.12,
     "minimum_lookahead_m": 0.24,
     "maximum_lookahead_m": 0.80,
     "pure_pursuit_gain": 1.75,
@@ -55,7 +63,267 @@
     "lateral_speed_softening_mps": 0.50,
     "lost_steering_hold_s": 0.15,
     "steering_smoothing_time_s": 0.035,
-    "maximum_steering_rate_rad_s": 4.0
+    "maximum_steering_rate_rad_s": 30.0,
+    "swept_footprint_enabled": true,
+    "swept_footprint_lateral_candidate_count": 9,
+    "swept_footprint_transition_candidate_count": 7,
+    "swept_footprint_maximum_extra_offset_m": 0.12,
+    "swept_footprint_minimum_transition_distance_m": 0.25,
+    "swept_footprint_maximum_transition_distance_m": 1.50,
+    "swept_footprint_road_margin_m": 0.005,
+    "swept_footprint_offroad_policy": "full_footprint_outside_road_corridor",
+    "swept_footprint_minimum_road_overlap_m": 0.010,
+    "swept_footprint_replan_distance_m": 0.050,
+    "swept_footprint_obstacle_margin_m": 0.0075,
+    "swept_footprint_large_obstacle_radius_threshold_m": 0.045,
+    "swept_footprint_large_obstacle_margin_m": 0.030,
+    "swept_footprint_rollout_tracking_margin_m": 0.030,
+    "swept_footprint_rollout_minimum_obstacle_lateral_m": 0.040,
+    "swept_footprint_allow_alternate_side": true,
+    "swept_footprint_clearance_release_distance_m": 0.60,
+    "swept_footprint_clearance_release_margin_m": 0.005,
+    "swept_footprint_planner": "dynamic_window",
+    "swept_footprint_full_offset_lead_m": 0.05,
+    "swept_footprint_post_obstacle_hold_m": 0.08,
+    "swept_footprint_egress_distance_m": 0.40,
+    "swept_footprint_cost_mode": "preferred_side_first",
+    "dwa_yaw_rate_sample_count": 11,
+    "dwa_prediction_horizon_s": 0.80,
+    "dwa_integration_step_s": 0.01,
+    "dwa_replan_distance_m": 0.01,
+    "dwa_tracking_margin_m": 0.04,
+    "dwa_minimum_planning_speed_mps": 0.60,
+    "dwa_goal_weight": 4.0,
+    "dwa_heading_weight": 0.5,
+    "dwa_clearance_weight": 0.05,
+    "dwa_steering_change_weight": 0.10,
+    "dwa_fallback_second_action_scale": -1.0,
+    "dwa_high_curvature_obstacle_margin_m": 0.015,
+    "dwa_high_curvature_margin_minimum_road_width_m": 0.45,
+    "astar_straight_step_m": 0.050,
+    "astar_planning_horizon_m": 0.90,
+    "astar_tracking_lookahead_m": 0.20,
+    "astar_short_lookahead_lateral_threshold_m": 0.04,
+    "astar_centered_obstacle_stop_deadband_m": 0.03,
+    "astar_minimum_supported_obstacle_lateral_m": -0.04,
+    "astar_maximum_action_count": 24,
+    "astar_maximum_expansions": 1500,
+    "astar_reference_weight": 3.0,
+    "astar_heading_weight": 1.0,
+    "astar_steering_change_weight": 0.10,
+    "astar_heuristic_weight": 2.0
+  },
+  "road_path_filter": {
+    "enabled": false,
+    "history_size": 5,
+    "time_constant_s": 0.005,
+    "boundary_time_constant_s": 0.02,
+    "maximum_match_distance_m": 0.10,
+    "maximum_lateral_innovation_m": 0.15,
+    "maximum_boundary_innovation_m": 0.10,
+    "reset_after_loss_s": 0.15
+  },
+  "local_racing_line": {
+    "enabled": false,
+    "minimum_complete_points": 8,
+    "resample_count": 24,
+    "maximum_forward_distance_m": 1.5,
+    "vehicle_edge_margin_m": 0.02,
+    "maximum_lateral_offset_m": 0.12,
+    "centerline_weight": 0.08,
+    "curvature_weight": 1.0,
+    "near_anchor_weight": 4.0
+  },
+  "minimum_time_racing_line": {
+    "enabled": false,
+    "minimum_complete_points": 8,
+    "resample_count": 14,
+    "lateral_candidate_count": 9,
+    "maximum_forward_distance_m": 1.5,
+    "vehicle_edge_margin_m": 0.04,
+    "maximum_lateral_offset_m": 0.04,
+    "lateral_acceleration_limit_mps2": 0.6,
+    "minimum_speed_mps": 0.35,
+    "maximum_speed_mps": 2.5,
+    "minimum_curvature_per_m": 0.05,
+    "initial_heading_anchor_fraction": 0.5,
+    "centerline_cost_s_per_m3": 20.0,
+    "lateral_smoothing_time_s": 0.005,
+    "fallback_offset_decay_time_s": 0.02,
+    "terminal_centerline_cost_s_per_m2": 1.0
+  },
+  "curvature_speed_planner": {
+    "enabled": false,
+    "minimum_path_points": 8,
+    "polynomial_degree": 3,
+    "evaluation_samples": 24,
+    "minimum_preview_distance_m": 0.20,
+    "maximum_preview_distance_m": 1.5,
+    "minimum_curvature_per_m": 0.05,
+    "lateral_acceleration_limit_mps2": 0.6,
+    "braking_deceleration_mps2": 1.5,
+    "minimum_speed_mps": 0.35,
+    "maximum_speed_mps": 2.5,
+    "maximum_speed_increase_mps2": 1.5,
+    "curvature_history_size": 5,
+    "curvature_time_constant_s": 0.03,
+    "maximum_curvature_innovation_per_m": 4.0,
+    "curvature_reset_after_loss_s": 0.15
+  },
+  "control_benchmarks": {
+    "laps": 5,
+    "track_ids": [
+      "waveshare_3x2",
+      "open_oval",
+      "technical_chicane",
+      "tight_hairpin"
+    ],
+    "default_method": "adaptive_with_avoidance_pursuit",
+    "segmentation_noise_profiles": {
+      "light": {
+        "seed": 20260806,
+        "background_class_id": 0,
+        "row_jitter_std_pixels": 1.5,
+        "jitter_band_height_rows": 8,
+        "row_dropout_probability": 0.04,
+        "occlusion_rectangle_count": 1,
+        "false_positive_rectangle_count": 0,
+        "rectangle_width_fraction": 0.08,
+        "rectangle_height_fraction": 0.08,
+        "dropout_period_s": 0.75,
+        "dropout_duration_s": 0.015
+      },
+      "moderate": {
+        "seed": 20260807,
+        "background_class_id": 0,
+        "row_jitter_std_pixels": 3.0,
+        "jitter_band_height_rows": 6,
+        "row_dropout_probability": 0.10,
+        "occlusion_rectangle_count": 2,
+        "false_positive_rectangle_count": 0,
+        "rectangle_width_fraction": 0.10,
+        "rectangle_height_fraction": 0.10,
+        "dropout_period_s": 0.50,
+        "dropout_duration_s": 0.030
+      },
+      "adversarial": {
+        "seed": 20260810,
+        "background_class_id": 0,
+        "row_jitter_std_pixels": 3.0,
+        "jitter_band_height_rows": 6,
+        "row_dropout_probability": 0.10,
+        "occlusion_rectangle_count": 2,
+        "false_positive_rectangle_count": 1,
+        "rectangle_width_fraction": 0.10,
+        "rectangle_height_fraction": 0.10,
+        "dropout_period_s": 0.50,
+        "dropout_duration_s": 0.030
+      }
+    },
+    "mount_sensitivity": {
+      "laps": 1,
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ],
+      "nominal_mount": {
+        "x_m": 0.10,
+        "y_m": 0.0,
+        "z_m": 0.16,
+        "roll_rad": 0.0,
+        "pitch_down_rad": 0.31,
+        "yaw_rad": 0.0
+      },
+      "heights_m": [0.12, 0.14, 0.16, 0.18, 0.20],
+      "pitches_down_rad": [0.23, 0.27, 0.31, 0.35, 0.39]
+    },
+    "methods": {
+      "pure_pursuit": {
+        "kind": "pure_pursuit"
+      },
+      "adaptive_pure_pursuit": {
+        "kind": "adaptive_pure_pursuit",
+        "parameters": {
+          "curvature_estimation_distance_m": 0.90,
+          "minimum_curvature_points": 7,
+          "curvature_lookahead_gain_m2": 0.010,
+          "lateral_error_lookahead_gain": 0.10
+        }
+      },
+      "lqr": {
+        "kind": "lqr",
+        "parameters": {
+          "fit_forward_distance_m": 0.90,
+          "minimum_fit_points": 7,
+          "lateral_error_weight": 2.0,
+          "heading_error_weight": 1.0,
+          "steering_effort_weight": 1.0,
+          "curvature_feedforward_gain": 1.0,
+          "lost_steering_hold_s": 0.15,
+          "steering_smoothing_time_s": 0.035,
+          "maximum_steering_rate_rad_s": 30.0
+        }
+      },
+      "adaptive_with_avoidance_pursuit": {
+        "kind": "handover",
+        "parameters": {
+          "normal_method_id": "adaptive_pure_pursuit",
+          "avoidance_method_id": "pure_pursuit",
+          "blend_time_s": 0.08
+        }
+      },
+      "stanley": {
+        "kind": "stanley",
+        "parameters": {
+          "heading_lookahead_m": 0.30,
+          "cross_track_lookahead_m": 0.20,
+          "heading_sample_count": 5,
+          "heading_gain": 0.6,
+          "cross_track_gain": 0.8,
+          "speed_softening_mps": 0.50,
+          "lost_steering_hold_s": 0.15,
+          "steering_smoothing_time_s": 0.035,
+          "maximum_steering_rate_rad_s": 4.0
+        }
+      },
+      "dynamic_window": {
+        "kind": "dynamic_window",
+        "parameters": {
+          "yaw_rate_sample_count": 21,
+          "prediction_horizon_s": 0.50,
+          "integration_step_s": 0.02,
+          "minimum_planning_speed_mps": 0.20,
+          "maximum_steering_rate_rad_s": 6.0,
+          "goal_weight": 4.0,
+          "path_weight": 2.0,
+          "heading_weight": 0.5,
+          "steering_change_weight": 0.10,
+          "lost_steering_hold_s": 0.15
+        }
+      }
+    }
+  },
+  "maximum_safe_speed_search": {
+    "minimum_speed_mps": 0.50,
+    "maximum_speed_mps": 2.50,
+    "coarse_step_mps": 0.25,
+    "refinement_tolerance_mps": 0.05,
+    "laps_per_trial": 3,
+    "trials_per_speed": 2,
+    "track_ids": [
+      "waveshare_3x2",
+      "open_oval",
+      "technical_chicane",
+      "tight_hairpin"
+    ],
+    "maximum_offroad_events_per_trial": 0,
+    "maximum_steering_saturation_fraction": 0.05,
+    "maximum_center_deviation_fraction": 0.80,
+    "minimum_peak_speed_fraction": 0.95,
+    "require_acceptance_pass": true,
+    "simulated_to_real_speed_factor": 0.80
   },
   "stop_sign_controller": {
     "stop_class_ids": [11],
@@ -70,15 +338,58 @@
     "detection_timeout_s": 0.45
   },
   "obstacle_avoidance": {
+    "method_id": "fixed_offset",
     "obstacle_class_ids": [4],
-    "trigger_distance_m": 2.0,
+    "trigger_distance_m": 2.4,
+    "maximum_range_overestimate_fraction": 0.0,
     "central_corridor_fraction": 0.42,
-    "lateral_offset_m": 0.12,
+    "side_selection_deadband_fraction": 0.04,
+    "lateral_offset_m": 0.084,
     "offset_time_constant_s": 0.12,
+    "clearance_offset_time_constant_s": 0.0,
+    "return_time_constant_s": 0.30,
     "hold_after_loss_s": 0.30,
+    "target_switch_hysteresis_m": 0.08,
+    "release_confirmation_s": 0.05,
+    "preserve_pass_side_on_handover": true,
+    "multi_obstacle_corridor_enabled": true,
+    "handover_speed_scale": 0.85,
+    "minimum_pass_speed_mps": 0.20,
+    "post_pass_clearance_m": 0.35,
     "preferred_pass_side": "left",
-    "slow_distance_m": 1.0,
-    "minimum_speed_scale": 0.38
+    "pass_side_policy": "preferred",
+    "slow_distance_m": 2.0,
+    "minimum_speed_scale": 0.38,
+    "full_offset_distance_m": 0.10,
+    "clearance_margin_m": 0.0,
+    "curvature_clearance_gain_m2": 0.0085,
+    "maximum_curvature_clearance_margin_m": 0.020,
+    "curvature_evaluation_distance_m": 0.20,
+    "road_boundary_margin_m": 0.010,
+    "offroad_policy": "full_footprint_outside_road_corridor",
+    "minimum_road_overlap_m": 0.010,
+    "clearance_tracking_scale": 1.0,
+    "road_boundary_tracking_reserve_m": 0.0,
+    "centered_obstacle_deadband_m": 0.005,
+    "inside_pass_curvature_threshold_per_m": 0.85,
+    "boundary_limited_post_pass_transition_distance_m": 0.75,
+    "egress_distance_m": 0.18,
+    "high_curvature_ingress_threshold_per_m": 1.5,
+    "high_curvature_ingress_profile": "quintic_smootherstep",
+    "high_curvature_speed_scale": 0.8,
+    "high_curvature_slowdown_trigger_distance_m": 2.0,
+    "footprint_transition_enabled": false,
+    "footprint_transition_safety_factor": 1.0
+  },
+  "obstacle_braking": {
+    "maximum_deceleration_mps2": 1.25,
+    "reaction_time_s": 0.15,
+    "stand_off_distance_m": 0.10,
+    "feasible_release_time_s": 0.15,
+    "infeasible_confirmation_s": 0.025,
+    "latch_until_obstacle_cleared": true,
+    "stopped_speed_threshold_mps": 0.05,
+    "stopped_hold_time_s": 0.20
   },
   "objects": {
     "stop_sign": {
@@ -91,10 +402,128 @@
     },
     "pedestrian": {
       "track_fraction": 0.38,
-      "width_m": 0.10,
-      "depth_m": 0.10,
+      "lateral_offset_m": 0.0,
+      "width_m": 0.24,
+      "depth_m": 0.08,
       "height_m": 0.55,
+      "collision_width_m": 0.10,
+      "collision_depth_m": 0.10,
+      "texture_path": "assets/pedestrian-abhinav-kamal-cc0.jpg",
       "bgr": [40, 120, 220]
+    },
+    "cylinder": {
+      "placement_seed": 9241,
+      "minimum_track_fraction": 0.18,
+      "maximum_track_fraction": 0.82,
+      "minimum_lateral_offset_m": -0.075,
+      "maximum_lateral_offset_m": 0.075,
+      "radius_m": 0.03,
+      "collision_radius_m": 0.03,
+      "height_m": 0.12,
+      "radial_segments": 24,
+      "bgr": [220, 30, 220],
+      "bgr_palette": [
+        [220, 30, 220],
+        [220, 220, 30],
+        [30, 140, 240]
+      ]
+    }
+  },
+  "cylinder_robustness": {
+    "random_seed": 20260803,
+    "cases_per_track": 25,
+    "laps_per_case": 1,
+    "radius_range_m": [0.020, 0.040],
+    "collision_radius_extra_range_m": [0.0, 0.005],
+    "height_range_m": [0.060, 0.180],
+    "speed_multiplier_range": [0.75, 1.20],
+    "latency_range_s": [0.0, 0.080],
+    "dropout_period_range_s": [0.35, 0.80],
+    "dropout_duration_fraction_range": [0.0, 0.20],
+    "range_bias_fraction_range": [-0.10, 0.15],
+    "lateral_bias_range_m": [-0.012, 0.012],
+    "perception_noise_profiles": {
+      "light": {
+        "seed": 20260808,
+        "latency_s": 0.020,
+        "dropout_period_s": 0.70,
+        "dropout_duration_s": 0.050,
+        "range_bias_fraction": 0.05,
+        "lateral_bias_m": 0.005
+      },
+      "moderate": {
+        "seed": 20260809,
+        "latency_s": 0.050,
+        "dropout_period_s": 0.50,
+        "dropout_duration_s": 0.080,
+        "range_bias_fraction": 0.10,
+        "lateral_bias_m": 0.010
+      },
+      "moderate_timing_only": {
+        "seed": 20260809,
+        "latency_s": 0.050,
+        "dropout_period_s": 0.50,
+        "dropout_duration_s": 0.080,
+        "range_bias_fraction": 0.0,
+        "lateral_bias_m": 0.0
+      },
+      "moderate_range_bias_only": {
+        "seed": 20260809,
+        "latency_s": 0.0,
+        "dropout_period_s": 0.0,
+        "dropout_duration_s": 0.0,
+        "range_bias_fraction": 0.10,
+        "lateral_bias_m": 0.0
+      },
+      "moderate_lateral_bias_only": {
+        "seed": 20260809,
+        "latency_s": 0.0,
+        "dropout_period_s": 0.0,
+        "dropout_duration_s": 0.0,
+        "range_bias_fraction": 0.0,
+        "lateral_bias_m": 0.010
+      },
+      "moderate_timing_range": {
+        "seed": 20260809,
+        "latency_s": 0.050,
+        "dropout_period_s": 0.50,
+        "dropout_duration_s": 0.080,
+        "range_bias_fraction": 0.10,
+        "lateral_bias_m": 0.0
+      },
+      "moderate_timing_lateral": {
+        "seed": 20260809,
+        "latency_s": 0.050,
+        "dropout_period_s": 0.50,
+        "dropout_duration_s": 0.080,
+        "range_bias_fraction": 0.0,
+        "lateral_bias_m": 0.010
+      },
+      "moderate_spatial_bias": {
+        "seed": 20260809,
+        "latency_s": 0.0,
+        "dropout_period_s": 0.0,
+        "dropout_duration_s": 0.0,
+        "range_bias_fraction": 0.10,
+        "lateral_bias_m": 0.010
+      }
+    },
+    "placement_grid": {
+      "track_fractions": [0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80],
+      "lateral_offsets_m": [-0.075, -0.050, -0.025, 0.0, 0.025, 0.050, 0.075]
+    },
+    "multi_object_random_layouts": {
+      "random_seed": 20260806,
+      "layouts_per_object_count": 10,
+      "minimum_track_fraction": 0.12,
+      "maximum_track_fraction": 0.88,
+      "minimum_track_fraction_separation": 0.10,
+      "maximum_lateral_offset_m": 0.075,
+      "maximum_generation_attempts": 1000
+    },
+    "safety": {
+      "maximum_collision_events": 0,
+      "maximum_offroad_events": 0
     }
   },
   "scenarios": {
@@ -120,6 +549,84 @@
       "stop_sign_count": 0,
       "pedestrian_on_road": true,
       "enable_obstacle_avoidance": true
+    },
+    "cylinder_no_avoidance": {
+      "stop_sign_count": 0,
+      "pedestrian_on_road": false,
+      "cylinder_on_road": true,
+      "enable_obstacle_avoidance": false
+    },
+    "cylinder_avoidance": {
+      "stop_sign_count": 0,
+      "pedestrian_on_road": false,
+      "cylinder_on_road": true,
+      "enable_obstacle_avoidance": true
+    }
+  },
+  "acceptance": {
+    "scenarios": {
+      "lane_following": {
+        "require_completed": true,
+        "maximum_collision_events_per_lap": 0.0,
+        "tracks": {
+          "waveshare_3x2": {
+            "maximum_offroad_events_per_lap": 0.0,
+            "maximum_mean_center_deviation_m": 0.08,
+            "minimum_average_speed_mps": 0.55
+          },
+          "open_oval": {
+            "maximum_offroad_events_per_lap": 0.0,
+            "maximum_mean_center_deviation_m": 0.08,
+            "minimum_average_speed_mps": 0.60
+          },
+          "technical_chicane": {
+            "maximum_offroad_events_per_lap": 1.0,
+            "maximum_mean_center_deviation_m": 0.08,
+            "minimum_average_speed_mps": 0.60
+          },
+          "tight_hairpin": {
+            "maximum_offroad_events_per_lap": 0.0,
+            "maximum_mean_center_deviation_m": 0.06,
+            "minimum_average_speed_mps": 0.45
+          }
+        }
+      },
+      "stop_signs": {
+        "require_completed": true,
+        "maximum_offroad_events_per_lap": 0.0,
+        "maximum_collision_events_per_lap": 0.0,
+        "maximum_stop_violations_per_lap": 0.0,
+        "minimum_completed_stop_fraction": 1.0,
+        "maximum_mean_center_deviation_m": 0.08,
+        "minimum_average_speed_mps": 0.35
+      },
+      "pedestrian_no_avoidance": {
+        "require_completed": true,
+        "maximum_offroad_events_per_lap": 0.0,
+        "minimum_collision_events_per_lap": 1.0,
+        "maximum_mean_center_deviation_m": 0.15,
+        "minimum_average_speed_mps": 0.40
+      },
+      "pedestrian_avoidance": {
+        "require_completed": true,
+        "maximum_offroad_events_per_lap": 0.0,
+        "maximum_collision_events_per_lap": 0.0,
+        "maximum_mean_center_deviation_m": 0.12,
+        "minimum_average_speed_mps": 0.40,
+        "minimum_obstacle_clearance_m": 0.05
+      },
+      "cylinder_no_avoidance": {
+        "require_completed": true
+      },
+      "cylinder_avoidance": {
+        "require_completed": true,
+        "allow_safe_obstacle_stop": true,
+        "maximum_offroad_events_per_lap": 0.0,
+        "maximum_collision_events_per_lap": 0.0,
+        "maximum_mean_center_deviation_m": 0.16,
+        "minimum_average_speed_mps": 0.35,
+        "minimum_obstacle_clearance_m": 0.01
+      }
     }
   },
   "tracks": [
@@ -129,14 +636,14 @@
       "difficulty": "medium",
       "arena_width_m": 3.0,
       "arena_height_m": 2.0,
-      "road_width_m": 0.55,
+      "road_width_m": 0.339,
       "recommended_speed_mps": 0.90,
       "seed": 3200,
       "source_url": "https://www.waveshare.com/jetracer-ai-kit.htm",
       "geometry": {
         "kind": "stadium",
-        "straight_half_length_m": 0.55,
-        "radius_m": 0.60,
+        "straight_half_length_m": 0.424,
+        "radius_m": 0.701,
         "arc_samples": 80,
         "straight_samples": 40,
         "resample_spacing_m": 0.025

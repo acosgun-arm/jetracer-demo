@@ -1,0 +1,2883 @@
+{
+  "benchmark_kind": "speed_certification_catalog",
+  "cases": [
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.33168345434793284,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.2789027819164117,
+              "failures": [
+                "acceptance: offroad_events_per_lap 9.66667 exceeds 0",
+                "maximum_center_deviation_m 0.156323 exceeds 0.144",
+                "maximum_speed_mps 0.331683 is below the exercised threshold 0.475",
+                "offroad_events 29 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1563234594794386,
+              "maximum_speed_mps": 0.33168345434793284,
+              "mean_center_deviation_m": 0.037690510933919924,
+              "offroad_events": 29,
+              "passed": false,
+              "segmentation_completion_fps": 15.394386477715855,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-d1ef544c8d029474",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b1-cityscapes-cpu-fp32",
+      "model_key": 1,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:35:52.073304Z",
+      "report_path": "case-001-speed-d1ef544c8d029474.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b1-cityscapes-cpu-fp32",
+          "model_key": 1,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.31808573327353074,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.27199570133179785,
+              "failures": [
+                "acceptance: offroad_events_per_lap 10 exceeds 0",
+                "maximum_center_deviation_m 0.192518 exceeds 0.144",
+                "maximum_speed_mps 0.318086 is below the exercised threshold 0.475",
+                "offroad_events 30 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.19251772979210952,
+              "maximum_speed_mps": 0.31808573327353074,
+              "mean_center_deviation_m": 0.03905484451467694,
+              "offroad_events": 30,
+              "passed": false,
+              "segmentation_completion_fps": 15.014149636449098,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-9f6e43d7e711adae",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b1-cityscapes-cpu-fp32",
+      "model_key": 1,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:37:00.177677Z",
+      "report_path": "case-002-speed-9f6e43d7e711adae.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b1-cityscapes-cpu-fp32",
+          "model_key": 1,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.3142705754282429,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.2769598125102567,
+              "failures": [
+                "acceptance: offroad_events_per_lap 7.66667 exceeds 0",
+                "maximum_center_deviation_m 0.146952 exceeds 0.144",
+                "maximum_speed_mps 0.314271 is below the exercised threshold 0.475",
+                "offroad_events 23 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1469523177185228,
+              "maximum_speed_mps": 0.3142705754282429,
+              "mean_center_deviation_m": 0.038156894757625896,
+              "offroad_events": 23,
+              "passed": false,
+              "segmentation_completion_fps": 15.081474328281907,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-68b3ccaa03285ad5",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b1-cityscapes-cpu-fp32",
+      "model_key": 1,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:38:06.847587Z",
+      "report_path": "case-003-speed-68b3ccaa03285ad5.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b1-cityscapes-cpu-fp32",
+          "model_key": 1,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.3138360086003542,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.2854375942720731,
+              "failures": [
+                "acceptance: offroad_events_per_lap 3.33333 exceeds 0",
+                "maximum_center_deviation_m 0.168604 exceeds 0.144",
+                "maximum_speed_mps 0.313836 is below the exercised threshold 0.475",
+                "offroad_events 10 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1686038073911854,
+              "maximum_speed_mps": 0.3138360086003542,
+              "mean_center_deviation_m": 0.03851476407063112,
+              "offroad_events": 10,
+              "passed": false,
+              "segmentation_completion_fps": 15.053852640364692,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-4f12a8a8f84f0829",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b1-cityscapes-cpu-fp32",
+      "model_key": 1,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:39:10.509182Z",
+      "report_path": "case-004-speed-4f12a8a8f84f0829.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b1-cityscapes-cpu-fp32",
+          "model_key": 1,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.31020781048578566,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.2919032128064997,
+              "failures": [
+                "acceptance: offroad_events_per_lap 1.33333 exceeds 0",
+                "maximum_speed_mps 0.310208 is below the exercised threshold 0.475",
+                "offroad_events 4 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1318726169262493,
+              "maximum_speed_mps": 0.31020781048578566,
+              "mean_center_deviation_m": 0.042251253227176176,
+              "offroad_events": 4,
+              "passed": false,
+              "segmentation_completion_fps": 15.16524631062079,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-19dc8f10a6fd4767",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b1-cityscapes-cpu-fp32",
+      "model_key": 1,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:40:12.265478Z",
+      "report_path": "case-005-speed-19dc8f10a6fd4767.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b1-cityscapes-cpu-fp32",
+          "model_key": 1,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.30731423720984163,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.2874576522828855,
+              "failures": [
+                "acceptance: offroad_events_per_lap 2 exceeds 0",
+                "maximum_center_deviation_m 0.153366 exceeds 0.144",
+                "maximum_speed_mps 0.307314 is below the exercised threshold 0.475",
+                "offroad_events 6 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.15336638875874042,
+              "maximum_speed_mps": 0.30731423720984163,
+              "mean_center_deviation_m": 0.050002464067731976,
+              "offroad_events": 6,
+              "passed": false,
+              "segmentation_completion_fps": 15.004600945192191,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-932725d40e46c4d5",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b1-cityscapes-cpu-fp32",
+      "model_key": 1,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:41:16.138795Z",
+      "report_path": "case-006-speed-932725d40e46c4d5.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b1-cityscapes-cpu-fp32",
+          "model_key": 1,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.45623290081885054,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.43406406021916927,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "maximum_speed_mps 0.456233 is below the exercised threshold 0.475",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.11369382209303283,
+              "maximum_speed_mps": 0.45623290081885054,
+              "mean_center_deviation_m": 0.036364997605798775,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 22.424381606896134,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-280ee9a6a687dbf5",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-cpu-fp32",
+      "model_key": 2,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:41:59.166347Z",
+      "report_path": "case-007-speed-280ee9a6a687dbf5.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-cpu-fp32",
+          "model_key": 2,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.45539907443578725,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4315226240498922,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "maximum_speed_mps 0.455399 is below the exercised threshold 0.475",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.12285013084240659,
+              "maximum_speed_mps": 0.45539907443578725,
+              "mean_center_deviation_m": 0.04636339365365549,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 22.287567017164267,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-26acca4c07952352",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-cpu-fp32",
+      "model_key": 2,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:42:42.725462Z",
+      "report_path": "case-008-speed-26acca4c07952352.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-cpu-fp32",
+          "model_key": 2,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.4512628441559128,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.42889740062962173,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "maximum_center_deviation_m 0.150232 exceeds 0.144",
+                "maximum_speed_mps 0.451263 is below the exercised threshold 0.475",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.15023235920384034,
+              "maximum_speed_mps": 0.4512628441559128,
+              "mean_center_deviation_m": 0.04083506999836936,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 22.156632566962866,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-b7755a830d667d23",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-cpu-fp32",
+      "model_key": 2,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:43:25.965241Z",
+      "report_path": "case-009-speed-b7755a830d667d23.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-cpu-fp32",
+          "model_key": 2,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.46397863086387303,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4297658077211682,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.666667 exceeds 0",
+                "maximum_center_deviation_m 0.183861 exceeds 0.144",
+                "maximum_speed_mps 0.463979 is below the exercised threshold 0.475",
+                "offroad_events 2 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.18386101471835473,
+              "maximum_speed_mps": 0.46397863086387303,
+              "mean_center_deviation_m": 0.04607409652116709,
+              "offroad_events": 2,
+              "passed": false,
+              "segmentation_completion_fps": 22.292945848155256,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-f325c6dc28e5fc90",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-cpu-fp32",
+      "model_key": 2,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:44:06.573897Z",
+      "report_path": "case-010-speed-f325c6dc28e5fc90.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-cpu-fp32",
+          "model_key": 2,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.45165901961641824,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.42886732951261164,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "maximum_center_deviation_m 0.169816 exceeds 0.144",
+                "maximum_speed_mps 0.451659 is below the exercised threshold 0.475",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.16981603167921377,
+              "maximum_speed_mps": 0.45165901961641824,
+              "mean_center_deviation_m": 0.04779427851404877,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 22.173277565598575,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-d612b46be45a48a7",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-cpu-fp32",
+      "model_key": 2,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:44:46.214796Z",
+      "report_path": "case-011-speed-d612b46be45a48a7.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-cpu-fp32",
+          "model_key": 2,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": false,
+          "maximum_observed_speed_mps": 0.4526767895513136,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.41750454339287635,
+              "failures": [
+                "acceptance: offroad_events_per_lap 1.33333 exceeds 0",
+                "maximum_speed_mps 0.452677 is below the exercised threshold 0.475",
+                "offroad_events 4 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.12812239990858804,
+              "maximum_speed_mps": 0.4526767895513136,
+              "mean_center_deviation_m": 0.042617024858771606,
+              "offroad_events": 4,
+              "passed": false,
+              "segmentation_completion_fps": 21.824103998611385,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-fbf1e31eb50bc39c",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-cpu-fp32",
+      "model_key": 2,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:45:27.960284Z",
+      "report_path": "case-012-speed-fbf1e31eb50bc39c.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "onnxruntime-cpu",
+          "compression": "none",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-cpu-fp32",
+          "model_key": 2,
+          "precision": "fp32"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4907999727096935,
+              "failures": [
+                "acceptance: offroad_events_per_lap 1.33333 exceeds 0",
+                "offroad_events 4 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.14038519090779744,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.050074430257191514,
+              "offroad_events": 4,
+              "passed": false,
+              "segmentation_completion_fps": 194.0800351769343,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-e541d06a59d9b6bd",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+      "model_key": 3,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:46:05.908676Z",
+      "report_path": "case-013-speed-e541d06a59d9b6bd.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+          "model_key": 3,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.49260060662533706,
+              "failures": [
+                "acceptance: offroad_events_per_lap 1 exceeds 0",
+                "offroad_events 3 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1431096466737889,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.055013497116262806,
+              "offroad_events": 3,
+              "passed": false,
+              "segmentation_completion_fps": 171.24792902430792,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-25cfd57e754c2ce1",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+      "model_key": 3,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:46:43.773073Z",
+      "report_path": "case-014-speed-25cfd57e754c2ce1.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+          "model_key": 3,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4943865198576762,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.666667 exceeds 0",
+                "maximum_center_deviation_m 0.145648 exceeds 0.144",
+                "offroad_events 2 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.14564810642486437,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.04929861775703822,
+              "offroad_events": 2,
+              "passed": false,
+              "segmentation_completion_fps": 154.7957414708879,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-6858e39600c3c65f",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+      "model_key": 3,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:47:21.433956Z",
+      "report_path": "case-015-speed-6858e39600c3c65f.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+          "model_key": 3,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4793608992175841,
+              "failures": [
+                "acceptance: offroad_events_per_lap 3.33333 exceeds 0",
+                "offroad_events 10 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1358447633744828,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.050477546224599754,
+              "offroad_events": 10,
+              "passed": false,
+              "segmentation_completion_fps": 186.30332502302505,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-e472103fdb999100",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+      "model_key": 3,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:47:59.242270Z",
+      "report_path": "case-016-speed-e472103fdb999100.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+          "model_key": 3,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4900465132639699,
+              "failures": [
+                "acceptance: offroad_events_per_lap 1.33333 exceeds 0",
+                "offroad_events 4 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.14337179616654222,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.06164676499838571,
+              "offroad_events": 4,
+              "passed": false,
+              "segmentation_completion_fps": 167.9824439199145,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-3cfd00def2802a34",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+      "model_key": 3,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:48:34.830883Z",
+      "report_path": "case-017-speed-3cfd00def2802a34.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+          "model_key": 3,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.48441853834930665,
+              "failures": [
+                "acceptance: offroad_events_per_lap 2.33333 exceeds 0",
+                "maximum_center_deviation_m 0.147372 exceeds 0.144",
+                "offroad_events 7 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.14737229550908862,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.06626747992696926,
+              "offroad_events": 7,
+              "passed": false,
+              "segmentation_completion_fps": 149.44633585045227,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-9e9295f4554731a4",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+      "model_key": 3,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:49:11.196757Z",
+      "report_path": "case-018-speed-9e9295f4554731a4.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-256",
+          "model_key": 3,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.49804721773454286,
+              "failures": [],
+              "maximum_center_deviation_m": 0.050296738399105645,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.021291568542493623,
+              "offroad_events": 0,
+              "passed": true,
+              "segmentation_completion_fps": 121.65360947812363,
+              "track_id": "waveshare_3x2",
+              "trial_count": 2
+            },
+            {
+              "average_speed_mps": 0.4990421708164666,
+              "failures": [
+                "acceptance: mean_center_deviation_m 0.0898829 exceeds 0.08"
+              ],
+              "maximum_center_deviation_m": 0.18359703103960984,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.08988288924964882,
+              "offroad_events": 0,
+              "passed": false,
+              "segmentation_completion_fps": 120.9810951804129,
+              "track_id": "open_oval",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-cb9341dbcc40eabb",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+      "model_key": 4,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:51:35.316635Z",
+      "report_path": "case-019-speed-cb9341dbcc40eabb.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "model_key": 4,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4980871144721498,
+              "failures": [],
+              "maximum_center_deviation_m": 0.06793340395086567,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.026810281247605733,
+              "offroad_events": 0,
+              "passed": true,
+              "segmentation_completion_fps": 120.93714518614615,
+              "track_id": "waveshare_3x2",
+              "trial_count": 2
+            },
+            {
+              "average_speed_mps": 0.4990471215295756,
+              "failures": [
+                "acceptance: mean_center_deviation_m 0.0989326 exceeds 0.08"
+              ],
+              "maximum_center_deviation_m": 0.18667441496874498,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.09893262137753008,
+              "offroad_events": 0,
+              "passed": false,
+              "segmentation_completion_fps": 120.23165008471159,
+              "track_id": "open_oval",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-5bd999d3a8ae541e",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+      "model_key": 4,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:54:00.090423Z",
+      "report_path": "case-020-speed-5bd999d3a8ae541e.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "model_key": 4,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.49808474852883855,
+              "failures": [],
+              "maximum_center_deviation_m": 0.07022346106233723,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.028257444745356925,
+              "offroad_events": 0,
+              "passed": true,
+              "segmentation_completion_fps": 119.37218190926228,
+              "track_id": "waveshare_3x2",
+              "trial_count": 2
+            },
+            {
+              "average_speed_mps": 0.49904384909860766,
+              "failures": [
+                "acceptance: mean_center_deviation_m 0.0954084 exceeds 0.08"
+              ],
+              "maximum_center_deviation_m": 0.18400635791364978,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.09540840347503404,
+              "offroad_events": 0,
+              "passed": false,
+              "segmentation_completion_fps": 105.70215059209596,
+              "track_id": "open_oval",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": 2.45,
+      "configuration_id": "speed-d5a42ac6bd893839",
+      "deployment_max_speed_mps": 1.9600000000000002,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+      "model_key": 4,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:56:24.408547Z",
+      "report_path": "case-021-speed-d5a42ac6bd893839.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "model_key": 4,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4978976284933208,
+              "failures": [
+                "maximum_center_deviation_m 0.148742 exceeds 0.144"
+              ],
+              "maximum_center_deviation_m": 0.14874228765126624,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.03905467790160736,
+              "offroad_events": 0,
+              "passed": false,
+              "segmentation_completion_fps": 121.89168778217403,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-340a7fb4332b589d",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+      "model_key": 4,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:56:58.428354Z",
+      "report_path": "case-022-speed-340a7fb4332b589d.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "model_key": 4,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4915410613946599,
+              "failures": [
+                "acceptance: offroad_events_per_lap 1 exceeds 0",
+                "maximum_center_deviation_m 0.193211 exceeds 0.144",
+                "offroad_events 3 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1932108558100738,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.053748482963449154,
+              "offroad_events": 3,
+              "passed": false,
+              "segmentation_completion_fps": 121.47651701384446,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-006be20b249e2913",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+      "model_key": 4,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:57:32.351226Z",
+      "report_path": "case-023-speed-006be20b249e2913.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "model_key": 4,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.49786110691756086,
+              "failures": [
+                "maximum_center_deviation_m 0.157428 exceeds 0.144"
+              ],
+              "maximum_center_deviation_m": 0.1574283332758969,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.04836208540440552,
+              "offroad_events": 0,
+              "passed": false,
+              "segmentation_completion_fps": 113.64173566389805,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-3867c506adcde441",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+      "model_key": 4,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:58:05.727116Z",
+      "report_path": "case-024-speed-3867c506adcde441.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "model_key": 4,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.49597042401419056,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.666667 exceeds 0",
+                "offroad_events 2 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.1334109966444304,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.03766066439211965,
+              "offroad_events": 2,
+              "passed": false,
+              "segmentation_completion_fps": 71.62324220561699,
+              "track_id": "waveshare_3x2",
+              "trial_count": 2
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-af62d75f821f6e8f",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16",
+      "model_key": 9,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:59:20.635269Z",
+      "report_path": "case-025-speed-af62d75f821f6e8f.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16",
+          "model_key": 9,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4959311213888973,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.12067499586340155,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.04288671091418798,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 71.25318580329153,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-ce2750fd990fa94c",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16",
+      "model_key": 9,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T06:59:58.313534Z",
+      "report_path": "case-026-speed-ce2750fd990fa94c.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16",
+          "model_key": 9,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4969474344442936,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "maximum_center_deviation_m 0.153465 exceeds 0.144",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.15346470405610177,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.04501846537537604,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 68.89325057585083,
+              "track_id": "waveshare_3x2",
+              "trial_count": 2
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-468802dc60f36c1d",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "pure_pursuit",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16",
+      "model_key": 9,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T07:01:12.917696Z",
+      "report_path": "case-027-speed-468802dc60f36c1d.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16",
+          "model_key": 9,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4957624507628525,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.13705676947951964,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.04574176201171375,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 71.76024782067861,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-ab836abe811dcc7f",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16",
+      "model_key": 9,
+      "path_planner_id": "centerline",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T07:01:48.487939Z",
+      "report_path": "case-028-speed-ab836abe811dcc7f.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16",
+          "model_key": 9,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.49753314278507577,
+              "failures": [
+                "maximum_center_deviation_m 0.164963 exceeds 0.144"
+              ],
+              "maximum_center_deviation_m": 0.16496253974413044,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.05275728451997491,
+              "offroad_events": 0,
+              "passed": false,
+              "segmentation_completion_fps": 70.98429673793657,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-13fdf319f3789e1f",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16",
+      "model_key": 9,
+      "path_planner_id": "local-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T07:02:22.774157Z",
+      "report_path": "case-029-speed-13fdf319f3789e1f.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16",
+          "model_key": 9,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "certifiable": false,
+          "exercised": true,
+          "maximum_observed_speed_mps": 0.49999999999999933,
+          "passed": false,
+          "speed_mps": 0.5,
+          "tracks": [
+            {
+              "average_speed_mps": 0.4955189588971659,
+              "failures": [
+                "acceptance: offroad_events_per_lap 0.333333 exceeds 0",
+                "maximum_center_deviation_m 0.156433 exceeds 0.144",
+                "offroad_events 1 exceeds 0"
+              ],
+              "maximum_center_deviation_m": 0.15643294769715235,
+              "maximum_speed_mps": 0.49999999999999933,
+              "mean_center_deviation_m": 0.0525633497717234,
+              "offroad_events": 1,
+              "passed": false,
+              "segmentation_completion_fps": 68.76562888044155,
+              "track_id": "waveshare_3x2",
+              "trial_count": 1
+            }
+          ]
+        }
+      ],
+      "certified_max_speed_mps": null,
+      "configuration_id": "speed-6562fc4e35bb11ea",
+      "deployment_max_speed_mps": null,
+      "first_uncertified_speed_mps": 0.5,
+      "method_id": "stanley",
+      "model_id": "segformer-b0-cityscapes-coreml-fp16",
+      "model_key": 9,
+      "path_planner_id": "minimum-time-racing-line",
+      "policy": {
+        "coarse_step_mps": 0.25,
+        "laps_per_trial": 3,
+        "maximum_center_deviation_fraction": 0.8,
+        "maximum_offroad_events_per_trial": 0,
+        "maximum_speed_mps": 2.5,
+        "maximum_steering_saturation_fraction": 0.05,
+        "minimum_peak_speed_fraction": 0.95,
+        "minimum_speed_mps": 0.5,
+        "refinement_tolerance_mps": 0.05,
+        "require_acceptance_pass": true,
+        "simulated_to_real_speed_factor": 0.8,
+        "track_ids": [
+          "waveshare_3x2",
+          "open_oval",
+          "technical_chicane",
+          "tight_hairpin"
+        ],
+        "trials_per_speed": 2
+      },
+      "recorded_at_utc": "2026-08-03T07:02:58.178447Z",
+      "report_path": "case-030-speed-6562fc4e35bb11ea.json",
+      "search_status": "minimum_failed",
+      "selection": {
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        },
+        "control_method_id": "stanley",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "perception": {
+          "backend": "coreml-native",
+          "compression": "float16",
+          "mode": "actual",
+          "model_id": "segformer-b0-cityscapes-coreml-fp16",
+          "model_key": 9,
+          "precision": "fp16"
+        },
+        "platform_id": "sim",
+        "speed_planner_id": "off"
+      },
+      "status": "uncertified",
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ]
+    }
+  ],
+  "catalog_status": "complete",
+  "configuration_fingerprints": {
+    "algorithm": "sha256-canonical-json-v1",
+    "files": {
+      "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+      "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+      "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+      "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+      "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+      "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+      "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+    }
+  },
+  "counts": {
+    "already_certified": 0,
+    "certified": 0,
+    "uncertified": 30
+  },
+  "path_filter_id": "off",
+  "platform_id": "sim",
+  "platform_path": "configs/platforms/sim.json",
+  "promoted_at_utc": "2026-08-03T07:12:13.057270Z",
+  "registry_path": "benchmarks/certified_speed_limits.json",
+  "schema_version": 1,
+  "source_summary_path": "build/benchmarks/full-speed-matrix-40p625/summary.json",
+  "source_summary_sha256": "56c3b99bbbe508ed1b939dcdb07fc59d9f7a4f76cd5b05c61efdf0a92be515b6",
+  "speed_planner_id": "off",
+  "unavailable_models": {
+    "segformer-b0-cityscapes-tensorrt-fp16": "RuntimeError: required ONNX execution provider is unavailable: TensorrtExecutionProvider",
+    "segformer-b0-cityscapes-tensorrt-int8": "disabled: pending representative INT8 calibration and validation",
+    "segformer-b1-cityscapes-coreml-fp16": "FileNotFoundError: Core ML smoke-test record does not exist: models/segformer-b1-cityscapes-512-fp16.coreml.json",
+    "segformer-b1-cityscapes-tensorrt-fp16": "RuntimeError: required ONNX execution provider is unavailable: TensorrtExecutionProvider"
+  }
+}

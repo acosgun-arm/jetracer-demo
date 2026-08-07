@@ -78,6 +78,7 @@ def test_captured_frame_preserves_capture_timestamp() -> None:
         result = worker.wait_for_result(minimum_frame_id=7)
         assert result is not None
         assert result.metrics.end_to_end_latency_s >= 0.02
+        assert result.metrics.captured_at_s == captured_at_s
 
 
 def test_switch_discards_in_flight_old_model() -> None:
@@ -122,6 +123,7 @@ def test_semantic_adapter_and_live_result_age() -> None:
     )
     governor = sim.LatencyAwareSpeedGovernor(
         sim.GovernorConfig(
+            capacity_safety_factor=0.90,
             maximum_acceleration_mps2=100.0,
             maximum_deceleration_mps2=100.0,
         )
@@ -170,7 +172,12 @@ def test_browser_speed_telemetry_contract() -> None:
     finally:
         sys.argv = original_arguments
     assert parsed.model == 1
-    assert parsed.model_config.name == "off_the_shelf_models.json"
+    assert parsed.model_config.name == "road_segmentation_models.json"
+    assert parsed.detector_config.name == "off_the_shelf_models.json"
+    assert parsed.detector_model == "yolo11n-coco-onnx-fp32"
+    assert parsed.driving_mode == "hazards"
+    assert demo.driving_mode_uses_detector("hazards")
+    assert not demo.driving_mode_uses_detector("lane-only")
 
     html = demo.VIEWER_HTML.decode()
     assert 'id="actual-speed"' in html
@@ -182,7 +189,33 @@ def test_browser_speed_telemetry_contract() -> None:
     assert 'id="clip-replaced-frames"' in html
     assert 'id="detector-status"' in html
     assert 'id="stop-state"' in html
+    assert 'id="control-method-list"' in html
+    assert 'id="path-planner-list"' in html
+    assert 'id="driving-mode-list"' in html
+    assert 'id="certification-status"' in html
+    assert 'id="benchmark-matrix"' in html
+    assert 'id="benchmark-track-filter"' in html
+    assert "fetch('/benchmarks'" in html
+    assert "deployment_max_speed_mps" in html
+    assert "`${prefix}:${option.id}`" in html
     assert "benchmarkDetails.processing_ratio" in html
+
+    repository = Path(__file__).resolve().parents[1]
+    default_method, methods, method_catalog = (
+        demo.control_method_configuration(
+            repository / "configs" / "driving_benchmarks.json"
+        )
+    )
+    assert default_method == "adaptive_with_avoidance_pursuit"
+    assert set(methods) == {
+        "pure_pursuit",
+        "adaptive_pure_pursuit",
+        "adaptive_with_avoidance_pursuit",
+        "lqr",
+        "stanley",
+        "dynamic_window",
+    }
+    assert {item["id"] for item in method_catalog} == set(methods)
 
     models = sim.load_model_variants(
         demo.DEFAULT_MODEL_CONFIG,
@@ -216,10 +249,69 @@ def test_browser_speed_telemetry_contract() -> None:
         quality="simulated",
     )
     platform = sim.load_platform_configuration(
-        Path(__file__).resolve().parents[1]
-        / "configs"
-        / "platforms"
-        / "sim.json"
+        repository / "configs" / "platforms" / "sim.json"
+    )
+    stanley = demo.configured_lateral_controller(
+        scene.vehicle, methods["stanley"]
+    )
+    assert isinstance(stanley, sim.StanleyLateralController)
+    assert demo.configured_lateral_controller(
+        scene.vehicle, methods["pure_pursuit"]
+    ) is None
+    road_config = sim.RoadSteeringConfig()
+    assert isinstance(
+        demo.configured_lateral_controller(
+            scene.vehicle,
+            methods["adaptive_pure_pursuit"],
+            road_config,
+            methods,
+        ),
+        sim.AdaptivePurePursuitLateralController,
+    )
+    assert isinstance(
+        demo.configured_lateral_controller(
+            scene.vehicle,
+            methods["adaptive_with_avoidance_pursuit"],
+            road_config,
+            methods,
+        ),
+        sim.HandoverLateralController,
+    )
+    assert isinstance(
+        demo.configured_lateral_controller(
+            scene.vehicle, methods["lqr"], road_config, methods
+        ),
+        sim.LqrLateralController,
+    )
+    assert isinstance(
+        demo.configured_lateral_controller(
+            scene.vehicle,
+            methods["dynamic_window"],
+            road_config,
+            methods,
+        ),
+        sim.DynamicWindowLateralController,
+    )
+    local_options = sim.runtime_config_section("local_racing_line")
+    local_options.pop("enabled")
+    minimum_time_options = sim.runtime_config_section(
+        "minimum_time_racing_line"
+    )
+    minimum_time_options.pop("enabled")
+    assert demo.configured_path_planner(
+        scene.vehicle,
+        "centerline",
+        local_options,
+        minimum_time_options,
+    ) is None
+    assert isinstance(
+        demo.configured_path_planner(
+            scene.vehicle,
+            "minimum-time-racing-line",
+            local_options,
+            minimum_time_options,
+        ),
+        sim.MinimumTimeCorridorPlanner,
     )
     speed = sim.GovernorDecision(
         commanded_speed_mps=0.72,
@@ -231,6 +323,8 @@ def test_browser_speed_telemetry_contract() -> None:
         effective_fps=90.0,
         reason="perception_age",
         model_id=models[1].model_id,
+        certified_speed_limit_mps=0.8,
+        certified_speed_limited=False,
     )
     statistics = sim.InferenceWorkerStatistics(10, 8, 2, 0, 0, False, None)
     record = demo.telemetry_record(
@@ -251,6 +345,15 @@ def test_browser_speed_telemetry_contract() -> None:
         paused=False,
         show_labels=True,
         include_model_catalog=True,
+        active_control_method_id="stanley",
+        available_control_methods=method_catalog,
+        active_path_planner_id="minimum-time-racing-line",
+        available_path_planners=demo.PATH_PLANNER_CATALOG,
+        active_driving_mode="lane-only",
+        available_driving_modes=demo.DRIVING_MODE_CATALOG,
+        speed_certification_status="matched",
+        speed_certification_configuration_id="speed-test",
+        speed_certification_authorized=True,
         system_health=sim.SystemHealthSnapshot(
             captured_at_s=11.5,
             maximum_temperature_c=48.0,
@@ -262,12 +365,24 @@ def test_browser_speed_telemetry_contract() -> None:
     assert record["vehicle_state_quality"] == "simulated"
     assert record["permitted_speed_mps"] == 0.75
     assert record["commanded_speed_mps"] == 0.72
+    assert record["certified_speed_limit_mps"] == 0.8
+    assert record["certified_speed_limited"] is False
     assert 80.0 < record["benchmark_fps"] < 100.0
     assert record["benchmark_source"] == "synthetic_latency_profile"
     assert record["benchmark_details"] is None
     assert record["active_model_key"] == 2
     assert record["camera_target_fps"] == camera.fps
     assert len(record["available_models"]) == 4
+    assert record["active_control_method_id"] == "stanley"
+    assert record["active_path_planner_id"] == "minimum-time-racing-line"
+    assert record["active_driving_mode"] == "lane-only"
+    assert record["detector_active"] is False
+    assert len(record["available_control_methods"]) == 6
+    assert len(record["available_path_planners"]) == 3
+    assert len(record["available_driving_modes"]) == 2
+    assert record["speed_certification_status"] == "matched"
+    assert record["speed_certification_configuration_id"] == "speed-test"
+    assert record["speed_certification_authorized"] is True
     assert record["vehicle_state_age_s"] == 2.0
     assert record["maximum_temperature_c"] == 48.0
     assert record["temperature_sensor_count"] == 3
@@ -410,13 +525,17 @@ def test_browser_speed_telemetry_contract() -> None:
         metrics=detection_metrics,
     )
     detection_statistics = sim.InferenceWorkerStatistics(
-        12, 10, 2, 0, 0, False, None
+        12, 10, 2, 0, 0, False, None, rate_limited_frames=28
     )
     stop_decision = sim.StopSignDecision(
         state=sim.StopState.APPROACHING,
         speed_limit_mps=0.6,
         nearest_range_m=1.2,
         reason="braking",
+        trigger_distance_m=1.4,
+        detection_age_s=0.03,
+        latency_budget_s=0.15,
+        required_deceleration_mps2=0.8,
     )
     detection_record = demo.telemetry_record(
         now_s=12.0,
@@ -441,10 +560,15 @@ def test_browser_speed_telemetry_contract() -> None:
         stop_decision=stop_decision,
     )
     assert detection_record["detector_model_id"] == detector.model_id
+    assert detection_record["detector_active"] is True
     assert detection_record["detector_effective_fps"] == 40.0
     assert np.isclose(detection_record["detector_age_s"], 0.05)
     assert detection_record["detected_object_count"] == 1
+    assert detection_record["detector_submitted_frames"] == 12
+    assert detection_record["detector_rate_limited_frames"] == 28
     assert detection_record["stop_state"] == "approaching"
+    assert detection_record["stop_trigger_distance_m"] == 1.4
+    assert detection_record["stop_latency_budget_s"] == 0.15
     assert demo.detector_is_healthy(
         timed_detections,
         detection_statistics,
@@ -510,6 +634,7 @@ def test_model_registry_round_trip() -> None:
     )
     assert [variant.key for variant in variants] == [1, 2, 3, 4]
     assert all(variant.benchmark_fps is not None for variant in variants)
+    assert replace(variants[0], key=10).key == 10
     adapter = sim.build_segmentation_adapter(variants[0])
     image = np.ones((12, 16, 3), dtype=np.uint8)
     assert adapter.infer(image).labels.shape == (12, 16)

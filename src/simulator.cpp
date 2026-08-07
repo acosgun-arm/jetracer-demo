@@ -4,9 +4,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
-#include <filesystem>
 #include <limits>
-#include <numbers>
 #include <random>
 #include <stdexcept>
 #include <string_view>
@@ -16,10 +14,12 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "jetracer_sim/filesystem_compat.hpp"
+
 namespace jetracer::sim {
 namespace {
 
-constexpr double kPi = std::numbers::pi_v<double>;
+constexpr double kPi = 3.14159265358979323846;
 constexpr double kEpsilon = 1e-9;
 
 double clamp_value(double value, double low, double high) {
@@ -124,6 +124,7 @@ struct ConfiguredCameraProfile {
   double mount_roll_rad;
   double mount_pitch_down_rad;
   double mount_yaw_rad;
+  bool mount_provisional;
   double exposure_s;
   double rolling_readout_s;
   bool provisional;
@@ -145,6 +146,7 @@ constexpr ConfiguredCameraProfile kStressCameraDefaults{
     defaults::kCameraProfilesStressMountRollRad,
     defaults::kCameraProfilesStressMountPitchDownRad,
     defaults::kCameraProfilesStressMountYawRad,
+    defaults::kCameraProfilesStressMountProvisional,
     defaults::kCameraProfilesStressExposureS,
     defaults::kCameraProfilesStressRollingReadoutS,
     defaults::kCameraProfilesStressProvisional,
@@ -166,6 +168,7 @@ constexpr ConfiguredCameraProfile kElpCameraDefaults{
     defaults::kCameraProfilesElpMountRollRad,
     defaults::kCameraProfilesElpMountPitchDownRad,
     defaults::kCameraProfilesElpMountYawRad,
+    defaults::kCameraProfilesElpMountProvisional,
     defaults::kCameraProfilesElpExposureS,
     defaults::kCameraProfilesElpRollingReadoutS,
     defaults::kCameraProfilesElpProvisional,
@@ -187,6 +190,7 @@ constexpr ConfiguredCameraProfile kImx219CameraDefaults{
     defaults::kCameraProfilesImx219MountRollRad,
     defaults::kCameraProfilesImx219MountPitchDownRad,
     defaults::kCameraProfilesImx219MountYawRad,
+    defaults::kCameraProfilesImx219MountProvisional,
     defaults::kCameraProfilesImx219ExposureS,
     defaults::kCameraProfilesImx219RollingReadoutS,
     defaults::kCameraProfilesImx219Provisional,
@@ -209,6 +213,7 @@ CameraProfile make_camera_profile(const ConfiguredCameraProfile& configured) {
   profile.mount_roll_rad = configured.mount_roll_rad;
   profile.mount_pitch_down_rad = configured.mount_pitch_down_rad;
   profile.mount_yaw_rad = configured.mount_yaw_rad;
+  profile.mount_provisional = configured.mount_provisional;
   profile.exposure_s = configured.exposure_s;
   profile.rolling_readout_s = configured.rolling_readout_s;
   profile.provisional = configured.provisional;
@@ -225,11 +230,16 @@ CameraProfile make_camera_profile(std::string_view alias) {
 }
 
 std::string object_to_string(ObjectType type) {
-  return type == ObjectType::StopSign ? "stop_sign" : "box";
+  if (type == ObjectType::Cylinder) return "cylinder";
+  if (type == ObjectType::StopSign) return "stop_sign";
+  if (type == ObjectType::Billboard) return "billboard";
+  return "box";
 }
 
 ObjectType object_from_string(const std::string& value) {
+  if (value == "cylinder") return ObjectType::Cylinder;
   if (value == "stop_sign") return ObjectType::StopSign;
+  if (value == "billboard") return ObjectType::Billboard;
   if (value == "box") return ObjectType::Box;
   throw std::runtime_error("unknown object type: " + value);
 }
@@ -254,7 +264,7 @@ void write_camera(cv::FileStorage& fs, const CameraProfile& camera) {
      << "x_m" << camera.mount_x_m << "y_m" << camera.mount_y_m << "z_m"
      << camera.mount_z_m << "roll_rad" << camera.mount_roll_rad
      << "pitch_down_rad" << camera.mount_pitch_down_rad << "yaw_rad"
-     << camera.mount_yaw_rad << "}";
+     << camera.mount_yaw_rad << "provisional" << camera.mount_provisional << "}";
   fs << "exposure_s" << camera.exposure_s << "rolling_readout_s"
      << camera.rolling_readout_s << "provisional" << camera.provisional << "}";
 }
@@ -301,6 +311,9 @@ CameraProfile read_camera(const cv::FileNode& node) {
   mount["roll_rad"] >> camera.mount_roll_rad;
   mount["pitch_down_rad"] >> camera.mount_pitch_down_rad;
   mount["yaw_rad"] >> camera.mount_yaw_rad;
+  int mount_provisional = 1;
+  mount["provisional"] >> mount_provisional;
+  camera.mount_provisional = mount_provisional != 0;
   node["exposure_s"] >> camera.exposure_s;
   node["rolling_readout_s"] >> camera.rolling_readout_s;
   int provisional = 0;
@@ -568,6 +581,10 @@ Atlas build_atlas(const Scene& scene) {
   cv::fillPoly(atlas.semantic, polygons,
                cv::Scalar(static_cast<int>(SemanticClass::DrivableSurface)),
                cv::LINE_8);
+  cv::fillPoly(
+      atlas.instance, polygons,
+      cv::Scalar(defaults::kRendererGroundInstanceIdsDrivableSurface),
+      cv::LINE_8);
 
   cv::Mat road_texture;
   if (!scene.road_texture_path.empty()) {
@@ -617,6 +634,62 @@ Atlas build_atlas(const Scene& scene) {
   cv::polylines(atlas.semantic, right_curves, true,
                 cv::Scalar(static_cast<int>(SemanticClass::LaneMarking)), lane_width,
                 cv::LINE_8);
+  cv::polylines(
+      atlas.instance, left_curves, true,
+      cv::Scalar(defaults::kRendererGroundInstanceIdsLeftBoundary), lane_width,
+      cv::LINE_8);
+  cv::polylines(
+      atlas.instance, right_curves, true,
+      cv::Scalar(defaults::kRendererGroundInstanceIdsRightBoundary), lane_width,
+      cv::LINE_8);
+
+  const int center_dash_width = std::max(
+      defaults::kRendererMinimumCenterDashWidthPixels,
+      static_cast<int>(std::round(defaults::kRendererCenterDashWidthM *
+                                  atlas.pixels_per_metre)));
+  const double dash_length_m = defaults::kRendererCenterDashLengthM;
+  const double gap_length_m = defaults::kRendererCenterDashGapM;
+  bool drawing_dash = true;
+  double pattern_remaining_m = dash_length_m;
+  for (std::size_t index = 0; index < scene.centerline.size(); ++index) {
+    const Point2 start = scene.centerline[index];
+    const Point2 end = scene.centerline[(index + 1) % scene.centerline.size()];
+    const double dx = end.x - start.x;
+    const double dy = end.y - start.y;
+    const double segment_length_m = std::hypot(dx, dy);
+    if (segment_length_m <= kEpsilon) continue;
+    double segment_progress_m = 0.0;
+    while (segment_progress_m < segment_length_m - kEpsilon) {
+      const double step_m = std::min(
+          pattern_remaining_m, segment_length_m - segment_progress_m);
+      if (drawing_dash && step_m > kEpsilon) {
+        const double first_fraction = segment_progress_m / segment_length_m;
+        const double second_fraction =
+            (segment_progress_m + step_m) / segment_length_m;
+        const Point2 first{start.x + dx * first_fraction,
+                           start.y + dy * first_fraction};
+        const Point2 second{start.x + dx * second_fraction,
+                            start.y + dy * second_fraction};
+        cv::line(atlas.bgr, atlas_point(first, atlas), atlas_point(second, atlas),
+                 configured_scalar(defaults::kRendererCenterDashBgr),
+                 center_dash_width, cv::LINE_AA);
+        cv::line(atlas.semantic, atlas_point(first, atlas),
+                 atlas_point(second, atlas),
+                 cv::Scalar(static_cast<int>(SemanticClass::CenterMarking)),
+                 center_dash_width, cv::LINE_8);
+        cv::line(
+            atlas.instance, atlas_point(first, atlas), atlas_point(second, atlas),
+            cv::Scalar(defaults::kRendererGroundInstanceIdsCenterDash),
+            center_dash_width, cv::LINE_8);
+      }
+      segment_progress_m += step_m;
+      pattern_remaining_m -= step_m;
+      if (pattern_remaining_m <= kEpsilon) {
+        drawing_dash = !drawing_dash;
+        pattern_remaining_m = drawing_dash ? dash_length_m : gap_length_m;
+      }
+    }
+  }
   return atlas;
 }
 
@@ -916,12 +989,16 @@ void Scene::validate() const {
     if (object.instance_id == 0 ||
         object.instance_id >
             static_cast<std::uint32_t>(std::numeric_limits<std::int32_t>::max()) ||
-        identifiers.contains(object.instance_id)) {
+        identifiers.find(object.instance_id) != identifiers.end()) {
       throw std::invalid_argument("scene object instance IDs must be unique and non-zero");
     }
     if (object.width_m <= 0.0 || object.depth_m <= 0.0 ||
-        object.height_m <= 0.0) {
+        object.height_m <= 0.0 || object.collision_width_m < 0.0 ||
+        object.collision_depth_m < 0.0 || object.radial_segments < 3) {
       throw std::invalid_argument("scene object dimensions must be positive");
+    }
+    if (object.type == ObjectType::Billboard && object.texture_path.empty()) {
+      throw std::invalid_argument("billboard objects require a texture path");
     }
     const int semantic = static_cast<int>(object.semantic_class);
     if (semantic < static_cast<int>(SemanticClass::Background) ||
@@ -940,17 +1017,17 @@ void Scene::save(const std::string& path) const {
   validate();
   cv::FileStorage fs(path, cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
   if (!fs.isOpened()) throw std::runtime_error("cannot open scene for writing: " + path);
-  const std::filesystem::path scene_directory =
-      std::filesystem::absolute(std::filesystem::path(path)).parent_path();
+  const jetracer_filesystem::path scene_directory =
+      jetracer_filesystem::absolute(jetracer_filesystem::path(path)).parent_path();
   auto portable_texture_path = [&](const std::string& texture_path) {
     if (texture_path.empty()) return std::string{};
-    std::filesystem::path texture(texture_path);
-    if (texture.is_relative()) texture = std::filesystem::absolute(texture);
+    jetracer_filesystem::path texture(texture_path);
+    if (texture.is_relative()) texture = jetracer_filesystem::absolute(texture);
     std::error_code error;
-    const std::filesystem::path relative =
-        std::filesystem::relative(texture, scene_directory, error);
-    return error ? texture.lexically_normal().string()
-                 : relative.lexically_normal().string();
+    const jetracer_filesystem::path relative =
+        jetracer_filesystem_compat::relative(texture, scene_directory, error);
+    return jetracer_filesystem_compat::normalized(error ? texture : relative)
+        .string();
   };
   fs << "schema_version" << schema_version << "seed" << std::to_string(seed)
      << "road_width_m" << road_width_m << "atlas_pixels_per_metre"
@@ -985,7 +1062,11 @@ void Scene::save(const std::string& path) const {
        << static_cast<int>(object.semantic_class) << "x" << object.position.x << "y"
        << object.position.y << "base_z_m" << object.base_z_m << "yaw_rad"
        << object.yaw_rad << "width_m" << object.width_m << "depth_m"
-       << object.depth_m << "height_m" << object.height_m << "bgr"
+       << object.depth_m << "height_m" << object.height_m
+       << "collision_width_m" << object.collision_width_m
+       << "collision_depth_m" << object.collision_depth_m
+       << "radial_segments" << object.radial_segments << "texture_path"
+       << portable_texture_path(object.texture_path) << "bgr"
        << "[" << static_cast<int>(object.bgr[0]) << static_cast<int>(object.bgr[1])
        << static_cast<int>(object.bgr[2]) << "]"
        << "}";
@@ -1005,13 +1086,15 @@ Scene Scene::load(const std::string& path) {
   fs["atlas_pixels_per_metre"] >> scene.atlas_pixels_per_metre;
   fs["background_texture_path"] >> scene.background_texture_path;
   fs["road_texture_path"] >> scene.road_texture_path;
-  const std::filesystem::path scene_directory =
-      std::filesystem::absolute(std::filesystem::path(path)).parent_path();
+  const jetracer_filesystem::path scene_directory =
+      jetracer_filesystem::absolute(jetracer_filesystem::path(path)).parent_path();
   auto resolve_texture_path = [&](std::string& texture_path) {
     if (texture_path.empty()) return;
-    std::filesystem::path texture(texture_path);
+    jetracer_filesystem::path texture(texture_path);
     if (texture.is_relative()) {
-      texture_path = (scene_directory / texture).lexically_normal().string();
+      texture_path =
+          jetracer_filesystem_compat::normalized(scene_directory / texture)
+              .string();
     }
   };
   resolve_texture_path(scene.background_texture_path);
@@ -1061,6 +1144,19 @@ Scene Scene::load(const std::string& path) {
     node["width_m"] >> object.width_m;
     node["depth_m"] >> object.depth_m;
     node["height_m"] >> object.height_m;
+    if (!node["collision_width_m"].empty()) {
+      node["collision_width_m"] >> object.collision_width_m;
+    }
+    if (!node["collision_depth_m"].empty()) {
+      node["collision_depth_m"] >> object.collision_depth_m;
+    }
+    if (!node["radial_segments"].empty()) {
+      node["radial_segments"] >> object.radial_segments;
+    }
+    if (!node["texture_path"].empty()) {
+      node["texture_path"] >> object.texture_path;
+      resolve_texture_path(object.texture_path);
+    }
     int channel = 0;
     for (const auto& value : node["bgr"]) {
       if (channel < 3) object.bgr[channel++] = static_cast<std::uint8_t>(static_cast<int>(value));
@@ -1115,6 +1211,22 @@ class Simulator::Impl {
     camera.validate();
     atlas = build_atlas(scene);
     stop_texture = make_stop_texture();
+    for (const SceneObject& object : scene.objects) {
+      if (object.type != ObjectType::Billboard) continue;
+      cv::Mat texture = cv::imread(object.texture_path, cv::IMREAD_UNCHANGED);
+      if (texture.empty()) {
+        throw std::runtime_error("cannot load billboard texture: " +
+                                 object.texture_path);
+      }
+      if (texture.channels() == 3) {
+        cv::cvtColor(texture, texture, cv::COLOR_BGR2BGRA);
+      } else if (texture.channels() != 4) {
+        throw std::runtime_error(
+            "billboard texture must have three or four channels: " +
+            object.texture_path);
+      }
+      object_textures.emplace(object.instance_id, std::move(texture));
+    }
     rebuild_ray_table();
     reset();
   }
@@ -1257,6 +1369,61 @@ class Simulator::Impl {
     }
   }
 
+  void render_cylinder(const SceneObject& object,
+                       const CameraTransform& transform) {
+    const double c = std::cos(object.yaw_rad);
+    const double s = std::sin(object.yaw_rad);
+    const cv::Vec3d forward(c, s, 0.0);
+    const cv::Vec3d left(-s, c, 0.0);
+    const cv::Vec3d centre(object.position.x, object.position.y,
+                           object.base_z_m);
+    const double longitudinal_radius = object.depth_m * 0.5;
+    const double lateral_radius = object.width_m * 0.5;
+    const double angle_step = 2.0 * kPi / object.radial_segments;
+    const ProjectedVertex top_centre = project_point(
+        centre + cv::Vec3d(0.0, 0.0, object.height_m), camera, transform);
+    for (int segment = 0; segment < object.radial_segments; ++segment) {
+      const double angle_a = angle_step * segment;
+      const double angle_b = angle_step * (segment + 1);
+      const cv::Vec3d base_a =
+          centre + forward * (std::cos(angle_a) * longitudinal_radius) +
+          left * (std::sin(angle_a) * lateral_radius);
+      const cv::Vec3d base_b =
+          centre + forward * (std::cos(angle_b) * longitudinal_radius) +
+          left * (std::sin(angle_b) * lateral_radius);
+      const cv::Vec3d top_a =
+          base_a + cv::Vec3d(0.0, 0.0, object.height_m);
+      const cv::Vec3d top_b =
+          base_b + cv::Vec3d(0.0, 0.0, object.height_m);
+      const double illumination = 0.5 + 0.5 * std::cos((angle_a + angle_b) * 0.5);
+      const double shade = defaults::kRendererCylinderSideShadeMin +
+                           illumination *
+                               (defaults::kRendererCylinderSideShadeMax -
+                                defaults::kRendererCylinderSideShadeMin);
+      const cv::Vec3b side_colour(
+          cv::saturate_cast<std::uint8_t>(object.bgr[0] * shade),
+          cv::saturate_cast<std::uint8_t>(object.bgr[1] * shade),
+          cv::saturate_cast<std::uint8_t>(object.bgr[2] * shade));
+      const ProjectedVertex projected_base_a =
+          project_point(base_a, camera, transform);
+      const ProjectedVertex projected_base_b =
+          project_point(base_b, camera, transform);
+      const ProjectedVertex projected_top_a =
+          project_point(top_a, camera, transform);
+      const ProjectedVertex projected_top_b =
+          project_point(top_b, camera, transform);
+      raster_triangle(projected_base_a, projected_base_b, projected_top_b,
+                      side_colour, object.semantic_class, object.instance_id,
+                      nullptr);
+      raster_triangle(projected_base_a, projected_top_b, projected_top_a,
+                      side_colour, object.semantic_class, object.instance_id,
+                      nullptr);
+      raster_triangle(top_centre, projected_top_a, projected_top_b,
+                      cv::Vec3b(object.bgr[0], object.bgr[1], object.bgr[2]),
+                      object.semantic_class, object.instance_id, nullptr);
+    }
+  }
+
   void render_stop_sign(const SceneObject& object,
                         const CameraTransform& transform) {
     SceneObject pole = object;
@@ -1291,6 +1458,44 @@ class Simulator::Impl {
                         object.instance_id, &stop_texture);
         raster_triangle(a, c, d, cv::Vec3b(0, 0, 0), SemanticClass::StopSign,
                         object.instance_id, &stop_texture);
+      }
+    }
+  }
+
+  void render_billboard(const SceneObject& object,
+                        const CameraTransform& transform) {
+    const auto texture = object_textures.find(object.instance_id);
+    if (texture == object_textures.end()) {
+      throw std::runtime_error("billboard texture was not loaded");
+    }
+    const cv::Vec3d centre(object.position.x, object.position.y,
+                           object.base_z_m + object.height_m * 0.5);
+    const cv::Vec3d horizontal(-std::sin(object.yaw_rad),
+                               std::cos(object.yaw_rad), 0.0);
+    const cv::Vec3d vertical(0.0, 0.0, 1.0);
+    constexpr int subdivisions = defaults::kRendererBillboardFaceSubdivisions;
+    for (int row = 0; row < subdivisions; ++row) {
+      for (int column = 0; column < subdivisions; ++column) {
+        const double u0 = static_cast<double>(column) / subdivisions;
+        const double u1 = static_cast<double>(column + 1) / subdivisions;
+        const double v0 = static_cast<double>(row) / subdivisions;
+        const double v1 = static_cast<double>(row + 1) / subdivisions;
+        auto world = [&](double u, double v) {
+          return centre + horizontal * ((u - 0.5) * object.width_m) +
+                 vertical * ((0.5 - v) * object.height_m);
+        };
+        const ProjectedVertex a =
+            project_point(world(u0, v0), camera, transform, u0, v0);
+        const ProjectedVertex b =
+            project_point(world(u1, v0), camera, transform, u1, v0);
+        const ProjectedVertex c =
+            project_point(world(u1, v1), camera, transform, u1, v1);
+        const ProjectedVertex d =
+            project_point(world(u0, v1), camera, transform, u0, v1);
+        raster_triangle(a, b, c, cv::Vec3b(0, 0, 0), object.semantic_class,
+                        object.instance_id, &texture->second);
+        raster_triangle(a, c, d, cv::Vec3b(0, 0, 0), object.semantic_class,
+                        object.instance_id, &texture->second);
       }
     }
   }
@@ -1361,6 +1566,10 @@ class Simulator::Impl {
     for (const SceneObject& object : scene.objects) {
       if (object.type == ObjectType::StopSign) {
         render_stop_sign(object, base_transform);
+      } else if (object.type == ObjectType::Cylinder) {
+        render_cylinder(object, base_transform);
+      } else if (object.type == ObjectType::Billboard) {
+        render_billboard(object, base_transform);
       } else {
         render_box(object, base_transform);
       }
@@ -1431,8 +1640,13 @@ class Simulator::Impl {
       detection.bbox_xyxy = {value.min_x, value.min_y, value.max_x + 1,
                              value.max_y + 1};
       detection.visibility = std::min(1.0, value.pixels / (area * fill));
-      detection.range_m = std::hypot(object.position.x - vehicle.pose.x,
-                                     object.position.y - vehicle.pose.y);
+      const double delta_x = object.position.x - vehicle.pose.x;
+      const double delta_y = object.position.y - vehicle.pose.y;
+      detection.range_m = std::hypot(delta_x, delta_y);
+      detection.forward_m = std::cos(vehicle.pose.yaw) * delta_x +
+                            std::sin(vehicle.pose.yaw) * delta_y;
+      detection.lateral_m = -std::sin(vehicle.pose.yaw) * delta_x +
+                            std::cos(vehicle.pose.yaw) * delta_y;
       detection.relative_yaw_rad = wrap_angle(object.yaw_rad - vehicle.pose.yaw);
       frame->detections.push_back(detection);
     }
@@ -1444,6 +1658,7 @@ class Simulator::Impl {
   VehicleState vehicle;
   Atlas atlas;
   cv::Mat stop_texture;
+  std::unordered_map<std::uint32_t, cv::Mat> object_textures;
   std::vector<cv::Vec3f> rays;
   cv::Mat render_bgr;
   cv::Mat render_semantic;

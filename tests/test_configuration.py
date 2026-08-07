@@ -16,8 +16,8 @@ def main() -> None:
     assert runtime["realtime_demo"]["viewer"] == "browser"
     assert runtime["realtime_demo"]["open_browser"] is False
     governor = sim.GovernorConfig(**runtime["governor"])
-    assert governor.baseline_distance_per_frame_m == 0.010
-    assert governor.maximum_distance_per_frame_m == 0.010
+    assert governor.baseline_distance_per_frame_m == 0.01953125
+    assert governor.maximum_distance_per_frame_m == 0.01953125
 
     with tempfile.TemporaryDirectory(
         prefix="jetracer-configuration-test-"
@@ -49,6 +49,17 @@ def main() -> None:
         )
         assert result.requested_laps == 1
         assert result.vehicle_body_width_m == 0.205
+
+        driving["acceptance"]["scenarios"]["lane_following"]["tracks"][
+            "unknown_track"
+        ] = {"maximum_offroad_events_per_lap": 0.0}
+        driving_path.write_text(json.dumps(driving), encoding="utf-8")
+        try:
+            sim.load_driving_benchmark_configuration(driving_path)
+        except ValueError as error:
+            assert "unknown track" in str(error)
+        else:
+            raise AssertionError("unknown acceptance track was accepted")
 
         runtime["governor"]["baseline_distance_per_frame_m"] = 0.0
         runtime_path.write_text(json.dumps(runtime), encoding="utf-8")
@@ -121,6 +132,7 @@ def test_native_defaults_match_compiled_values() -> None:
             "mount_roll_rad",
             "mount_pitch_down_rad",
             "mount_yaw_rad",
+            "mount_provisional",
             "exposure_s",
             "rolling_readout_s",
             "provisional",

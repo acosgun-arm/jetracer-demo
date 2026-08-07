@@ -13,18 +13,17 @@
       "interface": "usb_uvc",
       "identity": {
         "match_substrings": [
-          "ELP",
-          "USB Camera"
+          "Global Shutter Camera"
         ],
-        "serial_number": null
+        "serial_number": "2601240001"
       },
       "requested_mode": {
-        "width": 1920,
-        "height": 1200,
-        "fps_numerator": 120000480,
-        "fps_denominator": 1000000,
-        "pixel_format": null,
-        "jetson_verified": false
+        "width": 1280,
+        "height": 720,
+        "fps_numerator": 200,
+        "fps_denominator": 1,
+        "pixel_format": "MJPG",
+        "jetson_verified": true
       },
       "geometry": {
         "lens_model": "fisheye_equidistant",
@@ -60,7 +59,7 @@
       },
       "evidence": {
         "macos_measurement": "1920x1200 at approximately 120.00048 FPS",
-        "jetson_measurement_report": null,
+        "jetson_measurement_report": "benchmarks/jetson_elp_camera_transport.json",
         "calibration_report": null
       }
     },

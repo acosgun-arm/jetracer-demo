@@ -480,12 +480,14 @@ def _write_deployed_platform(
     output = source_root / configuration.deployed_platform_relative
     output.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_json(output, document)
-    model_reference = document.get("model_config")
-    if isinstance(model_reference, str) and model_reference:
+    model_references = {
+        reference
+        for key in ("model_config", "detector_config")
+        if isinstance((reference := document.get(key)), str) and reference
+    }
+    for model_reference in sorted(model_references):
         model_path = _release_reference(source_root, output, model_reference)
-        _write_release_model_cache_paths(
-            configuration, model_path, release_id
-        )
+        _write_release_model_cache_paths(configuration, model_path, release_id)
 
 
 def _write_release_model_cache_paths(

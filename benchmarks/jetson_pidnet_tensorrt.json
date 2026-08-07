@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-07",
+  "platform": {
+    "device": "Jetson Nano",
+    "jetpack": "4.6.6",
+    "l4t": "32.7.6",
+    "tensorrt": "8.2.1",
+    "cuda": "10.2",
+    "power_mode": "MAXN",
+    "clocks_locked": true
+  },
+  "model": {
+    "model_id": "pidnet-s-cityscapes-tensorrt-fp16",
+    "source_repository": "https://github.com/XuJiacong/PIDNet",
+    "source_commit": "fefa51716bddc13a4321af2c70a074367100645a",
+    "source_checkpoint": "PIDNet_S_Cityscapes_val.pt",
+    "input_shape": [1, 3, 512, 512],
+    "output_shape": [1, 19, 64, 64],
+    "source_onnx": "models/pidnet-s-cityscapes-512-opset14.onnx",
+    "source_onnx_opset": 14,
+    "source_onnx_sha256": "1066e68113acbdb2c495e0b1969adb8848b7d769d29b4375e735ac8271ebdb64",
+    "engine_sha256": "aa6fc1d844fab5c2670076cb89e50f57b25f41c243015d74bad9a8802c896805",
+    "engine_size_mib": 35,
+    "engine_build_seconds": 476.007,
+    "workspace_mib": 512,
+    "precision": "fp16"
+  },
+  "compatibility": {
+    "onnx_parse_result": "passed",
+    "reference_max_absolute_logit_difference": 0.00000834465,
+    "reference_mean_absolute_logit_difference": 0.00000128421,
+    "reference_argmax_agreement": 1.0
+  },
+  "inference_benchmark": {
+    "cuda_graph": true,
+    "data_transfers": true,
+    "throughput_fps": 28.0255,
+    "mean_latency_ms": 35.6683,
+    "p99_latency_ms": 36.3633,
+    "mean_gpu_compute_ms": 35.324,
+    "mean_h2d_ms": 0.305374,
+    "mean_d2h_ms": 0.0388629
+  },
+  "quality_benchmark": {
+    "dataset": "benchmarks/synthetic_clips/waveshare_3x2-stress-20260801-215820",
+    "execution_backend": "onnxruntime-cpu-fp32",
+    "evaluated_frames": 100,
+    "frame_stride": 20,
+    "road_iou": 0.0706402154095225,
+    "road_precision": 0.9357353656425433,
+    "road_recall": 0.07098459317977583,
+    "segformer_b0_coreml_384_road_iou": 0.587122084592568
+  },
+  "assessment": {
+    "speedup_over_segformer_b0_tensorrt_fp16": 7.1603,
+    "quality_gate_passed": false,
+    "selectable": false,
+    "reason": "Synthetic Waveshare road recall is too low for closed-loop control",
+    "recommended_role": "retain exporter and evidence for future real-track reassessment"
+  }
+}

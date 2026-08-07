@@ -198,6 +198,7 @@ def export_synthetic_track_clip(
                 {"id": 2, "name": "lane_marking"},
                 {"id": 3, "name": "stop_sign"},
                 {"id": 4, "name": "obstacle"},
+                {"id": 5, "name": "center_marking"},
             ],
             "files": {
                 "rgb_video": rgb_path.name,
@@ -395,6 +396,15 @@ def _camera_record(camera: CameraProfile) -> dict[str, Any]:
             "cy": float(camera.cy),
         },
         "distortion": [float(value) for value in camera.distortion],
+        "mount": {
+            "x_m": float(camera.mount_x_m),
+            "y_m": float(camera.mount_y_m),
+            "z_m": float(camera.mount_z_m),
+            "roll_rad": float(camera.mount_roll_rad),
+            "pitch_down_rad": float(camera.mount_pitch_down_rad),
+            "yaw_rad": float(camera.mount_yaw_rad),
+            "provisional": bool(camera.mount_provisional),
+        },
     }
 
 

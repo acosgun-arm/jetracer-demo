@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import floor, isfinite
 from threading import Condition, Thread
 from time import perf_counter, sleep
 from typing import Generic, TypeVar
@@ -89,6 +90,7 @@ class InferenceWorkerStatistics:
     failed_frames: int
     pending: bool
     last_error: str | None
+    rate_limited_frames: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,9 +112,20 @@ class _LatestFrameInferenceWorker(Generic[_TimedResult]):
         pipeline: SegmentationPipeline | DetectionPipeline,
         *,
         worker_name: str,
+        maximum_submission_fps: float | None = None,
     ) -> None:
+        if maximum_submission_fps is not None and (
+            not isfinite(maximum_submission_fps)
+            or maximum_submission_fps <= 0.0
+        ):
+            raise ValueError("maximum submission FPS must be positive")
         self.pipeline = pipeline
         self._worker_name = worker_name
+        self._submission_interval_s = (
+            None
+            if maximum_submission_fps is None
+            else 1.0 / maximum_submission_fps
+        )
         self._condition = Condition()
         self._thread: Thread | None = None
         self._running = False
@@ -124,7 +137,10 @@ class _LatestFrameInferenceWorker(Generic[_TimedResult]):
         self._replaced_pending_frames = 0
         self._discarded_results = 0
         self._failed_frames = 0
+        self._rate_limited_frames = 0
         self._last_error: str | None = None
+        self._last_submission_timestamp_s: float | None = None
+        self._next_submission_timestamp_s: float | None = None
 
     def start(self) -> None:
         with self._condition:
@@ -169,11 +185,14 @@ class _LatestFrameInferenceWorker(Generic[_TimedResult]):
         *,
         frame_id: int,
         captured_at_s: float | None = None,
-    ) -> None:
+    ) -> bool:
         captured_at = perf_counter() if captured_at_s is None else captured_at_s
         with self._condition:
             if not self._running:
                 raise RuntimeError(f"{self._worker_name} worker is not running")
+            if not self._submission_is_due(captured_at):
+                self._rate_limited_frames += 1
+                return False
             self._submitted_frames += 1
             if self._pending is not None:
                 self._replaced_pending_frames += 1
@@ -184,6 +203,7 @@ class _LatestFrameInferenceWorker(Generic[_TimedResult]):
                 epoch=self._epoch,
             )
             self._condition.notify()
+            return True
 
     def submit_captured_frame(self, frame: CapturedFrame) -> None:
         """Submit a frame without losing its capture timestamp."""
@@ -211,6 +231,8 @@ class _LatestFrameInferenceWorker(Generic[_TimedResult]):
                 self._discarded_results += 1
             self._pending = None
             self._latest = None
+            self._last_submission_timestamp_s = None
+            self._next_submission_timestamp_s = None
             self._condition.notify_all()
 
     @property
@@ -229,7 +251,31 @@ class _LatestFrameInferenceWorker(Generic[_TimedResult]):
                 failed_frames=self._failed_frames,
                 pending=self._pending is not None,
                 last_error=self._last_error,
+                rate_limited_frames=self._rate_limited_frames,
             )
+
+    def _submission_is_due(self, captured_at_s: float) -> bool:
+        interval_s = self._submission_interval_s
+        if interval_s is None:
+            return True
+        if (
+            self._last_submission_timestamp_s is None
+            or captured_at_s < self._last_submission_timestamp_s
+            or self._next_submission_timestamp_s is None
+        ):
+            self._last_submission_timestamp_s = captured_at_s
+            self._next_submission_timestamp_s = captured_at_s + interval_s
+            return True
+        self._last_submission_timestamp_s = captured_at_s
+        if captured_at_s + 1e-12 < self._next_submission_timestamp_s:
+            return False
+        elapsed_intervals = floor(
+            (captured_at_s - self._next_submission_timestamp_s) / interval_s
+        )
+        self._next_submission_timestamp_s += (
+            elapsed_intervals + 1
+        ) * interval_s
+        return True
 
     def wait_for_result(
         self,
@@ -303,5 +349,14 @@ class LatestFrameSegmentationWorker(
 class LatestFrameDetectionWorker(_LatestFrameInferenceWorker[TimedDetections]):
     """Run object detection independently with latest-frame replacement."""
 
-    def __init__(self, pipeline: DetectionPipeline) -> None:
-        super().__init__(pipeline, worker_name="detection")
+    def __init__(
+        self,
+        pipeline: DetectionPipeline,
+        *,
+        maximum_submission_fps: float | None = None,
+    ) -> None:
+        super().__init__(
+            pipeline,
+            worker_name="detection",
+            maximum_submission_fps=maximum_submission_fps,
+        )

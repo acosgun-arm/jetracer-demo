@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "keyframes": {
+    "sample_interval_s": 0.10,
+    "maximum_sampled_frames": 1200,
+    "selected_frame_count": 80,
+    "minimum_separation_s": 0.20,
+    "descriptor_width": 160,
+    "descriptor_height": 90,
+    "hue_histogram_bins": 12,
+    "saturation_histogram_bins": 4,
+    "png_compression": 3
+  },
+  "annotations": {
+    "sample_radius_pixels": 3,
+    "minimum_lane_samples": 25,
+    "minimum_background_samples": 25,
+    "maximum_request_bytes": 1048576
+  },
+  "threshold_search": {
+    "lower_percentile": 1.0,
+    "upper_percentile": 99.0,
+    "hue_padding_candidates": [0, 2, 4, 8],
+    "saturation_padding_candidates": [0, 8, 16, 24],
+    "value_padding_candidates": [0, 8, 16, 24],
+    "minimum_recall": 0.98,
+    "false_positive_weight": 1.0
+  },
+  "optical_flow": {
+    "maximum_propagation_s": 2.0,
+    "window_size_pixels": 21,
+    "pyramid_levels": 3,
+    "termination_iterations": 30,
+    "termination_epsilon": 0.01,
+    "maximum_forward_backward_error_pixels": 1.5,
+    "maximum_tracking_error": 30.0,
+    "minimum_retained_fraction": 0.60
+  },
+  "uncertainty_review": {
+    "detector_confidence_weight": 0.45,
+    "confidence_jump_weight": 0.20,
+    "illumination_extreme_weight": 0.15,
+    "blur_weight": 0.10,
+    "propagation_weight": 0.10
+  },
+  "pixel_mask_benchmark": {
+    "minimum_polygon_points": 3,
+    "road_class_id": 1
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8766
+  }
+}

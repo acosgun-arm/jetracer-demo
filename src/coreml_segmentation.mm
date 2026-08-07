@@ -39,20 +39,6 @@ std::size_t stride(MLMultiArray* array, NSUInteger index) {
   return static_cast<std::size_t>(array.strides[index].unsignedLongLongValue);
 }
 
-float output_value(MLMultiArray* array, std::size_t index) {
-  switch (array.dataType) {
-    case MLMultiArrayDataTypeFloat32:
-      return static_cast<const float*>(array.dataPointer)[index];
-    case MLMultiArrayDataTypeDouble:
-      return static_cast<float>(static_cast<const double*>(array.dataPointer)[index]);
-    case MLMultiArrayDataTypeFloat16:
-      return static_cast<float>(
-          static_cast<const _Float16*>(array.dataPointer)[index]);
-    default:
-      throw std::runtime_error("Core ML logits must be float16, float32, or double");
-  }
-}
-
 }  // namespace
 
 struct CoreMLSegmentationSession::Impl {
@@ -194,27 +180,45 @@ std::vector<std::uint8_t> CoreMLSegmentationSession::infer(
         stride(logits, 0), stride(logits, 1), stride(logits, 2), stride(logits, 3)};
     std::vector<std::uint8_t> labels(
         static_cast<std::size_t>(impl_->output_width) * impl_->output_height, 0);
-    for (int y = 0; y < impl_->output_height; ++y) {
-      for (int x = 0; x < impl_->output_width; ++x) {
-        float maximum = -std::numeric_limits<float>::infinity();
-        int maximum_class = 0;
-        for (std::size_t class_id = 0; class_id < class_count; ++class_id) {
-          const std::size_t index = class_id * output_strides[1] +
-              static_cast<std::size_t>(y) * output_strides[2] +
-              static_cast<std::size_t>(x) * output_strides[3];
-          const float value = output_value(logits, index);
-          if (value > maximum) {
-            maximum = value;
-            maximum_class = static_cast<int>(class_id);
+    std::vector<bool> road_classes(class_count, false);
+    for (const int class_id : impl_->source_road_class_ids) {
+      road_classes[static_cast<std::size_t>(class_id)] = true;
+    }
+    const auto decode_logits = [&](const auto* output_data) {
+      for (int y = 0; y < impl_->output_height; ++y) {
+        for (int x = 0; x < impl_->output_width; ++x) {
+          float maximum = -std::numeric_limits<float>::infinity();
+          std::size_t maximum_class = 0;
+          for (std::size_t class_id = 0; class_id < class_count; ++class_id) {
+            const std::size_t index = class_id * output_strides[1] +
+                static_cast<std::size_t>(y) * output_strides[2] +
+                static_cast<std::size_t>(x) * output_strides[3];
+            const float value = static_cast<float>(output_data[index]);
+            if (value > maximum) {
+              maximum = value;
+              maximum_class = class_id;
+            }
+          }
+          if (road_classes[maximum_class]) {
+            labels[static_cast<std::size_t>(y) * impl_->output_width + x] =
+                impl_->road_class_id;
           }
         }
-        if (std::find(impl_->source_road_class_ids.begin(),
-                      impl_->source_road_class_ids.end(), maximum_class) !=
-            impl_->source_road_class_ids.end()) {
-          labels[static_cast<std::size_t>(y) * impl_->output_width + x] =
-              impl_->road_class_id;
-        }
       }
+    };
+    switch (logits.dataType) {
+      case MLMultiArrayDataTypeFloat32:
+        decode_logits(static_cast<const float*>(logits.dataPointer));
+        break;
+      case MLMultiArrayDataTypeDouble:
+        decode_logits(static_cast<const double*>(logits.dataPointer));
+        break;
+      case MLMultiArrayDataTypeFloat16:
+        decode_logits(static_cast<const _Float16*>(logits.dataPointer));
+        break;
+      default:
+        throw std::runtime_error(
+            "Core ML logits must be float16, float32, or double");
     }
     return labels;
   }

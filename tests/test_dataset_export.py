@@ -84,7 +84,7 @@ def main() -> None:
             assert image is not None and image.shape == (90, 160, 3)
             assert semantic is not None and semantic.shape == (90, 160)
             assert semantic.dtype == np.uint8
-            assert set(np.unique(semantic)).issubset({0, 1, 2, 3, 4})
+            assert set(np.unique(semantic)).issubset({0, 1, 2, 3, 4, 5})
             assert instances.shape == (90, 160)
             assert instances.dtype == np.uint32
 

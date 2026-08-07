@@ -9,6 +9,10 @@ from ._native import (  # noqa: F401
     PixelFormat,
     Point2,
     Pose2D,
+    ROAD_CENTER_DASH_INSTANCE_ID,
+    ROAD_LEFT_BOUNDARY_INSTANCE_ID,
+    ROAD_RIGHT_BOUNDARY_INSTANCE_ID,
+    ROAD_SURFACE_INSTANCE_ID,
     Scene,
     SceneConfig,
     SceneObject,
@@ -33,16 +37,66 @@ from .configuration import (  # noqa: F401
     load_runtime_configuration,
     runtime_config_section,
 )
+from .configuration_space import (  # noqa: F401
+    DEFAULT_HEADING_LAYER_CSPACE_CONFIG_PATH,
+    HEADING_LAYER_CSPACE_SCHEMA_VERSION,
+    HeadingLayer,
+    HeadingLayerConfigurationSpace,
+    HeadingLayerCspaceConfig,
+    HeadingTransition,
+    RasterizedCspace,
+    VehicleFootprintGeometry,
+    load_heading_layer_cspace_configuration,
+)
+from .camera_runtime_config import (  # noqa: F401
+    CAMERA_RUNTIME_PROFILE_SCHEMA_VERSION,
+    CameraRuntimeProfile,
+    load_camera_runtime_profile,
+    resolve_camera_runtime_selection,
+)
+from .real_track_dataset import (  # noqa: F401
+    REAL_TRACK_COLOUR_CALIBRATION_SCHEMA_VERSION,
+    REAL_TRACK_DATASET_PURPOSE,
+    REAL_TRACK_DATASET_SCHEMA_VERSION,
+    REAL_TRACK_EVALUATION_SCHEMA_VERSION,
+    REAL_TRACK_SPLITS,
+    RealTrackDataset,
+    RealTrackDatasetEvaluation,
+    RealTrackValidationIssue,
+    calibrate_real_track_colours,
+    evaluate_real_track_colour_profiles,
+    evaluate_real_track_dataset,
+    file_sha256 as real_track_file_sha256,
+    load_real_track_dataset,
+    prepare_real_track_segmentation_dataset,
+    register_real_track_capture,
+    save_real_track_report,
+)
+from .real_track_profiles import (  # noqa: F401
+    REAL_TRACK_PROFILE_SCHEMA_VERSION,
+    RealTrackProfile,
+    RealTrackProfileCatalog,
+    load_real_track_profiles,
+    resolve_real_track_manifest,
+)
+from .realtime_capture import RealTrackCaptureManager  # noqa: F401
 from .governor import (  # noqa: F401
     GovernorConfig,
     GovernorDecision,
     LatencyAwareSpeedGovernor,
+    LongitudinalControlDecision,
+    LongitudinalControlRequest,
+    LongitudinalController,
+    PerceptionAwareLongitudinalController,
 )
 from .gui_safety import (  # noqa: F401
     UnsafeGuiRequestError,
     validate_gui_request,
 )
 from .frame_source import (  # noqa: F401
+    CameraDeviceIdentity,
+    CameraIdentityProbe,
+    CameraIdentityRequirement,
     CapturedFrame,
     FrameSource,
     FrameSourceError,
@@ -54,6 +108,7 @@ from .frame_source import (  # noqa: F401
     RecordedVideoFrameSource,
     ResolvedCameraMode,
     SimulatorFrameSource,
+    probe_camera_identity,
 )
 from .platform_runtime import (  # noqa: F401
     DEFAULT_PLATFORM_CONFIG_PATH,
@@ -62,6 +117,7 @@ from .platform_runtime import (  # noqa: F401
     PlatformConfiguration,
     PlatformRuntime,
     create_platform_runtime,
+    governor_config_for_platform,
     load_platform_configuration,
 )
 from .vehicle_io import (  # noqa: F401
@@ -171,6 +227,32 @@ from .bringup import (  # noqa: F401
     record_bringup_stage,
 )
 from .process_safety import ShutdownSignalMonitor  # noqa: F401
+from .speed_certification import (  # noqa: F401
+    CERTIFIED_SPEED_REGISTRY_SCHEMA_VERSION,
+    SpeedCandidateEvaluation,
+    SpeedCertificationReadiness,
+    SpeedSearchOutcome,
+    SpeedSearchPolicy,
+    certified_speed_entry,
+    evaluate_platform_speed_certification,
+    evaluate_speed_certification_selection,
+    fingerprint_speed_configuration_paths,
+    load_certified_speed_registry,
+    platform_speed_configuration_paths,
+    resolve_certified_speed_entry,
+    search_maximum_safe_speed,
+    speed_configuration_selection,
+    speed_configuration_id,
+    update_certified_speed_registry,
+)
+from .certification_catalog import (  # noqa: F401
+    CERTIFIABLE_PATH_PLANNER_IDS,
+    SPEED_CERTIFICATION_CATALOG_SCHEMA_VERSION,
+    default_speed_certification_catalog_path,
+    load_speed_certification_catalog,
+    promote_speed_certification_matrix,
+    speed_certification_coverage,
+)
 from .hardware_profiles import (  # noqa: F401
     CAMERA_PROFILE_SCHEMA_VERSION,
     DEFAULT_CAMERA_PROFILE_PATH,
@@ -182,19 +264,64 @@ from .hardware_profiles import (  # noqa: F401
     load_camera_profiles,
 )
 from .controller import (  # noqa: F401
+    AdaptivePurePursuitConfig,
+    AdaptivePurePursuitLateralController,
+    DynamicWindowLateralConfig,
+    DynamicWindowLateralController,
+    HandoverLateralController,
+    LateralController,
+    CurvaturePathSpeedPlanner,
+    CurvatureSpeedPlannerConfig,
+    LocalRacingLineConfig,
+    LocalRacingLinePlanner,
+    LqrLateralConfig,
+    LqrLateralController,
+    LateralHandoverConfig,
+    MaskRoadPathExtractor,
+    MinimumTimeCorridorConfig,
+    MinimumTimeCorridorPlanner,
+    PathSpeedDecision,
+    PathSpeedPlanner,
+    PurePursuitLateralController,
+    RoadPathExtractor,
+    RoadPathFilter,
+    RoadPathPlanner,
+    RoadPathObservation,
+    RoadPathPoint,
     RoadSteeringConfig,
     RoadSteeringController,
+    StanleyLateralConfig,
+    StanleyLateralController,
     SteeringDecision,
+    TemporalRoadPathFilter,
+    TemporalRoadPathFilterConfig,
+)
+from .benchmark_controllers import (  # noqa: F401
+    LateralControllerFactory,
+    configured_lateral_controller_factory,
 )
 from .avoidance import (  # noqa: F401
     ObstacleAvoidanceConfig,
     ObstacleAvoidanceController,
     ObstacleAvoidanceDecision,
+    ObstacleBrakingConfig,
+    ObstacleBrakingDecision,
+    ObstacleBrakingSupervisor,
 )
 from .benchmarking import (  # noqa: F401
+    CameraMountPose,
     DRIVING_BENCHMARK_SCHEMA_VERSION,
     DrivingBenchmarkConfig,
+    DrivingBenchmarkStateSample,
+    DrivingBenchmarkAcceptanceCriteria,
+    DrivingBenchmarkAcceptanceResult,
+    DrivingPerceptionConfig,
     DrivingBenchmarkResult,
+    ObstaclePerceptionFaultConfig,
+    SegmentationPerceptionFaultConfig,
+    SegmentationPerceptionFaultInjector,
+    driving_benchmark_acceptance_criteria,
+    evaluate_driving_benchmark_acceptance,
     run_driving_benchmark,
     save_driving_benchmark_results,
 )
@@ -225,6 +352,14 @@ from .inference import (  # noqa: F401
     SegmentationPipeline,
     SegmentationPrediction,
     TimedSegmentation,
+)
+from .color_lane import (  # noqa: F401
+    ColorLaneDiagnostics,
+    ColorLaneSegmentationAdapter,
+    ColorLaneSegmentationConfig,
+    HsvRange,
+    hsv_ranges_from_config,
+    load_color_lane_profile,
 )
 from .onnx_adapters import (  # noqa: F401
     OnnxSegmentationAdapter,
@@ -286,17 +421,55 @@ from .pretrained import (  # noqa: F401
     resolve_source_class_ids,
 )
 from .tracks import (  # noqa: F401
+    CylinderScenarioConfig,
     WAVESHARE_JETRACER_PRODUCT_URL,
     TrackDefinition,
     benchmark_tracks,
     build_benchmark_scene,
     track_by_id,
 )
+from .top_down_video import (  # noqa: F401
+    TopDownVideoConfig,
+    TopDownVideoSummary,
+    export_top_down_benchmark_video,
+    video_config_with_overrides,
+)
 from .stopping import (  # noqa: F401
+    DEFAULT_STOP_DETECTION_LATENCY_PROFILE_PATH,
+    STOP_DETECTION_LATENCY_PROFILE_SCHEMA_VERSION,
+    StopDetectionLatencyProfile,
     StopSignConfig,
     StopSignController,
     StopSignDecision,
     StopState,
+    load_stop_detection_latency_profiles,
+    select_stop_detection_latency_profile,
+)
+from .stop_certification import (  # noqa: F401
+    DEFAULT_STOP_SIGN_BENCHMARK_CONFIG_PATH,
+    STOP_SIGN_BENCHMARK_SCHEMA_VERSION,
+    GovernorCapacityPrediction,
+    StopBoundarySearchPolicy,
+    load_stop_boundary_search_policy,
+    predict_governor_speed_cap,
+)
+from .video_lane_calibration import (  # noqa: F401
+    VIDEO_LANE_ANNOTATION_SCHEMA_VERSION,
+    VIDEO_LANE_WORKSPACE_SCHEMA_VERSION,
+    KeyframeCandidate,
+    calibrate_sparse_lane_colours,
+    benchmark_video_lane_pixel_masks,
+    export_calibrated_color_lane_profile,
+    frame_descriptor,
+    load_video_lane_annotations,
+    load_video_lane_calibration_config,
+    prepare_video_lane_workspace,
+    propagate_video_lane_annotations,
+    rank_video_lane_review_frames,
+    rasterize_normalized_road_polygon,
+    save_video_lane_annotations,
+    select_diverse_keyframes,
+    validate_video_lane_annotations,
 )
 
 __all__ = [name for name in globals() if not name.startswith("_")]

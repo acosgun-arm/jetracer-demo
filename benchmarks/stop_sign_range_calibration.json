@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "calibration_id": "sim-stop-sign-yolo11n-320x180-v1",
+  "recorded_at_utc": "2026-08-02T00:25:22Z",
+  "scope": {
+    "environment": "simulator",
+    "track_id": "waveshare_3x2",
+    "camera_profile": "stress",
+    "camera_resolution": [320, 180],
+    "detector_model_id": "yolo11n-coco-onnx-fp32",
+    "class_id": 11,
+    "object_width_m": 0.24
+  },
+  "method": {
+    "simulation_duration_s": 25.0,
+    "sample_every_frames": 5,
+    "minimum_bbox_iou": 0.25,
+    "matched_pairs": 271,
+    "fit": "zero-intercept least squares from apparent-width estimate to simulator ground-truth range"
+  },
+  "observations": {
+    "estimated_range_min_m": 1.588983880155548,
+    "estimated_range_median_m": 2.812679002209892,
+    "estimated_range_max_m": 10.442573635594872,
+    "ground_truth_range_min_m": 0.8794137469522949,
+    "ground_truth_range_median_m": 1.2958070942457602,
+    "ground_truth_range_max_m": 2.208259206855647,
+    "truth_to_estimate_ratio_p05": 0.2941601393338908,
+    "truth_to_estimate_ratio_median": 0.45908080663263545,
+    "truth_to_estimate_ratio_p95": 0.5655209497452784
+  },
+  "result": {
+    "class_distance_scale": 0.3658904770468823,
+    "mean_absolute_error_before_m": 1.9449115739058769,
+    "mean_absolute_error_after_m": 0.2741557504362931,
+    "minimum_corrected_range_m": 0.5813940699299196
+  },
+  "limitations": [
+    "This calibration is valid only for the named simulator camera, resolution, renderer and detector.",
+    "Real-camera calibration must be measured independently and must not reuse this scale.",
+    "Apparent-width ranging remains sensitive to viewing angle and detector box extent."
+  ]
+}

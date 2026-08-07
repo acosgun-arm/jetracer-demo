@@ -123,6 +123,28 @@ class FakeCV2:
         )
 
 
+class FakeLowFpsCapture(FakeCapture):
+    def set(self, key: int, value: float) -> bool:
+        if key == FakeCV2.CAP_PROP_FPS:
+            return False
+        return super().set(key, value)
+
+
+class FakeLowFpsCV2(FakeCV2):
+    def VideoCapture(self, *_: object) -> FakeCapture:
+        fourcc = self.VideoWriter_fourcc(*"YUY2")
+        self.capture = FakeLowFpsCapture(
+            [image(0)],
+            {
+                self.CAP_PROP_FRAME_WIDTH: 1280,
+                self.CAP_PROP_FRAME_HEIGHT: 720,
+                self.CAP_PROP_FPS: 30.0,
+                self.CAP_PROP_FOURCC: fourcc,
+            },
+        )
+        return self.capture
+
+
 def wait_for_publications(source: sim.FrameSource, count: int) -> None:
     deadline = perf_counter() + 1.0
     while source.statistics.published_frames < count:
@@ -164,6 +186,182 @@ def test_uvc_source_is_latest_only_and_headless() -> None:
     with_fake_cv2(exercise)
 
 
+def test_avfoundation_identity_gate_rejects_built_in_camera_before_open() -> None:
+    original_inventory = frame_source._avfoundation_camera_inventory
+    original_import = frame_source._import_cv2
+    camera_open_attempted = False
+
+    def forbidden_import() -> Any:
+        nonlocal camera_open_attempted
+        camera_open_attempted = True
+        raise AssertionError("OpenCV must not run when camera identity is absent")
+
+    frame_source._avfoundation_camera_inventory = lambda _: (
+        sim.CameraDeviceIdentity(
+            "MacBook Pro Camera",
+            "MacBook Pro Camera",
+            "built-in-1",
+        ),
+    )
+    frame_source._import_cv2 = forbidden_import
+    try:
+        source = sim.OpenCVCameraFrameSource(
+            sim.OpenCVCameraConfig(
+                device_index=0,
+                width=1280,
+                height=720,
+                fps=200.0,
+                backend="avfoundation",
+                identity_requirement=sim.CameraIdentityRequirement(
+                    ("Global Shutter Camera",)
+                ),
+                identity_probe_timeout_s=1.0,
+                minimum_resolved_fps_fraction=0.95,
+            )
+        )
+        probe = sim.probe_camera_identity(source.config)
+        assert probe.status == "unavailable"
+        assert probe.required and not probe.ready
+        assert probe.matched_device is None
+        assert probe.available_devices[0].name == "MacBook Pro Camera"
+        try:
+            source.start()
+        except sim.FrameSourceError as error:
+            assert "required AVFoundation camera is not connected" in str(error)
+            assert "MacBook Pro Camera" in str(error)
+        else:
+            raise AssertionError("built-in camera bypassed the identity gate")
+        assert not camera_open_attempted
+    finally:
+        frame_source._avfoundation_camera_inventory = original_inventory
+        frame_source._import_cv2 = original_import
+
+
+def test_avfoundation_identity_gate_accepts_matching_external_camera() -> None:
+    original_inventory = frame_source._avfoundation_camera_inventory
+    frame_source._avfoundation_camera_inventory = lambda _: (
+        sim.CameraDeviceIdentity(
+            "Global Shutter Camera",
+            "UVC Camera VendorID_13028 ProductID_21044",
+            "external-1",
+        ),
+    )
+    try:
+        def exercise() -> None:
+            source = sim.OpenCVCameraFrameSource(
+                sim.OpenCVCameraConfig(
+                    device_index=0,
+                    width=1920,
+                    height=1200,
+                    fps=120.0,
+                    backend="avfoundation",
+                    identity_requirement=sim.CameraIdentityRequirement(
+                        ("Global Shutter Camera",)
+                    ),
+                    identity_probe_timeout_s=1.0,
+                    minimum_resolved_fps_fraction=0.95,
+                )
+            )
+            probe = sim.probe_camera_identity(source.config)
+            assert probe.status == "available"
+            assert probe.required and probe.ready
+            assert probe.matched_device is not None
+            assert probe.matched_device.name == "Global Shutter Camera"
+            source.start()
+            wait_for_publications(source, 1)
+            source.stop()
+
+        with_fake_cv2(exercise)
+    finally:
+        frame_source._avfoundation_camera_inventory = original_inventory
+
+
+def test_avfoundation_identity_inventory_failure_is_fail_closed() -> None:
+    original_inventory = frame_source._avfoundation_camera_inventory
+    original_import = frame_source._import_cv2
+    camera_open_attempted = False
+
+    def failed_inventory(_: float) -> tuple[sim.CameraDeviceIdentity, ...]:
+        raise sim.FrameSourceError("AVFoundation camera inventory failed")
+
+    def forbidden_import() -> Any:
+        nonlocal camera_open_attempted
+        camera_open_attempted = True
+        raise AssertionError("OpenCV must not run after inventory failure")
+
+    frame_source._avfoundation_camera_inventory = failed_inventory
+    frame_source._import_cv2 = forbidden_import
+    try:
+        source = sim.OpenCVCameraFrameSource(
+            sim.OpenCVCameraConfig(
+                device_index=0,
+                width=1280,
+                height=720,
+                fps=200.0,
+                backend="avfoundation",
+                identity_requirement=sim.CameraIdentityRequirement(
+                    ("Global Shutter Camera",)
+                ),
+                identity_probe_timeout_s=1.0,
+                minimum_resolved_fps_fraction=0.95,
+            )
+        )
+        probe = sim.probe_camera_identity(source.config)
+        assert probe.status == "error"
+        assert probe.required and not probe.ready
+        assert probe.reason == "AVFoundation camera inventory failed"
+        try:
+            source.start()
+        except sim.FrameSourceError as error:
+            assert "inventory failed" in str(error)
+        else:
+            raise AssertionError("camera inventory failure was ignored")
+        assert not camera_open_attempted
+    finally:
+        frame_source._avfoundation_camera_inventory = original_inventory
+        frame_source._import_cv2 = original_import
+
+
+def test_avfoundation_identity_gate_rejects_wrong_negotiated_mode() -> None:
+    original_inventory = frame_source._avfoundation_camera_inventory
+    original_import = frame_source._import_cv2
+    fake_cv2 = FakeLowFpsCV2()
+    frame_source._avfoundation_camera_inventory = lambda _: (
+        sim.CameraDeviceIdentity(
+            "Global Shutter Camera",
+            "UVC Camera VendorID_13028 ProductID_21044",
+            "external-1",
+        ),
+    )
+    frame_source._import_cv2 = lambda: fake_cv2
+    try:
+        source = sim.OpenCVCameraFrameSource(
+            sim.OpenCVCameraConfig(
+                device_index=0,
+                width=1280,
+                height=720,
+                fps=200.0,
+                backend="avfoundation",
+                identity_requirement=sim.CameraIdentityRequirement(
+                    ("Global Shutter Camera",)
+                ),
+                identity_probe_timeout_s=1.0,
+                minimum_resolved_fps_fraction=0.95,
+            )
+        )
+        try:
+            source.start()
+        except sim.FrameSourceError as error:
+            assert "resolved FPS" in str(error)
+        else:
+            raise AssertionError("wrong camera mode bypassed the acceptance gate")
+        assert fake_cv2.capture is not None
+        assert not fake_cv2.capture.opened
+    finally:
+        frame_source._avfoundation_camera_inventory = original_inventory
+        frame_source._import_cv2 = original_import
+
+
 def test_recorded_video_source_uses_latest_frame_contract() -> None:
     def exercise() -> None:
         with TemporaryDirectory(prefix="jetracer-recorded-source-") as directory:
@@ -197,15 +395,30 @@ def test_camera_device_path_is_valid_without_opening_it() -> None:
         backend="v4l2",
     )
     config.validate()
+    probe = sim.probe_camera_identity(config)
+    assert probe.status == "not_required"
+    assert not probe.required and probe.ready
+
+
+def test_camera_rotation_corrects_upside_down_mount() -> None:
+    original = np.arange(18, dtype=np.uint8).reshape(2, 3, 3)
+    rotated = frame_source._rotate_image_clockwise(original, 180)
+    assert np.array_equal(rotated, original[::-1, ::-1])
+    assert rotated.flags.c_contiguous
 
 
 def main() -> None:
     test_latest_frame_buffer_replaces_stale_frames()
     test_simulator_frame_source_uses_common_contract()
     test_uvc_source_is_latest_only_and_headless()
+    test_avfoundation_identity_gate_rejects_built_in_camera_before_open()
+    test_avfoundation_identity_gate_accepts_matching_external_camera()
+    test_avfoundation_identity_inventory_failure_is_fail_closed()
+    test_avfoundation_identity_gate_rejects_wrong_negotiated_mode()
     test_recorded_video_source_uses_latest_frame_contract()
     test_frame_source_module_has_no_gui_calls()
     test_camera_device_path_is_valid_without_opening_it()
+    test_camera_rotation_corrects_upside_down_mount()
 
 
 if __name__ == "__main__":

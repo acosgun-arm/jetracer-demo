@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """Generate compile-time C++ defaults from versioned JSON configuration."""
 
-from __future__ import annotations
-
 import argparse
 import json
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 
 SCHEMA_VERSION = 1
@@ -21,14 +19,14 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_document(path: Path) -> dict[str, Any]:
+def load_document(path: Path) -> Dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or value.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"unsupported configuration schema: {path}")
     return value
 
 
-def validate_native(document: dict[str, Any]) -> None:
+def validate_native(document: Dict[str, Any]) -> None:
     required = {
         "camera_profiles",
         "scene_generation",
@@ -62,6 +60,10 @@ def validate_native(document: dict[str, Any]) -> None:
             raise ValueError(f"camera {profile_id!r} requires five distortion values")
         if float(profile["mount_z_m"]) <= 0.0:
             raise ValueError(f"camera {profile_id!r} must be above the ground")
+        if not isinstance(profile.get("mount_provisional"), bool):
+            raise ValueError(
+                f"camera {profile_id!r} mount provisional flag is invalid"
+            )
 
     scene = document["scene_generation"]
     if scene["camera_profile"] not in profiles:
@@ -82,7 +84,7 @@ def validate_native(document: dict[str, Any]) -> None:
         raise ValueError("native scene dimensions and sampling values must be positive")
 
 
-def validate_driving(document: dict[str, Any]) -> None:
+def validate_driving(document: Dict[str, Any]) -> None:
     vehicle = document.get("vehicle")
     if not isinstance(vehicle, dict):
         raise ValueError("driving configuration is missing vehicle defaults")
@@ -99,14 +101,14 @@ def validate_driving(document: dict[str, Any]) -> None:
         raise ValueError("driving vehicle defaults must be positive")
 
 
-def identifier(path: tuple[str, ...]) -> str:
+def identifier(path: Tuple[str, ...]) -> str:
     words = []
     for component in path:
         words.extend(word for word in re.split(r"[^A-Za-z0-9]+", component) if word)
     return "k" + "".join(word[0].upper() + word[1:] for word in words)
 
 
-def cpp_value(value: Any) -> tuple[str, str]:
+def cpp_value(value: Any) -> Tuple[str, str]:
     if isinstance(value, bool):
         return "bool", "true" if value else "false"
     if isinstance(value, int):
@@ -128,8 +130,8 @@ def cpp_value(value: Any) -> tuple[str, str]:
     raise TypeError(f"unsupported native default value: {value!r}")
 
 
-def flatten(value: dict[str, Any], prefix: tuple[str, ...] = ()) -> list[str]:
-    declarations: list[str] = []
+def flatten(value: Dict[str, Any], prefix: Tuple[str, ...] = ()) -> List[str]:
+    declarations = []  # type: List[str]
     for key, item in value.items():
         path = (*prefix, key)
         if isinstance(item, dict):
@@ -142,7 +144,7 @@ def flatten(value: dict[str, Any], prefix: tuple[str, ...] = ()) -> list[str]:
     return declarations
 
 
-def generate(native: dict[str, Any], driving: dict[str, Any]) -> str:
+def generate(native: Dict[str, Any], driving: Dict[str, Any]) -> str:
     values = {
         "native_schema_version": native["schema_version"],
         "driving_schema_version": driving["schema_version"],

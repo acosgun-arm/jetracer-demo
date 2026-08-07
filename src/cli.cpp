@@ -1,9 +1,9 @@
 #include "jetracer_sim/simulator.hpp"
+#include "jetracer_sim/filesystem_compat.hpp"
 
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -72,7 +72,7 @@ std::uint64_t sparse_hash(const cv::Mat& image) {
   return value;
 }
 
-void write_yolo(const std::filesystem::path& path, const Frame& frame) {
+void write_yolo(const jetracer_filesystem::path& path, const Frame& frame) {
   std::ofstream output(path);
   if (!output) throw std::runtime_error("cannot write " + path.string());
   output << std::fixed << std::setprecision(8);
@@ -330,7 +330,7 @@ int main(int argc, char** argv) try {
         argc >= 5 ? argv[4] : std::string(defaults::kCliDefaultProfile));
     Simulator simulator(std::move(scene), camera);
     const FramePtr frame = simulator.render_now();
-    const std::filesystem::path prefix(argv[3]);
+    const jetracer_filesystem::path prefix(argv[3]);
     cv::imwrite(prefix.string() + "-rgb.png", frame_to_bgr(*frame));
     cv::imwrite(prefix.string() + "-semantic.png", frame->semantic);
     cv::Mat instance_16;

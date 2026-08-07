@@ -66,6 +66,7 @@ class InferenceMetrics:
     ewma_end_to_end_latency_s: float
     effective_fps: float
     completed_at_s: float
+    captured_at_s: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,6 +300,7 @@ class SegmentationPipeline:
                 ewma_end_to_end_latency_s=state.ewma_end_to_end_s,
                 effective_fps=effective_fps,
                 completed_at_s=completed_at,
+                captured_at_s=captured_at_s,
             )
         return TimedSegmentation(prediction=prediction, metrics=metrics)
 

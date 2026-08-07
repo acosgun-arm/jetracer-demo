@@ -73,6 +73,7 @@
     }
     .model-name { margin: 3px 0 10px; font-size: 20px; font-weight: 650; }
     .model-list { display: grid; gap: 7px; }
+    .selector-group + .selector-group { margin-top: 14px; }
     .model-button,
     .control-button {
       border: 1px solid var(--border);
@@ -188,6 +189,27 @@
       gap: 7px;
       margin-top: 10px;
     }
+    .capture-panel { margin-top: 12px; }
+    .capture-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 10px;
+    }
+    .capture-grid label { color: var(--muted); font-size: 12px; }
+    .capture-grid select {
+      display: block;
+      width: 100%;
+      margin-top: 4px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel-raised);
+      color: var(--foreground);
+      padding: 8px;
+    }
+    .capture-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .capture-message { margin-top: 9px; color: var(--muted); }
+    .capture-message.error { color: var(--danger); }
     .status-row { margin-bottom: 8px; }
     .status {
       color: var(--cyan);
@@ -197,10 +219,54 @@
     }
     .status.paused { color: var(--amber); }
     .connection { color: var(--muted); font-size: 12px; }
+    .benchmark-explorer {
+      max-width: 1472px;
+      margin: 0 auto 14px;
+      padding: 0 14px;
+    }
+    .benchmark-explorer summary { cursor: pointer; font-size: 18px; font-weight: 650; }
+    .benchmark-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .benchmark-toolbar select {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-raised);
+      color: var(--foreground);
+      padding: 6px 8px;
+    }
+    .matrix-scroll { overflow-x: auto; }
+    .benchmark-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .benchmark-table th,
+    .benchmark-table td { border: 1px solid var(--border); padding: 7px; }
+    .benchmark-table th { background: var(--panel-raised); text-align: left; }
+    .benchmark-cell { min-width: 88px; text-align: center; cursor: pointer; }
+    .benchmark-cell.certified { background: color-mix(in srgb, var(--cyan) 25%, var(--panel)); }
+    .benchmark-cell.uncertified { background: color-mix(in srgb, var(--danger) 23%, var(--panel)); }
+    .benchmark-cell.missing,
+    .benchmark-cell.stale { background: color-mix(in srgb, var(--amber) 20%, var(--panel)); }
+    .benchmark-cell.unavailable { color: var(--muted); cursor: default; }
+    .benchmark-detail { margin-top: 13px; }
+    .candidate-strip { display: flex; flex-wrap: wrap; gap: 7px; margin: 9px 0; }
+    .candidate-chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: var(--panel-raised);
+    }
+    .candidate-chip.pass { border-color: var(--cyan); }
+    .candidate-chip.fail { border-color: var(--danger); }
+    .coverage-ready { color: var(--cyan); }
+    .coverage-blocked { color: var(--danger); }
     @media (max-width: 820px) {
       .dashboard { grid-template-columns: 1fr; }
       .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .model-panel { grid-row: span 2; }
+      .capture-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 560px) {
       .dashboard { padding: 8px; }
@@ -227,9 +293,30 @@
         <button class="control-button" data-key="]">+ Requested speed</button>
         <button id="pause-button" class="control-button" data-key="p">Pause</button>
         <button id="overlay-button" class="control-button active" data-key="l">Mask overlay</button>
+        <button id="feed-mode-button" class="control-button">Show raw feed</button>
         <button class="control-button" data-key="r">Reset</button>
         <button class="control-button" data-key=" ">Stop</button>
       </div>
+      <section id="capture-panel" class="panel capture-panel" hidden>
+        <div class="label-row">
+          <span class="kicker">Real-track dataset capture</span>
+          <span id="capture-mode" class="subvalue">—</span>
+        </div>
+        <div class="capture-grid">
+          <label>Split<select id="capture-split"></select></label>
+          <label>Lighting<select id="capture-lighting"></select></label>
+          <label>Track section<select id="capture-track-section"></select></label>
+          <label>Scene<select id="capture-scene"></select></label>
+        </div>
+        <div class="capture-actions">
+          <button id="snapshot-button" class="control-button">Save snapshot</button>
+          <button id="start-video-button" class="control-button">Start raw video</button>
+          <button id="stop-video-button" class="control-button" disabled>Stop video</button>
+        </div>
+        <div id="capture-message" class="capture-message">
+          Loading capture configuration…
+        </div>
+      </section>
     </section>
 
     <aside class="sidebar">
@@ -240,6 +327,30 @@
         <div id="model-list" class="model-list" role="group"
           aria-label="Vision model">
           <span class="subvalue">Loading model registry…</span>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Driving control selection">
+        <div class="selector-group">
+          <div class="kicker">Driving mode</div>
+          <div id="driving-mode-list" class="model-list" role="group"
+            aria-label="Driving mode">
+            <span class="subvalue">Loading driving modes…</span>
+          </div>
+        </div>
+        <div class="selector-group">
+          <div class="kicker">Control method</div>
+          <div id="control-method-list" class="model-list" role="group"
+            aria-label="Control method">
+            <span class="subvalue">Loading controllers…</span>
+          </div>
+        </div>
+        <div class="selector-group">
+          <div class="kicker">Racing line</div>
+          <div id="path-planner-list" class="model-list" role="group"
+            aria-label="Racing line">
+            <span class="subvalue">Loading racing lines…</span>
+          </div>
         </div>
       </section>
 
@@ -278,7 +389,9 @@
         </div>
         <div id="stop-status" class="reason" hidden>
           Stop controller: <span id="stop-state">—</span> · range
-          <span id="stop-range">—</span>
+          <span id="stop-range">—</span> · trigger
+          <span id="stop-trigger">—</span> · latency budget
+          <span id="stop-latency">—</span>
         </div>
         <div id="clip-benchmark-evidence" class="benchmark-evidence" hidden>
           <div class="evidence-card">
@@ -317,6 +430,9 @@
           <span id="requested-speed">—</span>
         </div>
         <div class="reason">Limiter: <span id="limit-reason">waiting for perception</span></div>
+        <div class="reason">
+          Certification: <span id="certification-status">waiting</span>
+        </div>
       </section>
 
       <section class="panel">
@@ -328,6 +444,24 @@
       </section>
     </aside>
   </main>
+
+  <section class="benchmark-explorer">
+    <details class="panel" open>
+      <summary>Speed certification benchmarks</summary>
+      <div class="benchmark-toolbar">
+        <span id="benchmark-coverage" class="subvalue">Loading benchmark catalog…</span>
+        <label>Track
+          <select id="benchmark-track-filter">
+            <option value="all">All tracks</option>
+          </select>
+        </label>
+      </div>
+      <div id="benchmark-matrix" class="matrix-scroll"></div>
+      <div id="benchmark-detail" class="benchmark-detail subvalue">
+        Select a matrix cell for candidate and track metrics.
+      </div>
+    </details>
+  </section>
 
   <script>
     let maximumFps = 250;
@@ -350,17 +484,128 @@
     }
 
     function wireButton(button) {
-      button.addEventListener('click', () => send(button.dataset.key));
+      button.addEventListener('click', () =>
+        send(button.dataset.action ?? button.dataset.key));
     }
 
     document.querySelectorAll('[data-key]').forEach(wireButton);
 
     window.addEventListener('keydown', event => {
+      if (event.target.matches('button, input, select, textarea')) return;
       if (accepted.has(event.key)) {
         event.preventDefault();
         send(event.key);
       }
     });
+
+    function setSelectOptions(selector, values) {
+      const select = document.querySelector(selector);
+      const previous = select.value;
+      select.replaceChildren();
+      values.forEach(value => select.add(new Option(
+        value.replaceAll('_', ' '), value)));
+      if ([...select.options].some(option => option.value === previous)) {
+        select.value = previous;
+      }
+    }
+
+    function captureMetadata(action) {
+      return {
+        action,
+        split: document.querySelector('#capture-split').value,
+        lighting_condition: document.querySelector('#capture-lighting').value,
+        track_section: document.querySelector('#capture-track-section').value,
+        scene_type: document.querySelector('#capture-scene').value
+      };
+    }
+
+    async function requestCapture(action) {
+      const message = document.querySelector('#capture-message');
+      try {
+        const response = await fetch('/capture', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(captureMetadata(action))
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? `HTTP ${response.status}`);
+        message.textContent = 'Capture request accepted…';
+        message.classList.remove('error');
+      } catch (error) {
+        message.textContent = error.message;
+        message.classList.add('error');
+      }
+    }
+
+    document.querySelector('#snapshot-button').addEventListener(
+      'click', () => requestCapture('snapshot'));
+    document.querySelector('#start-video-button').addEventListener(
+      'click', () => requestCapture('start_video'));
+    document.querySelector('#stop-video-button').addEventListener(
+      'click', () => requestCapture('stop_video'));
+
+    document.querySelector('#feed-mode-button').addEventListener('click', async () => {
+      const button = document.querySelector('#feed-mode-button');
+      const mode = button.classList.contains('active') ? 'processed' : 'raw';
+      try {
+        const response = await fetch(`/feed?mode=${mode}`, {method: 'POST'});
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      } catch (_) {}
+    });
+
+    let captureCatalogSignature = '';
+
+    function renderCapture(payload) {
+      const catalog = payload.catalog ?? {};
+      const panel = document.querySelector('#capture-panel');
+      panel.hidden = catalog.enabled !== true;
+      const raw = payload.feed_mode === 'raw';
+      const feedButton = document.querySelector('#feed-mode-button');
+      feedButton.classList.toggle('active', raw);
+      feedButton.textContent = raw ? 'Show processed feed' : 'Show raw feed';
+      if (panel.hidden) return;
+      const signature = JSON.stringify(catalog);
+      if (signature !== captureCatalogSignature) {
+        captureCatalogSignature = signature;
+        setSelectOptions('#capture-split', catalog.splits ?? []);
+        setSelectOptions(
+          '#capture-lighting', catalog.lighting_conditions ?? []);
+        setSelectOptions(
+          '#capture-track-section', catalog.track_sections ?? []);
+        setSelectOptions('#capture-scene', catalog.scene_types ?? []);
+        const mode = catalog.camera_mode ?? {};
+        document.querySelector('#capture-mode').textContent =
+          `${catalog.track_name ?? catalog.track_id} · ` +
+          `${catalog.camera_mode_id} · ${mode.width}×${mode.height} @ ` +
+          `${number(mode.fps, 0)} FPS · raw frames`;
+      }
+      const status = payload.status ?? {};
+      const recording = status.state === 'recording';
+      const finalizing = status.state === 'finalizing';
+      document.querySelector('#start-video-button').disabled =
+        recording || finalizing;
+      document.querySelector('#stop-video-button').disabled = !recording;
+      const message = document.querySelector('#capture-message');
+      const frameDetail = recording || finalizing
+        ? ` · written ${status.written_frames ?? 0} · queued ` +
+          `${status.queued_frames ?? 0} · dropped ${status.dropped_frames ?? 0}`
+        : '';
+      message.textContent = `${status.message ?? 'Ready'}${frameDetail}`;
+      message.classList.toggle('error', status.state === 'error');
+    }
+
+    async function pollCapture() {
+      try {
+        const response = await fetch('/capture', {cache: 'no-store'});
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        renderCapture(await response.json());
+      } catch (error) {
+        const message = document.querySelector('#capture-message');
+        message.textContent = 'Capture service disconnected';
+        message.classList.add('error');
+      }
+      window.setTimeout(pollCapture, 250);
+    }
 
     let modelCatalogSignature = '';
 
@@ -374,7 +619,7 @@
           const button = document.createElement('button');
           button.className = 'model-button';
           button.dataset.modelKey = String(model.key);
-          button.dataset.key = String(model.key);
+          button.dataset.action = `model:${model.key}`;
           button.setAttribute('aria-pressed', 'false');
           const fps = model.benchmark_fps == null
             ? 'not benchmarked'
@@ -393,8 +638,54 @@
         .textContent = `${maximumFps} FPS`;
     }
 
+    let controlCatalogSignature = '';
+    let pathCatalogSignature = '';
+    let modeCatalogSignature = '';
+
+    function renderSelectionCatalog(containerId, options, activeId, prefix) {
+      const signature = JSON.stringify(options);
+      const signatureKey = `${containerId}:${signature}`;
+      if (prefix === 'control' && signatureKey !== controlCatalogSignature) {
+        controlCatalogSignature = signatureKey;
+      } else if (prefix === 'path' && signatureKey !== pathCatalogSignature) {
+        pathCatalogSignature = signatureKey;
+      } else if (prefix === 'mode' && signatureKey !== modeCatalogSignature) {
+        modeCatalogSignature = signatureKey;
+      } else {
+        document.querySelectorAll(`#${containerId} .model-button`).forEach(button => {
+          const active = button.dataset.optionId === activeId;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        return;
+      }
+      const list = document.querySelector(`#${containerId}`);
+      list.replaceChildren();
+      options.forEach(option => {
+        const button = document.createElement('button');
+        button.className = 'model-button';
+        button.dataset.optionId = option.id;
+        button.dataset.action = `${prefix}:${option.id}`;
+        button.textContent = option.display_name;
+        const active = option.id === activeId;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+        wireButton(button);
+        list.append(button);
+      });
+    }
+
     function renderTelemetry(data) {
       renderModelCatalog(data.available_models, data.camera_target_fps);
+      renderSelectionCatalog(
+        'driving-mode-list', data.available_driving_modes ?? [],
+        data.active_driving_mode, 'mode');
+      renderSelectionCatalog(
+        'control-method-list', data.available_control_methods ?? [],
+        data.active_control_method_id, 'control');
+      renderSelectionCatalog(
+        'path-planner-list', data.available_path_planners ?? [],
+        data.active_path_planner_id, 'path');
       document.querySelector('#active-model-name').textContent =
         data.active_model_name;
       document.querySelector('#model-detail').textContent =
@@ -418,7 +709,7 @@
         data.benchmark_source == null
           ? 'none'
           : data.benchmark_source.replaceAll('_', ' ');
-      const detectorEnabled = data.detector_model_id != null;
+      const detectorEnabled = data.detector_active === true;
       document.querySelector('#detector-status').hidden = !detectorEnabled;
       document.querySelector('#stop-status').hidden = !detectorEnabled;
       if (detectorEnabled) {
@@ -440,6 +731,14 @@
           data.stop_range_m == null
             ? '—'
             : `${number(data.stop_range_m, 2)} m`;
+        document.querySelector('#stop-trigger').textContent =
+          data.stop_trigger_distance_m == null
+            ? '—'
+            : `${number(data.stop_trigger_distance_m, 2)} m`;
+        document.querySelector('#stop-latency').textContent =
+          data.stop_latency_budget_s == null
+            ? '—'
+            : `${number(data.stop_latency_budget_s * 1000, 1)} ms`;
       }
       const benchmarkDetails = data.benchmark_details ?? {};
       const processingRatio = benchmarkDetails.processing_ratio;
@@ -477,6 +776,11 @@
         `${number(data.requested_speed_mps, 2)} m/s`;
       document.querySelector('#limit-reason').textContent =
         data.speed_limit_reason.replaceAll('_', ' ');
+      const certificationStatus = document.querySelector('#certification-status');
+      certificationStatus.textContent = data.speed_certification_status
+        .replaceAll('_', ' ');
+      certificationStatus.style.color = data.speed_certification_authorized
+        ? 'var(--cyan)' : 'var(--danger)';
       document.querySelector('#speed-actual-fill').style.width =
         clampPercent(data.actual_speed_mps, maximumSpeed);
       document.querySelector('#speed-permitted-marker').style.left =
@@ -489,7 +793,7 @@
           `permitted ${number(data.permitted_speed_mps, 2)}`
       );
 
-      document.querySelectorAll('.model-button').forEach(button => {
+      document.querySelectorAll('#model-list .model-button').forEach(button => {
         const active = Number(button.dataset.modelKey) === data.active_model_key;
         button.classList.toggle('active', active);
         button.setAttribute('aria-pressed', String(active));
@@ -504,7 +808,9 @@
         'active', data.show_labels
       );
       document.querySelector('#connection').textContent =
-        `Camera ${number(data.measured_camera_fps, 1)} / ` +
+        `${data.camera_display_name ?? data.camera_profile_id} · ` +
+        `${data.camera_runtime_mode_id ?? 'configured mode'} · ` +
+        `${number(data.measured_camera_fps, 1)} / ` +
         `${number(data.camera_target_fps, 0)} FPS · dropped ` +
         data.replaced_pending_frames;
     }
@@ -520,7 +826,217 @@
       window.setTimeout(pollTelemetry, 100);
     }
 
+    let benchmarkPayload = null;
+    let selectedBenchmarkId = null;
+
+    function normalizedBenchmarkStatus(status) {
+      return status === 'already_certified' ? 'certified' : status;
+    }
+
+    function benchmarkLabel(value) {
+      return String(value ?? 'unknown').replaceAll('_', ' ').replaceAll('-', ' ');
+    }
+
+    function renderBenchmarkMatrix(payload) {
+      benchmarkPayload = payload;
+      const coverage = payload.coverage ?? {};
+      const coverageNode = document.querySelector('#benchmark-coverage');
+      if (payload.error) {
+        coverageNode.textContent = payload.error;
+        coverageNode.className = 'coverage-blocked';
+      } else {
+        const covered = coverage.covered_case_count ?? 0;
+        const expected = coverage.expected_case_count ?? 0;
+        coverageNode.textContent = coverage.ready
+          ? `Coverage current · ${covered}/${expected} combinations`
+          : `Coverage incomplete · ${covered}/${expected} · ` +
+            `${coverage.missing_case_count ?? 0} missing · ` +
+            `${coverage.stale_case_count ?? 0} stale`;
+        coverageNode.className = coverage.ready
+          ? 'coverage-ready' : 'coverage-blocked';
+      }
+
+      const casesById = new Map();
+      (payload.catalog?.cases ?? []).forEach(item =>
+        casesById.set(item.configuration_id, item));
+      (coverage.coverage ?? []).forEach(item => {
+        if (item.configuration_id && !casesById.has(item.configuration_id)) {
+          casesById.set(item.configuration_id, item);
+        }
+      });
+      const cases = [...casesById.values()];
+      const combinations = new Map();
+      cases.forEach(item => {
+        if (item.method_id && item.path_planner_id) {
+          combinations.set(
+            `${item.method_id}|${item.path_planner_id}`,
+            {method: item.method_id, path: item.path_planner_id});
+        }
+      });
+      const models = new Set(cases.map(item => item.model_id).filter(Boolean));
+      Object.keys(payload.catalog?.unavailable_models ?? {}).forEach(
+        model => models.add(model));
+      const table = document.createElement('table');
+      table.className = 'benchmark-table';
+      const header = document.createElement('tr');
+      const modelHeader = document.createElement('th');
+      modelHeader.textContent = 'Vision model';
+      header.append(modelHeader);
+      combinations.forEach(combo => {
+        const cell = document.createElement('th');
+        cell.textContent = `${benchmarkLabel(combo.method)} · ${benchmarkLabel(combo.path)}`;
+        header.append(cell);
+      });
+      const head = document.createElement('thead');
+      head.append(header);
+      table.append(head);
+      const body = document.createElement('tbody');
+      [...models].forEach(modelId => {
+        const row = document.createElement('tr');
+        const label = document.createElement('th');
+        label.textContent = modelId;
+        row.append(label);
+        combinations.forEach(combo => {
+          const item = cases.find(candidate =>
+            candidate.model_id === modelId &&
+            candidate.method_id === combo.method &&
+            candidate.path_planner_id === combo.path);
+          const cell = document.createElement('td');
+          const unavailableReason =
+            payload.catalog?.unavailable_models?.[modelId];
+          const status = normalizedBenchmarkStatus(
+            item?.status ?? (unavailableReason ? 'unavailable' : 'missing'));
+          cell.className = `benchmark-cell ${status}`;
+          cell.textContent = status === 'certified'
+            ? `${number(item?.deployment_max_speed_mps, 2)} m/s`
+            : status === 'uncertified'
+            ? 'FAILED'
+            : status.toUpperCase();
+          cell.title = unavailableReason ?? benchmarkLabel(status);
+          if (item?.configuration_id) {
+            cell.tabIndex = 0;
+            cell.addEventListener('click', () => {
+              selectedBenchmarkId = item.configuration_id;
+              renderBenchmarkDetail();
+            });
+            cell.addEventListener('keydown', event => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                cell.click();
+              }
+            });
+          }
+          row.append(cell);
+        });
+        body.append(row);
+      });
+      table.append(body);
+      document.querySelector('#benchmark-matrix').replaceChildren(table);
+      updateBenchmarkTrackFilter(cases);
+      renderBenchmarkDetail();
+    }
+
+    function updateBenchmarkTrackFilter(cases) {
+      const select = document.querySelector('#benchmark-track-filter');
+      const previous = select.value;
+      const tracks = new Set();
+      cases.forEach(item => (item.candidates ?? []).forEach(candidate =>
+        (candidate.tracks ?? []).forEach(track => tracks.add(track.track_id))));
+      select.replaceChildren(new Option('All tracks', 'all'));
+      [...tracks].sort().forEach(track =>
+        select.add(new Option(benchmarkLabel(track), track)));
+      select.value = [...select.options].some(option => option.value === previous)
+        ? previous : 'all';
+    }
+
+    function renderBenchmarkDetail() {
+      const detail = document.querySelector('#benchmark-detail');
+      if (!benchmarkPayload || !selectedBenchmarkId) return;
+      const item = (benchmarkPayload.catalog?.cases ?? []).find(
+        candidate => candidate.configuration_id === selectedBenchmarkId);
+      if (!item) {
+        detail.textContent = 'This combination has no completed benchmark report.';
+        return;
+      }
+      const heading = document.createElement('div');
+      heading.className = 'model-name';
+      heading.textContent = `${item.model_id} · ${benchmarkLabel(item.method_id)} · ` +
+        benchmarkLabel(item.path_planner_id);
+      const summary = document.createElement('div');
+      summary.textContent = `Status ${benchmarkLabel(item.status)} · certified ` +
+        `${number(item.certified_max_speed_mps, 3)} m/s · deployment ` +
+        `${number(item.deployment_max_speed_mps, 3)} m/s · first failure ` +
+        `${number(item.first_uncertified_speed_mps, 3)} m/s`;
+      const candidates = document.createElement('div');
+      candidates.className = 'candidate-strip';
+      (item.candidates ?? []).forEach(candidate => {
+        const chip = document.createElement('span');
+        chip.className = `candidate-chip ${candidate.certifiable ? 'pass' : 'fail'}`;
+        chip.textContent = `${number(candidate.speed_mps, 3)} m/s ` +
+          (candidate.certifiable ? 'PASS' : 'FAIL');
+        candidates.append(chip);
+      });
+      const table = document.createElement('table');
+      table.className = 'benchmark-table';
+      const columns = [
+        'Speed', 'Track', 'Pass', 'Off-road', 'Mean deviation',
+        'Max deviation', 'Average speed', 'Peak speed', 'Vision FPS'
+      ];
+      const header = document.createElement('tr');
+      columns.forEach(value => {
+        const cell = document.createElement('th');
+        cell.textContent = value;
+        header.append(cell);
+      });
+      const head = document.createElement('thead');
+      head.append(header);
+      table.append(head);
+      const body = document.createElement('tbody');
+      const selectedTrack = document.querySelector('#benchmark-track-filter').value;
+      (item.candidates ?? []).forEach(candidate =>
+        (candidate.tracks ?? [])
+          .filter(track => selectedTrack === 'all' || track.track_id === selectedTrack)
+          .forEach(track => {
+            const row = document.createElement('tr');
+            const values = [
+              number(candidate.speed_mps, 3), benchmarkLabel(track.track_id),
+              track.passed ? 'yes' : 'no', String(track.offroad_events),
+              number(track.mean_center_deviation_m, 3),
+              number(track.maximum_center_deviation_m, 3),
+              number(track.average_speed_mps, 3),
+              number(track.maximum_speed_mps, 3),
+              number(track.segmentation_completion_fps, 1)
+            ];
+            values.forEach(value => {
+              const cell = document.createElement('td');
+              cell.textContent = value;
+              row.append(cell);
+            });
+            body.append(row);
+          }));
+      table.append(body);
+      detail.replaceChildren(heading, summary, candidates, table);
+    }
+
+    document.querySelector('#benchmark-track-filter').addEventListener(
+      'change', renderBenchmarkDetail);
+
+    async function pollBenchmarks() {
+      try {
+        const response = await fetch('/benchmarks', {cache: 'no-store'});
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        renderBenchmarkMatrix(await response.json());
+      } catch (error) {
+        const node = document.querySelector('#benchmark-coverage');
+        node.textContent = 'Benchmark catalog unavailable';
+        node.className = 'coverage-blocked';
+      }
+      window.setTimeout(pollBenchmarks, 5000);
+    }
+
     pollTelemetry();
+    pollBenchmarks();
+    pollCapture();
   </script>
 </body>
 </html>

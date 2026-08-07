@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "profiles": [
+    {
+      "profile_id": "sim-stress-yolo11n-cpu-v1",
+      "platform_id": "sim",
+      "camera_profile_id": "stress",
+      "detector_model_id": "yolo11n-coco-onnx-fp32",
+      "benchmark_source": "benchmarks/off_the_shelf_model_benchmarks.json",
+      "calibration_status": "provisional_simulator",
+      "p99_inference_latency_s": 0.02164073913823814,
+      "maximum_frame_interval_s": 0.03333333333333333,
+      "p99_first_detection_additional_s": 0.005,
+      "maximum_submission_fps": 30.0,
+      "control_latency_s": 0.005,
+      "actuator_latency_s": 0.12,
+      "maximum_approach_acceleration_mps2": 2.0,
+      "range_safety_margin_m": 0.2741557504362931,
+      "reliable_detection_distance_m": 1.8
+    }
+  ]
+}

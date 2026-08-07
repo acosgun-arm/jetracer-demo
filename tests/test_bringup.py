@@ -77,6 +77,7 @@ def test_stages_cannot_be_skipped_and_active_limits_are_exposed() -> None:
                 },
                 "state": {"validated_for_motion": True},
                 "models": {"ready": True},
+                "speed_certification": {"ready": True, "status": "matched"},
                 "storage": {"free_bytes": 10_000_000_000},
                 "power": {"observed": True},
                 "thermal": {"maximum_temperature_c": 40.0},

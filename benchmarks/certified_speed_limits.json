@@ -1,0 +1,285 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "configuration_id": "speed-6310cfb48adaac76",
+      "selection": {
+        "platform_id": "sim",
+        "perception": {
+          "mode": "actual",
+          "model_key": 4,
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "backend": "coreml-native",
+          "precision": "fp16",
+          "compression": "float16"
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "speed_planner_id": "off",
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "99257ebbc54ce8c2b9100d0c9370bd77b8a7d4d88016281dd04adb7c61ba5cc2",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "d120c36da8e16a679f4f26564e6d1f27061e13533eaae40ed3e8dfe0f2324337",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        }
+      },
+      "certified_max_speed_mps": 1.1875,
+      "deployment_max_speed_mps": 0.9500000000000001,
+      "simulated_to_real_speed_factor": 0.8,
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ],
+      "laps_per_trial": 3,
+      "trials_per_speed": 2,
+      "certification_status": "bounded",
+      "report_path": "/Users/akacos01/jetracer-demo/build/benchmarks/full-speed-matrix/case-021-speed-6310cfb48adaac76.json",
+      "recorded_at_utc": "2026-08-02T17:33:29.436632Z",
+      "configuration_fingerprints": {
+        "algorithm": "sha256-canonical-json-v1",
+        "files": {
+          "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+          "driving_benchmark": "99257ebbc54ce8c2b9100d0c9370bd77b8a7d4d88016281dd04adb7c61ba5cc2",
+          "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+          "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+          "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+          "runtime": "d120c36da8e16a679f4f26564e6d1f27061e13533eaae40ed3e8dfe0f2324337",
+          "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+        }
+      }
+    },
+    {
+      "configuration_id": "speed-a5b3eb0ce85b63e7",
+      "selection": {
+        "platform_id": "sim",
+        "perception": {
+          "mode": "actual",
+          "model_key": 4,
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "backend": "coreml-native",
+          "precision": "fp16",
+          "compression": "float16"
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "speed_planner_id": "off",
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "8ca9e23af2d46a3d084b5a7380dc5e7aa228799e4262bbe08b43d4e7418f8c6b",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        }
+      },
+      "certified_max_speed_mps": 2.425,
+      "deployment_max_speed_mps": 1.94,
+      "simulated_to_real_speed_factor": 0.8,
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ],
+      "laps_per_trial": 1,
+      "trials_per_speed": 1,
+      "certification_status": "bounded",
+      "report_path": "/Users/akacos01/jetracer-demo/build/benchmarks/current-speed-certificate-2026-08-03.json",
+      "recorded_at_utc": "2026-08-03T05:43:51.058405Z",
+      "configuration_fingerprints": {
+        "algorithm": "sha256-canonical-json-v1",
+        "files": {
+          "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+          "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+          "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+          "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+          "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+          "runtime": "8ca9e23af2d46a3d084b5a7380dc5e7aa228799e4262bbe08b43d4e7418f8c6b",
+          "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+        }
+      }
+    },
+    {
+      "configuration_id": "speed-b0fb98e7f7f8fde9",
+      "selection": {
+        "platform_id": "sim",
+        "perception": {
+          "mode": "actual",
+          "model_key": 4,
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "backend": "coreml-native",
+          "precision": "fp16",
+          "compression": "float16"
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "centerline",
+        "speed_planner_id": "off",
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "99257ebbc54ce8c2b9100d0c9370bd77b8a7d4d88016281dd04adb7c61ba5cc2",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "d120c36da8e16a679f4f26564e6d1f27061e13533eaae40ed3e8dfe0f2324337",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        }
+      },
+      "certified_max_speed_mps": 1.0,
+      "deployment_max_speed_mps": 0.8,
+      "simulated_to_real_speed_factor": 0.8,
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ],
+      "laps_per_trial": 3,
+      "trials_per_speed": 2,
+      "certification_status": "bounded",
+      "report_path": "/Users/akacos01/jetracer-demo/build/benchmarks/full-speed-matrix/case-019-speed-b0fb98e7f7f8fde9.json",
+      "recorded_at_utc": "2026-08-02T16:46:53.774231Z",
+      "configuration_fingerprints": {
+        "algorithm": "sha256-canonical-json-v1",
+        "files": {
+          "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+          "driving_benchmark": "99257ebbc54ce8c2b9100d0c9370bd77b8a7d4d88016281dd04adb7c61ba5cc2",
+          "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+          "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+          "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+          "runtime": "d120c36da8e16a679f4f26564e6d1f27061e13533eaae40ed3e8dfe0f2324337",
+          "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+        }
+      }
+    },
+    {
+      "configuration_id": "speed-cc2a2ad5f1b475c8",
+      "selection": {
+        "platform_id": "sim",
+        "perception": {
+          "mode": "actual",
+          "model_key": 4,
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "backend": "coreml-native",
+          "precision": "fp16",
+          "compression": "float16"
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "local-racing-line",
+        "speed_planner_id": "off",
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "99257ebbc54ce8c2b9100d0c9370bd77b8a7d4d88016281dd04adb7c61ba5cc2",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "d120c36da8e16a679f4f26564e6d1f27061e13533eaae40ed3e8dfe0f2324337",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        }
+      },
+      "certified_max_speed_mps": 1.09375,
+      "deployment_max_speed_mps": 0.875,
+      "simulated_to_real_speed_factor": 0.8,
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ],
+      "laps_per_trial": 3,
+      "trials_per_speed": 2,
+      "certification_status": "bounded",
+      "report_path": "/Users/akacos01/jetracer-demo/build/benchmarks/full-speed-matrix/case-020-speed-cc2a2ad5f1b475c8.json",
+      "recorded_at_utc": "2026-08-02T17:11:29.294362Z",
+      "configuration_fingerprints": {
+        "algorithm": "sha256-canonical-json-v1",
+        "files": {
+          "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+          "driving_benchmark": "99257ebbc54ce8c2b9100d0c9370bd77b8a7d4d88016281dd04adb7c61ba5cc2",
+          "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+          "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+          "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+          "runtime": "d120c36da8e16a679f4f26564e6d1f27061e13533eaae40ed3e8dfe0f2324337",
+          "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+        }
+      }
+    },
+    {
+      "configuration_id": "speed-d5a42ac6bd893839",
+      "selection": {
+        "platform_id": "sim",
+        "perception": {
+          "mode": "actual",
+          "model_key": 4,
+          "model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+          "backend": "coreml-native",
+          "precision": "fp16",
+          "compression": "float16"
+        },
+        "control_method_id": "pure_pursuit",
+        "path_filter_id": "off",
+        "path_planner_id": "minimum-time-racing-line",
+        "speed_planner_id": "off",
+        "configuration_fingerprints": {
+          "algorithm": "sha256-canonical-json-v1",
+          "files": {
+            "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+            "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+            "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+            "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+            "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+            "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+            "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+          }
+        }
+      },
+      "certified_max_speed_mps": 2.375,
+      "deployment_max_speed_mps": 1.9000000000000001,
+      "simulated_to_real_speed_factor": 0.8,
+      "track_ids": [
+        "waveshare_3x2",
+        "open_oval",
+        "technical_chicane",
+        "tight_hairpin"
+      ],
+      "laps_per_trial": 10,
+      "trials_per_speed": 1,
+      "certification_status": "bounded",
+      "report_path": "/Users/akacos01/jetracer-demo/build/benchmarks/current-robust-live-speed-certificate-40p625-2026-08-03.json",
+      "recorded_at_utc": "2026-08-03T07:52:07.832891Z",
+      "configuration_fingerprints": {
+        "algorithm": "sha256-canonical-json-v1",
+        "files": {
+          "camera_profiles": "806f0092734d0c52c489707d7c87e73110a20b192ffb9d4baa7cc849b996dffe",
+          "driving_benchmark": "59a5232cd5a03b0be90c3ecd3d58f0aec83592c17bbd59a2636b47e91c48fbc9",
+          "model_benchmarks": "cbf5ade1cb9c8649a0cc6815f94289caefca577e7924aed4548cd9d23b6d8a66",
+          "native_simulator": "62c9750968c36600a958c06bb6e9a061cb80fd4414af0efd1af0e07d3e12dbef",
+          "platform": "d7a23e6c43e4e3507a73870c512e26baf3a4ffb030478071cfa27f1fed49c61d",
+          "runtime": "4cfda7fc8d26a0f16239ec158e27db20b78e5d51e108705cb8046885b5ad690d",
+          "segmentation_models": "811856514f44fc3e1b02289f4e147de3d8531f15491a9c100fa6b0015ce9234f"
+        }
+      }
+    }
+  ]
+}

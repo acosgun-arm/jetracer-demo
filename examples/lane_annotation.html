@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JetRacer lane calibration</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b0e14; --panel:#171d28; --line:#344057; --text:#f1f5fb; --muted:#9aa8bc; --orange:#ff9f1c; --cyan:#4fd1c5; --red:#ff6b6b; }
+    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); font:14px/1.4 system-ui,sans-serif; }
+    main { max-width:1500px; margin:auto; padding:14px; display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:14px; }
+    section,aside { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px; }
+    canvas { display:block; width:100%; height:auto; background:#000; border-radius:7px; cursor:crosshair; }
+    button { color:var(--text); background:#222b3a; border:1px solid var(--line); border-radius:6px; padding:8px 10px; cursor:pointer; }
+    button.active { border-color:var(--orange); background:#3a2b18; } .modes,.actions,.nav { display:flex; flex-wrap:wrap; gap:7px; margin:10px 0; }
+    .status { color:var(--muted); } .good { color:var(--cyan); } .error { color:var(--red); }
+    .legend span { display:block; margin:5px 0; } .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+    progress { width:100%; } h1 { font-size:19px; margin:0 0 8px; } h2 { font-size:15px; margin:16px 0 6px; }
+    @media(max-width:850px){main{grid-template-columns:1fr}}
+  </style>
+</head>
+<body><main>
+  <section><canvas id="canvas"></canvas><div class="nav"><button id="previous">← Previous</button><button id="next">Next →</button><span id="position" class="status"></span></div></section>
+  <aside>
+    <h1>Lane calibration</h1><div id="identity" class="status">Loading…</div><progress id="progress" value="0" max="1"></progress><div class="actions"><button id="all-review" class="active">All frames</button><button id="uncertain-review">Uncertain first</button></div><div id="uncertainty" class="status"></div>
+    <h2>Drawing mode</h2><div class="modes">
+      <button data-mode="lane_points">Lane pixels (1)</button><button data-mode="background_points">Background (2)</button>
+      <button data-mode="left_polyline">Left line (3)</button><button data-mode="right_polyline">Right line (4)</button>
+      <button data-mode="road_polygon">Road polygon (5)</button>
+    </div>
+    <div class="legend"><span><i class="dot" style="background:#ff9f1c"></i>lane sample</span><span><i class="dot" style="background:#ff6b6b"></i>background sample</span><span><i class="dot" style="background:#4fd1c5"></i>left boundary</span><span><i class="dot" style="background:#52a8ff"></i>right boundary</span></div>
+    <div class="actions"><button id="undo">Undo</button><button id="clear">Clear frame</button><button id="save">Save annotated</button><button id="skip">Skip</button></div>
+    <div id="message" class="status">Click representative pixels; coordinates are saved normalized.</div>
+    <h2>Safety</h2><div class="status">This page edits extracted images only. It does not open the camera, simulator, or actuators.</div>
+  </aside>
+</main><script>
+const fields=['lane_points','background_points','left_polyline','right_polyline','road_polygon']; const colors={lane_points:'#ff9f1c',background_points:'#ff6b6b',left_polyline:'#4fd1c5',right_polyline:'#52a8ff',road_polygon:'#d4e157'};
+let session,allFrames,frames,index=0,mode='lane_points',image=new Image(),current,reviewById={};
+const canvas=document.querySelector('#canvas'),ctx=canvas.getContext('2d'),message=document.querySelector('#message');
+function blank(){return{status:'pending',lane_points:[],background_points:[],left_polyline:[],right_polyline:[],road_polygon:[]}}
+async function load(){session=await fetch('/api/session').then(r=>r.json());allFrames=session.workspace.frames;frames=allFrames;reviewById=Object.fromEntries(session.uncertainty_review.map(x=>[x.frame_id,x]));document.querySelector('#identity').textContent=`${session.workspace.track_profile_id} · ${session.workspace.camera_profile_id}`;show(0)}
+function show(next){index=Math.max(0,Math.min(frames.length-1,next));const f=frames[index];current=structuredClone(session.annotations.frames[f.frame_id]??blank());for(const field of fields)current[field]??=[];image.onload=draw;image.src='/'+f.path;document.querySelector('#position').textContent=`${index+1} / ${frames.length} · ${f.timestamp_s.toFixed(2)} s · ${current.status}`;const review=reviewById[f.frame_id];document.querySelector('#uncertainty').textContent=review?`Uncertainty ${review.score.toFixed(3)} · ${review.reasons.join(', ')||'no dominant reason'}`:'';updateProgress()}
+function draw(){canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;ctx.drawImage(image,0,0);ctx.lineWidth=Math.max(2,canvas.width/500);for(const field of fields){const pts=current[field]??[];ctx.strokeStyle=colors[field];ctx.fillStyle=colors[field];if((field.includes('polyline')||field==='road_polygon')&&pts.length){ctx.beginPath();pts.forEach((p,i)=>{const x=p[0]*canvas.width,y=p[1]*canvas.height;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});if(field==='road_polygon'&&pts.length>=3){ctx.closePath();ctx.save();ctx.globalAlpha=.18;ctx.fill();ctx.restore()}ctx.stroke()}for(const p of pts){ctx.beginPath();ctx.arc(p[0]*canvas.width,p[1]*canvas.height,Math.max(4,canvas.width/300),0,Math.PI*2);ctx.fill()}}}
+canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect();current[mode].push([(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]);draw()});
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b))});document.querySelector('[data-mode]').click();
+document.querySelector('#previous').onclick=()=>show(index-1);document.querySelector('#next').onclick=()=>show(index+1);document.querySelector('#undo').onclick=()=>{current[mode].pop();draw()};document.querySelector('#clear').onclick=()=>{current=blank();draw()};
+async function save(status){current.status=status;const id=frames[index].frame_id;const r=await fetch('/api/annotations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({frame_id:id,annotation:current})});const result=await r.json();message.textContent=result.saved?`Saved ${id}`:result.error;message.className=result.saved?'status good':'status error';if(result.saved){session.annotations.frames[id]=structuredClone(current);updateProgress();if(index+1<frames.length)show(index+1)}}
+document.querySelector('#save').onclick=()=>save('annotated');document.querySelector('#skip').onclick=()=>save('skipped');
+document.querySelector('#all-review').onclick=()=>setReview(false);document.querySelector('#uncertain-review').onclick=()=>setReview(true);function setReview(uncertain){const queue=session.uncertainty_review.filter(r=>r.status==='pending'||r.status==='proposed');frames=uncertain?queue.map(r=>allFrames.find(f=>f.frame_id===r.frame_id)).filter(Boolean):allFrames;if(!frames.length){frames=allFrames;message.textContent='No unreviewed uncertain frames remain.'}document.querySelector('#all-review').classList.toggle('active',!uncertain);document.querySelector('#uncertain-review').classList.toggle('active',uncertain);show(0)}
+function updateProgress(){const done=Object.values(session.annotations.frames).filter(x=>x.status==='annotated'||x.status==='skipped').length;document.querySelector('#progress').value=done/Math.max(1,frames.length)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1);if('12345'.includes(e.key)){mode=fields[Number(e.key)-1];document.querySelector(`[data-mode="${mode}"]`).click()}});load().catch(e=>{message.textContent=e;message.className='status error'});
+</script></body></html>

@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-07",
+  "clip_id": "waveshare_3x2-elp-20260801-214642",
+  "frames": 1200,
+  "source_fps": 120.00048,
+  "actuator_mode": "disabled",
+  "actuators_accessed": false,
+  "macos": {
+    "tracking_fraction": 0.545,
+    "zero_speed_fraction": 0.455,
+    "mean_confidence": 0.190389,
+    "mean_estimated_speed_mps": 0.21514,
+    "maximum_absolute_steering_rad": 0.231873
+  },
+  "jetson_nano": {
+    "wall_time_s": 40,
+    "tracking_fraction": 0.545,
+    "zero_speed_fraction": 0.455,
+    "mean_confidence": 0.190097,
+    "mean_estimated_speed_mps": 0.215583,
+    "maximum_absolute_steering_rad": 0.234253
+  },
+  "cross_platform_parity": {
+    "reason_match_fraction": 0.9983333333,
+    "mean_absolute_confidence_difference": 0.0007633583,
+    "mean_absolute_steering_difference_rad": 0.0005287467,
+    "maximum_absolute_steering_difference_rad": 0.034198,
+    "actuator_write_attempts": 0
+  },
+  "python_controller_comparison": {
+    "compared_tracking_frames": 654,
+    "steering_direction_agreement": 0.998470948,
+    "mean_absolute_steering_difference_rad": 0.01802463,
+    "p95_absolute_steering_difference_rad": 0.06927136,
+    "maximum_absolute_steering_difference_rad": 0.18548557,
+    "note": "The Python reference extracts a scanline center from the fitted mask; the native controller consumes the fitter's normalized polynomial path directly."
+  },
+  "limitations": [
+    "The clip and calibration are synthetic and do not validate the physical camera mount.",
+    "OpenCV software video decode determines replay wall time; it is not the 200 Hz live GPU transport benchmark.",
+    "Low-confidence frames deliberately request zero speed."
+  ]
+}

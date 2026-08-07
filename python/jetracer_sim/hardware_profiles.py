@@ -213,6 +213,7 @@ def _parse_camera_profile(value: Any) -> PhysicalCameraProfile:
     mode.validate()
     thresholds.validate()
     _validate_geometry(profile.geometry)
+    _validate_mount(profile.mount)
     return profile
 
 
@@ -250,6 +251,39 @@ def _validate_geometry(geometry: Mapping[str, Any]) -> None:
             raise ValueError("calibrated camera requires calibration image size")
         if rms is None or float(rms) <= 0.0:
             raise ValueError("calibrated camera requires positive RMS error")
+
+
+def _validate_mount(mount: Mapping[str, Any]) -> None:
+    status = mount.get("status")
+    if status not in {"unmeasured", "measured"}:
+        raise ValueError("camera mount status must be unmeasured or measured")
+    names = (
+        "x_m",
+        "y_m",
+        "z_m",
+        "roll_rad",
+        "pitch_down_rad",
+        "yaw_rad",
+    )
+    values = {name: mount.get(name) for name in names}
+    if status == "measured" and any(value is None for value in values.values()):
+        raise ValueError("measured camera mount requires a complete transform")
+    for name, value in values.items():
+        if value is None:
+            continue
+        try:
+            finite = isfinite(float(value))
+        except (TypeError, ValueError) as error:
+            raise ValueError(f"camera mount {name} must be numeric") from error
+        if not finite:
+            raise ValueError(f"camera mount {name} must be finite")
+    if values["z_m"] is not None:
+        try:
+            valid_height = float(values["z_m"]) > 0.0
+        except (TypeError, ValueError) as error:
+            raise ValueError("camera mount height must be numeric") from error
+        if not valid_height:
+            raise ValueError("camera mount height must be positive")
 
 
 def evaluate_camera_measurement(

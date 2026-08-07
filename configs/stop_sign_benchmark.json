@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "screening_fractions": [0.9, 1.0, 1.1],
+  "screening_laps": 1,
+  "screening_trials_per_speed": 1,
+  "certification_laps": 2,
+  "certification_trials": 2,
+  "stop_after_first_failure": true,
+  "minimum_peak_speed_fraction": 0.9,
+  "simulated_to_real_speed_factor": 0.8
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "default_profile_id": "waveshare",
+  "profiles": {
+    "waveshare": {
+      "display_name": "Waveshare 3 x 2 m mat",
+      "track_id": "waveshare_3x2",
+      "manifest": "../datasets/real_track/manifest.json",
+      "surface": "printed_plastic_mat",
+      "geometry_status": "physically_measured_and_artwork_fitted",
+      "lane_marking": {
+        "boundary_colour": "orange",
+        "boundary_width_m": 0.037125,
+        "road_width_m": 0.339,
+        "centre_marking": "white_dashes"
+      }
+    },
+    "floor": {
+      "display_name": "Floor sticker track",
+      "track_id": "floor_v1",
+      "manifest": "../datasets/real_tracks/floor/manifest.json",
+      "surface": "floor_with_removable_stickers",
+      "geometry_status": "awaiting_design_and_measurement",
+      "lane_marking": {
+        "boundary_colour": "configurable",
+        "boundary_width_m": null,
+        "road_width_m": null,
+        "centre_marking": "configurable"
+      }
+    }
+  }
+}

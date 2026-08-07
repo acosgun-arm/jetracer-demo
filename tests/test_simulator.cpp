@@ -1,7 +1,7 @@
 #include "jetracer_sim/simulator.hpp"
+#include "jetracer_sim/filesystem_compat.hpp"
 
 #include <cmath>
-#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -30,9 +30,9 @@ void test_profiles() {
 
 void test_bicycle() {
   VehicleConfig config;
-  check(std::abs(config.body_length_m() - 0.30) < 1e-12,
+  check(std::abs(config.body_length_m() - 0.2566875) < 1e-12,
         "JetRacer body length");
-  check(std::abs(config.body_width_m - 0.19) < 1e-12,
+  check(std::abs(config.body_width_m - 0.14) < 1e-12,
         "JetRacer body width");
   check(config.minimum_turn_radius_m() > config.wheelbase_m,
         "finite bicycle turning radius");
@@ -58,7 +58,7 @@ void test_scene_replay() {
         "deterministic centreline coordinates");
   check(first.objects.size() == second.objects.size(), "deterministic objects");
 
-  const auto path = std::filesystem::temp_directory_path() /
+  const auto path = jetracer_filesystem::temp_directory_path() /
                     "jetracer-sim-scene-test.json";
   first.save(path.string());
   Scene loaded = Scene::load(path.string());
@@ -69,8 +69,10 @@ void test_scene_replay() {
         "scene object round trip");
   check(std::abs(loaded.vehicle.body_width_m - first.vehicle.body_width_m) < 1e-12,
         "vehicle footprint round trip");
+  check(loaded.camera.mount_provisional == first.camera.mount_provisional,
+        "camera mount status round trip");
   std::error_code ignored;
-  std::filesystem::remove(path, ignored);
+  jetracer_filesystem::remove(path, ignored);
 }
 
 void test_render_and_cadence() {
@@ -130,6 +132,38 @@ void test_render_and_cadence() {
         "second batched timestamp");
 }
 
+void test_cylinder_rendering() {
+  SceneConfig config;
+  config.seed = 17;
+  config.obstacle_count = 0;
+  config.stop_sign_count = 0;
+  Scene scene = Scene::generate(config);
+  SceneObject cylinder;
+  cylinder.instance_id = 1;
+  cylinder.type = ObjectType::Cylinder;
+  cylinder.semantic_class = SemanticClass::Obstacle;
+  cylinder.position = scene.centerline.at(12);
+  cylinder.width_m = 0.06;
+  cylinder.depth_m = 0.06;
+  cylinder.height_m = 0.20;
+  cylinder.radial_segments = 24;
+  cylinder.bgr = {220, 30, 220};
+  scene.objects = {cylinder};
+  scene.validate();
+
+  CameraProfile camera = CameraProfile::stress_720p_200();
+  camera.width = 320;
+  camera.height = 180;
+  camera.apply_nominal_intrinsics();
+  Simulator simulator(scene, camera);
+  const FramePtr frame = simulator.render_now();
+  check(cv::countNonZero(frame->instance == 1) > 0,
+        "cylinder produces instance pixels");
+  check(cv::countNonZero(frame->semantic ==
+                         static_cast<int>(SemanticClass::Obstacle)) > 0,
+        "cylinder produces obstacle semantics");
+}
+
 }  // namespace
 
 int main() {
@@ -138,6 +172,7 @@ int main() {
     test_bicycle();
     test_scene_replay();
     test_render_and_cadence();
+    test_cylinder_rendering();
   } catch (const std::exception& error) {
     std::cerr << "unexpected exception: " << error.what() << '\n';
     return 2;

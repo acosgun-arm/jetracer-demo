@@ -152,6 +152,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         platform_configuration.benchmark_registry_path,
         deployment_policy,
         sim.collect_runtime_capabilities(deployment_policy),
+        detector_configuration_path=(
+            platform_configuration.detector_config_path
+        ),
+    )
+    speed_certification = sim.evaluate_platform_speed_certification(
+        platform_configuration
     )
     storage_path = Path(str(configuration["storage"]["path"]))
     if not storage_path.is_absolute():
@@ -179,6 +185,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "minimum_confidence": state.minimum_confidence,
         },
         "models": deployment.to_dict(),
+        "speed_certification": speed_certification.to_dict(),
         "storage": {
             "path": str(storage_path.resolve()),
             "free_bytes": disk.free,

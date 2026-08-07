@@ -1,4 +1,5 @@
 #include "jetracer_sim/simulator.hpp"
+#include "color_lane_native.hpp"
 #ifdef __APPLE__
 #include "jetracer_sim/coreml_segmentation.hpp"
 #endif
@@ -11,6 +12,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <opencv2/imgproc.hpp>
 
 namespace py = pybind11;
 using namespace jetracer::sim;
@@ -48,6 +50,48 @@ py::array bgr_copy(const Frame& frame) {
 PYBIND11_MODULE(_native, module) {
   module.doc() = "Native JetRacer high-rate camera simulator";
   module.attr("SCENE_SCHEMA_VERSION") = kSceneSchemaVersion;
+
+  py::class_<ColorLaneNativeProcessor>(module, "NativeColorLaneProcessor")
+      .def(py::init([](const std::string& profile_path) {
+        return std::make_unique<ColorLaneNativeProcessor>(
+            load_color_lane_native_config(profile_path));
+      }))
+      .def("infer", [](ColorLaneNativeProcessor& processor,
+                       py::array_t<std::uint8_t,
+                                   py::array::c_style | py::array::forcecast>
+                           image) {
+        const py::buffer_info input = image.request();
+        if (input.ndim != 3 || input.shape[2] != 3) {
+          throw std::invalid_argument(
+              "native color-lane input must be an HxWx3 uint8 array");
+        }
+        ColorLaneNativeResult result;
+        cv::Mat resized;
+        {
+          cv::Mat source(static_cast<int>(input.shape[0]),
+                         static_cast<int>(input.shape[1]), CV_8UC3, input.ptr,
+                         static_cast<std::size_t>(input.strides[0]));
+          py::gil_scoped_release release;
+          result = processor.process(source);
+          cv::resize(result.labels, resized,
+                     cv::Size(static_cast<int>(input.shape[1]),
+                              static_cast<int>(input.shape[0])),
+                     0.0, 0.0, cv::INTER_NEAREST);
+        }
+        py::array_t<std::uint8_t> labels(
+            {static_cast<py::ssize_t>(resized.rows),
+             static_cast<py::ssize_t>(resized.cols)});
+        std::memcpy(labels.mutable_data(), resized.data,
+                    resized.total() * resized.elemSize());
+        py::list path;
+        for (const cv::Point2f& point : result.center_path_normalized) {
+          path.append(py::make_tuple(point.x, point.y));
+        }
+        return py::make_tuple(labels, result.confidence, result.observed_rows,
+                              result.left_inlier_fraction,
+                              result.right_inlier_fraction,
+                              path, result.birdseye_applied);
+      });
 
 #ifdef __APPLE__
   module.attr("COREML_NATIVE_AVAILABLE") = true;
@@ -89,6 +133,14 @@ PYBIND11_MODULE(_native, module) {
 #else
   module.attr("COREML_NATIVE_AVAILABLE") = false;
 #endif
+  module.attr("ROAD_SURFACE_INSTANCE_ID") =
+      defaults::kRendererGroundInstanceIdsDrivableSurface;
+  module.attr("ROAD_LEFT_BOUNDARY_INSTANCE_ID") =
+      defaults::kRendererGroundInstanceIdsLeftBoundary;
+  module.attr("ROAD_RIGHT_BOUNDARY_INSTANCE_ID") =
+      defaults::kRendererGroundInstanceIdsRightBoundary;
+  module.attr("ROAD_CENTER_DASH_INSTANCE_ID") =
+      defaults::kRendererGroundInstanceIdsCenterDash;
 
   py::enum_<LensModel>(module, "LensModel")
       .value("BROWN_CONRADY", LensModel::BrownConrady)
@@ -103,10 +155,13 @@ PYBIND11_MODULE(_native, module) {
       .value("DRIVABLE_SURFACE", SemanticClass::DrivableSurface)
       .value("LANE_MARKING", SemanticClass::LaneMarking)
       .value("STOP_SIGN", SemanticClass::StopSign)
-      .value("OBSTACLE", SemanticClass::Obstacle);
+      .value("OBSTACLE", SemanticClass::Obstacle)
+      .value("CENTER_MARKING", SemanticClass::CenterMarking);
   py::enum_<ObjectType>(module, "ObjectType")
       .value("BOX", ObjectType::Box)
-      .value("STOP_SIGN", ObjectType::StopSign);
+      .value("CYLINDER", ObjectType::Cylinder)
+      .value("STOP_SIGN", ObjectType::StopSign)
+      .value("BILLBOARD", ObjectType::Billboard);
 
   py::class_<Point2>(module, "Point2")
       .def(py::init<>())
@@ -168,6 +223,7 @@ PYBIND11_MODULE(_native, module) {
       .def_readwrite("mount_pitch_down_rad",
                      &CameraProfile::mount_pitch_down_rad)
       .def_readwrite("mount_yaw_rad", &CameraProfile::mount_yaw_rad)
+      .def_readwrite("mount_provisional", &CameraProfile::mount_provisional)
       .def_readwrite("exposure_s", &CameraProfile::exposure_s)
       .def_readwrite("rolling_readout_s", &CameraProfile::rolling_readout_s)
       .def_readwrite("provisional", &CameraProfile::provisional)
@@ -210,6 +266,10 @@ PYBIND11_MODULE(_native, module) {
       .def_readwrite("width_m", &SceneObject::width_m)
       .def_readwrite("depth_m", &SceneObject::depth_m)
       .def_readwrite("height_m", &SceneObject::height_m)
+      .def_readwrite("collision_width_m", &SceneObject::collision_width_m)
+      .def_readwrite("collision_depth_m", &SceneObject::collision_depth_m)
+      .def_readwrite("radial_segments", &SceneObject::radial_segments)
+      .def_readwrite("texture_path", &SceneObject::texture_path)
       .def_readwrite("bgr", &SceneObject::bgr);
   py::class_<Scene>(module, "Scene")
       .def(py::init<>())
@@ -236,6 +296,8 @@ PYBIND11_MODULE(_native, module) {
       .def_readonly("bbox_xyxy", &Detection::bbox_xyxy)
       .def_readonly("visibility", &Detection::visibility)
       .def_readonly("range_m", &Detection::range_m)
+      .def_readonly("forward_m", &Detection::forward_m)
+      .def_readonly("lateral_m", &Detection::lateral_m)
       .def_readonly("relative_yaw_rad", &Detection::relative_yaw_rad);
 
   py::class_<Frame, FramePtr>(module, "Frame")

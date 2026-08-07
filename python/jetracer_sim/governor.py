@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from math import inf, isfinite
+from typing import Protocol, runtime_checkable
 
 from .configuration import runtime_config_section
 from .inference import InferenceMetrics
@@ -61,6 +63,42 @@ class GovernorDecision:
     effective_fps: float
     reason: str
     model_id: str | None
+    certified_speed_limit_mps: float | None = None
+    certified_speed_limited: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class LongitudinalControlRequest:
+    requested_cruise_speed_mps: float
+    tracking_available: bool
+    tracking_confidence: float
+    tracking_full_confidence: float
+    avoidance_speed_scale: float
+    external_speed_limit_mps: float
+    perception_healthy: bool
+    perception_metrics: InferenceMetrics | None
+    dt_s: float
+    now_s: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class LongitudinalControlDecision:
+    commanded_speed_mps: float
+    requested_speed_mps: float
+    tracking_scale: float
+    reason: str
+    governor_decision: GovernorDecision | None
+
+
+@runtime_checkable
+class LongitudinalController(Protocol):
+    """Converts path confidence and external limits into a speed command."""
+
+    def reset(self, speed_mps: float = 0.0) -> None: ...
+
+    def update(
+        self, request: LongitudinalControlRequest
+    ) -> LongitudinalControlDecision: ...
 
 
 class LatencyAwareSpeedGovernor:
@@ -165,6 +203,125 @@ class LatencyAwareSpeedGovernor:
             effective_fps=effective_fps,
             reason=reason,
             model_id=model_id,
+        )
+
+
+class PerceptionAwareLongitudinalController:
+    """Tracking-confidence policy with optional latency-aware governance."""
+
+    def __init__(
+        self,
+        governor: LatencyAwareSpeedGovernor | None = None,
+        maximum_speed_mps: float = inf,
+    ) -> None:
+        self.governor = governor
+        self._maximum_speed_mps = inf
+        self.set_maximum_speed_mps(maximum_speed_mps)
+
+    @property
+    def maximum_speed_mps(self) -> float:
+        return self._maximum_speed_mps
+
+    def set_maximum_speed_mps(self, maximum_speed_mps: float) -> None:
+        if maximum_speed_mps <= 0.0 or not (
+            isfinite(maximum_speed_mps) or maximum_speed_mps == inf
+        ):
+            raise ValueError("longitudinal maximum speed must be positive")
+        self._maximum_speed_mps = maximum_speed_mps
+
+    def reset(self, speed_mps: float = 0.0) -> None:
+        if self.governor is not None:
+            self.governor.reset(speed_mps)
+
+    def update(
+        self, request: LongitudinalControlRequest
+    ) -> LongitudinalControlDecision:
+        if request.requested_cruise_speed_mps < 0.0:
+            raise ValueError("requested cruise speed must not be negative")
+        if request.tracking_full_confidence <= 0.0:
+            raise ValueError("full tracking confidence must be positive")
+        if not isfinite(request.tracking_confidence):
+            raise ValueError("tracking confidence must be finite")
+        if not 0.0 <= request.avoidance_speed_scale <= 1.0:
+            raise ValueError("avoidance speed scale must be in [0, 1]")
+        if request.external_speed_limit_mps < 0.0:
+            raise ValueError("external speed limit must not be negative")
+        if request.dt_s < 0.0:
+            raise ValueError("controller dt must not be negative")
+
+        tracking_scale = (
+            min(
+                1.0,
+                max(0.0, request.tracking_confidence)
+                / request.tracking_full_confidence,
+            )
+            if request.tracking_available
+            else 0.0
+        )
+        uncapped_requested_speed = min(
+            request.requested_cruise_speed_mps
+            * tracking_scale
+            * request.avoidance_speed_scale,
+            request.external_speed_limit_mps,
+        )
+        requested_speed = min(
+            uncapped_requested_speed, self._maximum_speed_mps
+        )
+        certified_speed_limited = (
+            self._maximum_speed_mps < uncapped_requested_speed
+        )
+        if not request.perception_healthy:
+            requested_speed = 0.0
+            certified_speed_limited = False
+
+        if self.governor is None:
+            reason = (
+                "perception_unhealthy"
+                if not request.perception_healthy
+                else "tracking_unavailable"
+                if not request.tracking_available
+                else "certified_speed"
+                if certified_speed_limited
+                else "requested_speed"
+            )
+            return LongitudinalControlDecision(
+                commanded_speed_mps=requested_speed,
+                requested_speed_mps=requested_speed,
+                tracking_scale=tracking_scale,
+                reason=reason,
+                governor_decision=None,
+            )
+
+        governor_decision = self.governor.update(
+            request.perception_metrics,
+            requested_speed_mps=requested_speed,
+            dt_s=request.dt_s,
+            now_s=request.now_s,
+        )
+        certification_is_active_limit = (
+            certified_speed_limited
+            and governor_decision.permitted_speed_mps >= requested_speed
+        )
+        governor_decision = replace(
+            governor_decision,
+            reason=(
+                "certified_speed"
+                if certification_is_active_limit
+                else governor_decision.reason
+            ),
+            certified_speed_limit_mps=(
+                self._maximum_speed_mps
+                if isfinite(self._maximum_speed_mps)
+                else None
+            ),
+            certified_speed_limited=certification_is_active_limit,
+        )
+        return LongitudinalControlDecision(
+            commanded_speed_mps=governor_decision.commanded_speed_mps,
+            requested_speed_mps=requested_speed,
+            tracking_scale=tracking_scale,
+            reason=governor_decision.reason,
+            governor_decision=governor_decision,
         )
 
 

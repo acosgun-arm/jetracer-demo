@@ -14,21 +14,22 @@ CAMERA_PROBE_PATH = PROJECT_ROOT / "tools/probe_jetson_cameras.py"
 def accepted_measurement() -> dict:
     return {
         "duration_s": 10.0,
-        "delivered_frames": 1201,
+        "delivered_frames": 2001,
         "dropped_frames": 0,
-        "width": 1920,
-        "height": 1200,
-        "pixel_format": "YUYV",
+        "width": 1280,
+        "height": 720,
+        "pixel_format": "MJPG",
         "capture_buffer_frames": 1,
         "calibration_rms_reprojection_error_px": 0.42,
     }
 
 
-def test_provisional_profiles_are_explicit() -> None:
+def test_hardware_validation_status_is_explicit() -> None:
     profiles = sim.load_camera_profiles()
     assert set(profiles) == {"elp_112", "imx219_160"}
+    assert profiles["elp_112"].mode.jetson_verified
+    assert not profiles["imx219_160"].mode.jetson_verified
     for profile in profiles.values():
-        assert not profile.mode.jetson_verified
         assert not profile.calibrated
         assert not profile.mount_measured
 
@@ -56,7 +57,7 @@ def test_jetson_camera_probe_has_no_gui_calls() -> None:
 
 
 def main() -> None:
-    test_provisional_profiles_are_explicit()
+    test_hardware_validation_status_is_explicit()
     test_camera_measurement_acceptance()
     test_jetson_camera_probe_has_no_gui_calls()
 

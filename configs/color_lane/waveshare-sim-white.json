@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "profile_id": "waveshare-sim-white",
+  "processing_width": 640,
+  "processing_height": 360,
+  "hsv_ranges": [
+    {
+      "lower": [0, 0, 170],
+      "upper": [179, 60, 255]
+    }
+  ],
+  "roi_top_fraction": 0.125,
+  "morphology_close_kernel": 5,
+  "morphology_open_kernel": 0,
+  "minimum_run_width_px": 2,
+  "minimum_lane_width_px": 15,
+  "polynomial_degree": 3,
+  "fit_iterations": 4,
+  "minimum_fit_points": 8,
+  "residual_floor_px": 12.0,
+  "residual_quantile": 0.75,
+  "residual_multiplier": 2.0,
+  "path_sample_count": 24,
+  "road_class_id": 1,
+  "birdseye": {
+    "enabled": 0,
+    "source_points": [],
+    "destination_points": []
+  }
+}

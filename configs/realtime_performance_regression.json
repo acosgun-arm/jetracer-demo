@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "profile_id": "mac-coreml-200hz",
+  "run": {
+    "platform_config": "configs/platforms/sim.json",
+    "model_key": 4,
+    "duration_s": 30.0,
+    "process_timeout_s": 90.0,
+    "artifact_directory": "build/performance-gate"
+  },
+  "evidence": {
+    "repository_root": "..",
+    "sources": {
+      "gate_config": "configs/realtime_performance_regression.json",
+      "native_simulator_config": "configs/native_simulator_defaults.json",
+      "platform": "configs/platforms/sim.json",
+      "runtime": "configs/runtime_defaults.json",
+      "segmentation_models": "configs/road_segmentation_models.json",
+      "realtime_demo": "examples/realtime_demo.py",
+      "simulator_header": "include/jetracer_sim/simulator.hpp",
+      "frame_source": "python/jetracer_sim/frame_source.py",
+      "inference": "python/jetracer_sim/inference.py",
+      "model_registry": "python/jetracer_sim/model_registry.py",
+      "platform_runtime": "python/jetracer_sim/platform_runtime.py",
+      "realtime": "python/jetracer_sim/realtime.py",
+      "realtime_presentation": "python/jetracer_sim/realtime_presentation.py",
+      "native_bindings": "src/bindings.cpp",
+      "native_simulator": "src/simulator.cpp"
+    }
+  },
+  "measurement": {
+    "warmup_s": 5.0,
+    "minimum_window_s": 20.0,
+    "minimum_record_count": 1000
+  },
+  "expected_runtime": {
+    "active_model_id": "segformer-b0-cityscapes-coreml-fp16-384",
+    "model_backend": "coreml-native",
+    "camera_target_fps": 200.0,
+    "camera_target_tolerance_fps": 0.01
+  },
+  "source_gate": {
+    "minimum_published_fps": 190.0,
+    "maximum_published_fps": 210.0,
+    "maximum_failed_reads": 0
+  },
+  "coreml_gate": {
+    "minimum_completed_fps": 55.0,
+    "maximum_p99_inference_latency_s": 0.025,
+    "maximum_p99_perception_age_s": 0.055,
+    "maximum_failed_frames": 0,
+    "maximum_discarded_results": 0
+  }
+}

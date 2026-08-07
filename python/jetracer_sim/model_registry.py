@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
@@ -13,6 +14,10 @@ from typing import Any, Iterable
 import numpy as np
 
 from .configuration import runtime_config_section
+from .color_lane import (
+    ColorLaneSegmentationAdapter,
+    load_color_lane_profile,
+)
 from .coreml_adapter import CoreMLSegmentationAdapter, CoreMLSegmentationConfig
 from .detection import (
     ApparentWidthRangeEstimator,
@@ -169,8 +174,8 @@ class ModelVariant:
     benchmark: ModelBenchmark | None = None
 
     def __post_init__(self) -> None:
-        if not 1 <= self.key <= 9:
-            raise ValueError("model key must be in [1, 9]")
+        if self.key <= 0:
+            raise ValueError("model key must be positive")
         if not self.model_id or not self.display_name or not self.backend:
             raise ValueError("model identity and backend must not be empty")
         if not self.precision or not self.compression:
@@ -180,6 +185,7 @@ class ModelVariant:
             "onnx",
             "coreml_native",
             "huggingface",
+            "color_lane",
         }:
             raise ValueError(f"unsupported adapter kind: {self.adapter_kind}")
         if self.benchmark is not None and self.benchmark.model_id != self.model_id:
@@ -244,8 +250,8 @@ def load_model_variants(
         adapter_options = {
             str(key): value for key, value in adapter.items() if key != "kind"
         }
-        if adapter_kind in {"onnx", "coreml_native"}:
-            for path_key in ("model_path", "validation_path"):
+        if adapter_kind in {"onnx", "coreml_native", "color_lane"}:
+            for path_key in ("model_path", "validation_path", "profile_path"):
                 if path_key not in adapter_options:
                     continue
                 model_path = Path(str(adapter_options[path_key]))
@@ -426,6 +432,18 @@ def build_segmentation_adapter(variant: ModelVariant) -> SegmentationAdapter:
                 "invalid Hugging Face adapter configuration"
             ) from error
 
+    if variant.adapter_kind == "color_lane":
+        try:
+            config = load_color_lane_profile(str(options["profile_path"]))
+            return ColorLaneSegmentationAdapter(
+                config,
+                model_id=variant.model_id,
+                display_name=variant.display_name,
+                native_profile_path=str(options["profile_path"]),
+            )
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError("invalid colour-lane adapter configuration") from error
+
     if variant.adapter_kind == "coreml_native":
         try:
             config = CoreMLSegmentationConfig(
@@ -547,6 +565,7 @@ def build_detection_adapter(
     variant: DetectionModelVariant,
     *,
     focal_length_pixels: float | None = None,
+    range_distance_scales: Mapping[int, float] | None = None,
     session: Any | None = None,
 ) -> DetectionAdapter:
     """Construct a YOLO detector and optional calibrated range estimator."""
@@ -606,18 +625,41 @@ def build_detection_adapter(
                 int(class_id): float(width)
                 for class_id, width in raw_widths.items()
             }
+            raw_scales = range_options.get("class_distance_scales", {})
+            if not isinstance(raw_scales, dict):
+                raise ValueError(
+                    "class_distance_scales must be an object"
+                )
+            class_distance_scales = {
+                int(class_id): float(scale)
+                for class_id, scale in raw_scales.items()
+            }
+            if range_distance_scales is not None:
+                class_distance_scales.update(
+                    {
+                        int(class_id): float(scale)
+                        for class_id, scale in range_distance_scales.items()
+                    }
+                )
             range_estimator = ApparentWidthRangeEstimator(
                 focal_length_pixels,
                 class_widths,
+                class_distance_scales,
             )
         return YoloOnnxAdapter(
             str(options["model_path"]),
             config,
             model_id=variant.model_id,
             display_name=variant.display_name,
+            backend=variant.backend,
             precision=variant.precision,
             compression=variant.compression,
             providers=providers,
+            required_execution_provider=(
+                None
+                if options.get("required_execution_provider") is None
+                else str(options["required_execution_provider"])
+            ),
             range_estimator=range_estimator,
             session=session,
         )

@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "profile_id": "waveshare-elp-synthetic-shadow-v1",
+  "actuator_mode": "disabled",
+  "camera": {
+    "calibration_id": "synthetic-elp-112-nominal",
+    "calibration_validated": true,
+    "lens_model": "fisheye_equidistant",
+    "source_width": 1920,
+    "source_height": 1200,
+    "fx": 982.2133630814112,
+    "fy": 982.2133630814112,
+    "cx": 959.5,
+    "cy": 599.5,
+    "distortion": [0.0, 0.0, 0.0, 0.0, 0.0],
+    "mount_x_m": 0.10,
+    "mount_y_m": 0.0,
+    "mount_z_m": 0.16,
+    "mount_roll_rad": 0.0,
+    "mount_pitch_down_rad": 0.31,
+    "mount_yaw_rad": 0.0
+  },
+  "vehicle": {
+    "wheelbase_m": 0.182625,
+    "maximum_steering_rad": 0.52
+  },
+  "controller": {
+    "kind": "adaptive_pure_pursuit",
+    "base_lookahead_m": 0.30,
+    "speed_lookahead_s": 0.12,
+    "minimum_lookahead_m": 0.24,
+    "maximum_lookahead_m": 0.80,
+    "pure_pursuit_gain": 1.75,
+    "lateral_error_gain": 0.25,
+    "lateral_speed_softening_mps": 0.50,
+    "lost_steering_hold_s": 0.15,
+    "steering_smoothing_time_s": 0.035,
+    "maximum_steering_rate_rad_s": 30.0,
+    "curvature_estimation_distance_m": 0.90,
+    "minimum_curvature_points": 7,
+    "curvature_lookahead_gain_m2": 0.010,
+    "lateral_error_lookahead_gain": 0.10
+  },
+  "speed": {
+    "cruise_speed_mps": 0.90,
+    "maximum_speed_mps": 2.50,
+    "minimum_tracking_confidence": 0.10,
+    "full_speed_confidence": 0.50,
+    "maximum_acceleration_mps2": 0.80,
+    "maximum_deceleration_mps2": 3.00
+  }
+}

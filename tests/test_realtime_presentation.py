@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 from tempfile import TemporaryDirectory
+from urllib.request import Request, urlopen
 
 import numpy as np
 
@@ -93,6 +94,72 @@ def test_browser_viewer_rejects_invalid_input_before_binding() -> None:
         raise AssertionError("empty viewer HTML was accepted")
 
 
+def test_browser_viewer_serves_benchmark_catalog() -> None:
+    expected = {"catalog": {"cases": []}, "coverage": {"ready": False}}
+    viewer = BrowserViewer(
+        FakeCv2(),
+        0,
+        viewer_html=b"<html></html>",
+        jpeg_quality=85,
+        stream_wait_timeout_s=1.0,
+        stop_timeout_s=1.0,
+        benchmark_catalog=expected,
+    )
+    viewer.start(open_browser=False)
+    try:
+        with urlopen(f"{viewer.url}/benchmarks", timeout=1.0) as response:
+            observed = json.loads(response.read())
+        assert observed == expected
+        viewer.update_benchmark_catalog({"coverage": {"ready": True}})
+        assert viewer.benchmark_catalog_snapshot["coverage"]["ready"]
+    finally:
+        viewer.stop()
+
+
+def test_browser_viewer_accepts_capture_requests_and_feed_selection() -> None:
+    catalog = {"enabled": True, "camera_mode_id": "test"}
+    viewer = BrowserViewer(
+        FakeCv2(),
+        0,
+        viewer_html=b"<html></html>",
+        jpeg_quality=85,
+        stream_wait_timeout_s=1.0,
+        stop_timeout_s=1.0,
+        capture_catalog=catalog,
+        maximum_capture_request_bytes=1024,
+    )
+    viewer.start(open_browser=False)
+    try:
+        payload = {
+            "action": "snapshot",
+            "split": "calibration",
+            "lighting_condition": "daylight_diffuse",
+            "track_section": "straight",
+            "scene_type": "empty_road",
+        }
+        request = Request(
+            f"{viewer.url}/capture",
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urlopen(request, timeout=1.0) as response:
+            assert response.status == 202
+        assert viewer.capture_requests() == [payload]
+
+        feed_request = Request(
+            f"{viewer.url}/feed?mode=raw", data=b"", method="POST"
+        )
+        with urlopen(feed_request, timeout=1.0) as response:
+            assert json.loads(response.read())["feed_mode"] == "raw"
+        with urlopen(f"{viewer.url}/capture", timeout=1.0) as response:
+            status = json.loads(response.read())
+        assert status["catalog"] == catalog
+        assert status["feed_mode"] == "raw"
+    finally:
+        viewer.stop()
+
+
 def test_draw_display_is_independent_of_windowing_backend() -> None:
     cv2 = FakeCv2()
     frame = SimpleNamespace(
@@ -104,6 +171,8 @@ def test_draw_display_is_independent_of_windowing_backend() -> None:
         perception_age_s=0.012,
         commanded_speed_mps=0.5,
         permitted_speed_mps=0.6,
+        certified_speed_limit_mps=0.8,
+        certified_speed_limited=False,
         reason="inference_fps",
     )
     model = SimpleNamespace(
@@ -145,6 +214,8 @@ def main() -> None:
     test_rolling_rate_tracks_only_the_requested_window()
     test_jsonl_telemetry_writes_complete_records()
     test_browser_viewer_rejects_invalid_input_before_binding()
+    test_browser_viewer_serves_benchmark_catalog()
+    test_browser_viewer_accepts_capture_requests_and_feed_selection()
     test_draw_display_is_independent_of_windowing_backend()
 
 

@@ -25,6 +25,7 @@ def jetson_capabilities() -> sim.RuntimeCapabilities:
         onnxruntime_version="test",
         onnx_execution_providers=("CPUExecutionProvider",),
         tensorrt_version=None,
+        opencv_version="test",
     )
 
 
@@ -77,6 +78,47 @@ def test_valid_artifact_hashes_are_accepted() -> None:
     )
 
 
+def test_separate_segmentation_and_detector_manifests_are_accepted() -> None:
+    policy = sim.load_deployment_policy()
+    policy["policy"]["require_target_benchmark"] = False
+    with materialized_model_manifest() as combined_manifest:
+        document = json.loads(combined_manifest.read_text(encoding="utf-8"))
+        segmentation_manifest = combined_manifest.with_name("segmentation.json")
+        detector_manifest = combined_manifest.with_name("detectors.json")
+        segmentation_manifest.write_text(
+            json.dumps(
+                {
+                    "schema_version": document["schema_version"],
+                    "models": document["models"],
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        detector_manifest.write_text(
+            json.dumps(
+                {
+                    "schema_version": document["schema_version"],
+                    "detectors": document["detectors"],
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        report = sim.evaluate_deployment(
+            segmentation_manifest,
+            BENCHMARKS,
+            policy,
+            jetson_capabilities(),
+            detector_configuration_path=detector_manifest,
+        )
+    assert report.ready
+    assert "segformer-b0-ade20k-cpu-fp32" in report.selectable_model_ids
+    assert "yolo11n-coco-onnx-fp32" in report.selectable_model_ids
+
+
 def test_tensorrt_variants_require_observed_tensorrt_provider() -> None:
     policy = sim.load_deployment_policy()
     policy["policy"]["require_target_benchmark"] = False
@@ -119,6 +161,40 @@ def test_real_policy_requires_jetson_benchmarks() -> None:
     )
 
 
+def test_color_lane_does_not_require_model_artifact_or_provider() -> None:
+    policy = sim.load_deployment_policy()
+    policy["policy"]["require_target_benchmark"] = False
+    with materialized_model_manifest() as models:
+        document = json.loads(models.read_text(encoding="utf-8"))
+        document["models"].append(
+            {
+                "key": 99,
+                "model_id": "test-color-lane",
+                "display_name": "Test colour lane",
+                "backend": "opencv",
+                "precision": "uint8",
+                "compression": "threshold-fit",
+                "adapter": {
+                    "kind": "color_lane",
+                },
+            }
+        )
+        models.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+        report = sim.evaluate_deployment(
+            models, BENCHMARKS, policy, jetson_capabilities()
+        )
+    status = next(
+        value for value in report.variants if value.model_id == "test-color-lane"
+    )
+    assert status.selectable
+    assert "test-color-lane" in report.selectable_model_ids
+    assert all(
+        check["passed"]
+        for check in status.checks
+        if check["id"] in {"artifact_exists", "artifact_sha256", "runtime"}
+    )
+
+
 def test_int8_export_is_isolated_and_provenance_aware() -> None:
     source = INT8_TOOL.read_text(encoding="utf-8")
     assert "import jetracer_sim" not in source
@@ -129,8 +205,10 @@ def test_int8_export_is_isolated_and_provenance_aware() -> None:
 
 def main() -> None:
     test_valid_artifact_hashes_are_accepted()
+    test_separate_segmentation_and_detector_manifests_are_accepted()
     test_tensorrt_variants_require_observed_tensorrt_provider()
     test_real_policy_requires_jetson_benchmarks()
+    test_color_lane_does_not_require_model_artifact_or_provider()
     test_int8_export_is_isolated_and_provenance_aware()
 
 

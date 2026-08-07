@@ -1,11 +1,28 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "platform_id": "sim",
   "mode": "sim",
   "runtime_config": "../runtime_defaults.json",
   "driving_config": "../driving_benchmarks.json",
-  "model_config": "../off_the_shelf_models.json",
-  "benchmark_registry": "../../benchmarks/off_the_shelf_model_benchmarks.json",
+  "model_config": "../road_segmentation_models.json",
+  "detector_config": "../off_the_shelf_models.json",
+  "benchmark_registry": "../../benchmarks/road_model_benchmarks.json",
+  "certified_speed_registry": "../../benchmarks/certified_speed_limits.json",
+  "speed_certification": {
+    "enforcement": "optional"
+  },
+  "perception": {
+    "segmentation_model_key": 4,
+    "detector_enabled": true,
+    "detector_model_id": "yolo11n-coco-onnx-fp32",
+    "detector_range_calibration": {
+      "calibration_id": "sim-yolo11n-textured-objects-v1",
+      "class_distance_scales": {
+        "0": 0.4036044431929783,
+        "11": 0.3658904770468823
+      }
+    }
+  },
   "hardware": {
     "camera_profiles": "../hardware/cameras.json",
     "actuator_profile": "../hardware/actuator.json",

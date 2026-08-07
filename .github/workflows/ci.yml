@@ -43,6 +43,7 @@ jobs:
         run: |
           python -m pip install \
             "numpy>=1.26" \
+            "opencv-python-headless>=4.8" \
             "Pillow>=10" \
             "pybind11>=2.12"
 
@@ -59,5 +60,132 @@ jobs:
       - name: Build
         run: cmake --build build-ci --parallel 2
 
+      - name: Run compact deployment-stack regression
+        env:
+          PYTHONPATH: ${{ github.workspace }}/build-ci/python
+        run: |
+          python tools/run_deployment_stack_benchmark.py \
+            --config configs/deployment_stack_benchmark.json \
+            --baseline benchmarks/deployment_stack_benchmark_baseline.json \
+            --output build-ci/deployment-stack-benchmark.json \
+            --overwrite
+
       - name: Test
         run: ctest --test-dir build-ci --output-on-failure --timeout 180
+
+  oracle-driving-acceptance:
+    name: Oracle driving acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            libopencv-dev \
+            ninja-build
+
+      - name: Install Python build dependencies
+        run: |
+          python -m pip install \
+            "numpy>=1.26" \
+            "pybind11>=2.12"
+
+      - name: Configure headless acceptance build
+        run: |
+          cmake -S . -B build-acceptance -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DJETRACER_SIM_BUILD_NATIVE_CLI=OFF \
+            -DJETRACER_SIM_BUILD_PYTHON=ON \
+            -DJETRACER_SIM_BUILD_TESTS=OFF \
+            -DPython_EXECUTABLE="$(command -v python)" \
+            -Dpybind11_DIR="$(python -m pybind11 --cmakedir)"
+
+      - name: Build acceptance runtime
+        run: cmake --build build-acceptance --parallel 2
+
+      - name: Run oracle driving acceptance
+        env:
+          PYTHONPATH: ${{ github.workspace }}/build-acceptance/python
+        run: |
+          python tools/run_driving_benchmarks.py \
+            --platform configs/platforms/sim.json \
+            --perception oracle \
+            --scenario full \
+            --track all \
+            --laps 1 \
+            --output build-acceptance/reports/oracle-driving-acceptance.json
+
+      - name: Run noisy multi-object acceptance
+        env:
+          PYTHONPATH: ${{ github.workspace }}/build-acceptance/python
+        run: |
+          python tools/run_multi_obstacle_benchmarks.py \
+            --tracks all \
+            --controllers adaptive_with_avoidance_pursuit \
+            --object-counts 1 2 3 \
+            --planners dynamic_window \
+            --segmentation-noise moderate \
+            --obstacle-noise moderate \
+            --path-filter temporal \
+            --output build-acceptance/reports/multi-obstacle-acceptance.json
+
+      - name: Publish oracle acceptance summary
+        if: ${{ always() }}
+        run: |
+          if [[ -f build-acceptance/reports/oracle-driving-acceptance.json ]]; then
+            python tools/summarize_driving_benchmark.py \
+              build-acceptance/reports/oracle-driving-acceptance.json \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '## Oracle driving acceptance\n\nReport was not produced.\n' \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publish multi-object acceptance summary
+        if: ${{ always() }}
+        run: |
+          if [[ -f build-acceptance/reports/multi-obstacle-acceptance.json ]]; then
+            python tools/summarize_multi_obstacle_benchmark.py \
+              build-acceptance/reports/multi-obstacle-acceptance.json \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '## Multi-object avoidance acceptance\n\nReport was not produced.\n' \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Compare with oracle baseline
+        if: ${{ always() }}
+        run: |
+          if [[ -f build-acceptance/reports/oracle-driving-acceptance.json ]]; then
+            python tools/compare_driving_benchmarks.py \
+              benchmarks/oracle_driving_acceptance_baseline.json \
+              build-acceptance/reports/oracle-driving-acceptance.json \
+              --config configs/driving_benchmark_regression.json \
+              --json-output build-acceptance/reports/oracle-driving-comparison.json \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '## Baseline regression comparison\n\nCurrent report was not produced.\n' \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload oracle acceptance report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: oracle-driving-acceptance
+          path: |
+            build-acceptance/reports/oracle-driving-acceptance.json
+            build-acceptance/reports/oracle-driving-comparison.json
+            build-acceptance/reports/multi-obstacle-acceptance.json
+          if-no-files-found: warn
+          retention-days: 14

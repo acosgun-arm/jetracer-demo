@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "camera_id": "imx219_160",
+  "display_name": "JetRacer Pro IMX219 CSI camera, nominal 160 degree lens",
+  "hardware_profile_id": "imx219_160",
+  "nominal_mount": {
+    "x_m": 0.10,
+    "y_m": 0.0,
+    "z_m": 0.16,
+    "roll_rad": 0.0,
+    "pitch_down_rad": 0.31,
+    "yaw_rad": 0.0
+  },
+  "exposure_s": 0.001,
+  "rolling_readout_s": 0.016,
+  "provisional": true,
+  "modes": {
+    "jetson_720p_60": {
+      "driver": "opencv",
+      "device": "nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink drop=true max-buffers=1 sync=false",
+      "width": 1280,
+      "height": 720,
+      "fps_numerator": 60,
+      "fps_denominator": 1,
+      "backend": "gstreamer",
+      "buffer_size": 1,
+      "fourcc": null,
+      "maximum_consecutive_read_failures": 3,
+      "failure_retry_s": 0.005
+    },
+    "jetson_1080p_30": {
+      "driver": "opencv",
+      "device": "nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, format=(string)NV12, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink drop=true max-buffers=1 sync=false",
+      "width": 1920,
+      "height": 1080,
+      "fps_numerator": 30,
+      "fps_denominator": 1,
+      "backend": "gstreamer",
+      "buffer_size": 1,
+      "fourcc": null,
+      "maximum_consecutive_read_failures": 3,
+      "failure_retry_s": 0.005
+    }
+  }
+}

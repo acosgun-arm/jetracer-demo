@@ -82,7 +82,10 @@ def evaluate_segmentation_dataset(
     if not manifest_path.is_file() or not metadata_path.is_file():
         raise ValueError("dataset must contain manifest.json and frames.jsonl")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("purpose") != "off_the_shelf_model_evaluation":
+    if manifest.get("purpose") not in {
+        "off_the_shelf_model_evaluation",
+        "real_track_perception_evaluation",
+    }:
         raise ValueError("unsupported dataset purpose")
     records = [
         json.loads(line)

@@ -4,27 +4,38 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import json
+from math import radians
 import os
 from pathlib import Path
 from typing import Any
 
 from ._native import (
     CameraProfile,
+    LensModel,
     Scene,
     SceneConfig,
     Simulator,
+    ShutterType,
     VehicleCommand,
     VehicleConfig,
 )
-from .configuration import load_driving_benchmark_configuration
+from .camera_runtime_config import resolve_camera_runtime_selection
+from .configuration import (
+    load_driving_benchmark_configuration,
+    runtime_config_section,
+)
+from .hardware_profiles import load_camera_profiles
 from .resource_paths import configuration_resource
+from .real_track_profiles import load_real_track_profiles
 from .frame_source import (
+    CameraIdentityRequirement,
     CapturedFrame,
     FrameSource,
     OpenCVCameraConfig,
     OpenCVCameraFrameSource,
     SimulatorFrameSource,
 )
+from .governor import GovernorConfig
 from .vehicle_io import (
     ActuatorLimits,
     DryRunVehicleActuator,
@@ -39,7 +50,7 @@ from .vehicle_io import (
 )
 
 
-PLATFORM_CONFIGURATION_SCHEMA_VERSION = 1
+PLATFORM_CONFIGURATION_SCHEMA_VERSION = 2
 PLATFORM_CONFIG_ENVIRONMENT_VARIABLE = "JETRACER_PLATFORM_CONFIG"
 
 
@@ -58,12 +69,27 @@ class PlatformConfiguration:
     runtime_config_path: Path
     driving_config_path: Path
     model_config_path: Path
+    detector_config_path: Path
     benchmark_registry_path: Path
+    certified_speed_registry_path: Path
     hardware_paths: dict[str, Path]
+    speed_certification: dict[str, Any]
+    perception: dict[str, Any]
     camera: dict[str, Any]
     vehicle: dict[str, Any]
     state: dict[str, Any]
     simulation: dict[str, Any] | None
+    capture: dict[str, Any] | None
+
+    @property
+    def detector_class_distance_scales(self) -> dict[int, float]:
+        calibration = self.perception.get("detector_range_calibration", {})
+        return {
+            int(class_id): float(scale)
+            for class_id, scale in calibration.get(
+                "class_distance_scales", {}
+            ).items()
+        }
 
 
 def load_platform_configuration(
@@ -85,9 +111,11 @@ def load_platform_configuration(
     mode = str(document.get("mode", ""))
     if not platform_id or mode not in {"sim", "real"}:
         raise ValueError("platform ID and mode are invalid")
-    camera = _required_object(document, "camera")
+    camera_selection = _required_object(document, "camera")
     vehicle = _required_object(document, "vehicle")
     state = _required_object(document, "state")
+    perception = _required_object(document, "perception")
+    speed_certification = _required_object(document, "speed_certification")
     hardware = _required_object(document, "hardware")
     hardware_reference_names = (
         "camera_profiles",
@@ -101,12 +129,31 @@ def load_platform_configuration(
         name: _referenced_path_value(resolved, hardware.get(name), f"hardware.{name}")
         for name in hardware_reference_names
     }
+    camera = _resolve_platform_camera(
+        resolved,
+        camera_selection,
+        hardware_paths["camera_profiles"],
+    )
     simulation_value = document.get("simulation")
     simulation = None
     if simulation_value is not None:
         if not isinstance(simulation_value, dict):
             raise ValueError("platform simulation section must be an object")
         simulation = dict(simulation_value)
+    capture = _capture_configuration(resolved, document.get("capture"), mode)
+    if (
+        capture is not None
+        and camera.get("dataset_camera_mode_id") is not None
+        and capture["camera_mode_id"] != camera["dataset_camera_mode_id"]
+    ):
+        raise ValueError(
+            "platform capture mode does not match the selected camera mode"
+        )
+    _validate_perception_section(perception)
+    if set(speed_certification) != {"enforcement"} or speed_certification[
+        "enforcement"
+    ] not in {"disabled", "optional", "required"}:
+        raise ValueError("platform speed-certification policy is invalid")
     _validate_platform_sections(mode, camera, vehicle, state, simulation)
     return PlatformConfiguration(
         path=resolved,
@@ -115,15 +162,157 @@ def load_platform_configuration(
         runtime_config_path=_referenced_file(resolved, document, "runtime_config"),
         driving_config_path=_referenced_file(resolved, document, "driving_config"),
         model_config_path=_referenced_file(resolved, document, "model_config"),
+        detector_config_path=_referenced_file(
+            resolved, document, "detector_config"
+        ),
         benchmark_registry_path=_referenced_file(
             resolved, document, "benchmark_registry"
         ),
+        certified_speed_registry_path=_referenced_file(
+            resolved, document, "certified_speed_registry"
+        ),
         hardware_paths=hardware_paths,
+        speed_certification=dict(speed_certification),
+        perception=dict(perception),
         camera=dict(camera),
         vehicle=dict(vehicle),
         state=dict(state),
         simulation=simulation,
+        capture=capture,
     )
+
+
+def _capture_configuration(
+    configuration_path: Path,
+    value: Any,
+    mode: str,
+) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("platform capture section must be an object")
+    if value.get("enabled") is not True:
+        return None
+    if mode != "real":
+        raise ValueError("real-track capture is only valid for real cameras")
+    camera_mode_id = value.get("camera_mode_id")
+    if not isinstance(camera_mode_id, str) or not camera_mode_id:
+        raise ValueError("platform capture camera mode ID must be non-empty")
+    manifest_value = value.get("manifest")
+    catalog_value = value.get("track_profiles")
+    profile_id = value.get("track_profile_id")
+    if manifest_value is not None and catalog_value is not None:
+        raise ValueError(
+            "platform capture must use either manifest or track_profiles"
+        )
+    selected_profile = None
+    catalog_path = None
+    if catalog_value is not None:
+        if not isinstance(catalog_value, str) or not catalog_value:
+            raise ValueError("platform capture track profile catalog must be a path")
+        if not isinstance(profile_id, str) or not profile_id:
+            raise ValueError("platform capture track profile ID must be non-empty")
+        catalog_path = Path(catalog_value)
+        if not catalog_path.is_absolute():
+            catalog_path = configuration_path.parent / catalog_path
+        catalog_path = catalog_path.resolve()
+        selected_profile = load_real_track_profiles(catalog_path).profile(profile_id)
+        manifest_path = selected_profile.manifest_path
+    else:
+        if not isinstance(manifest_value, str) or not manifest_value:
+            raise ValueError(
+                "platform capture requires manifest or track_profiles"
+            )
+        if profile_id is not None:
+            raise ValueError("track_profile_id requires track_profiles")
+        manifest_path = Path(manifest_value)
+        if not manifest_path.is_absolute():
+            manifest_path = configuration_path.parent / manifest_path
+        manifest_path = manifest_path.resolve()
+        if not manifest_path.is_file():
+            raise FileNotFoundError(
+                f"platform capture manifest does not exist: {manifest_path}"
+            )
+    result = {
+        "enabled": True,
+        "manifest_path": manifest_path,
+        "camera_mode_id": camera_mode_id,
+    }
+    if selected_profile is not None:
+        result.update(
+            {
+                "track_profile_catalog_path": catalog_path,
+                "track_profile_id": selected_profile.profile_id,
+                "track_id": selected_profile.track_id,
+                "track_display_name": selected_profile.display_name,
+                "track_road_width_m": selected_profile.lane_marking.get(
+                    "road_width_m"
+                ),
+            }
+        )
+    return result
+
+
+def _resolve_platform_camera(
+    platform_path: Path,
+    selection: dict[str, Any],
+    hardware_profiles_path: Path,
+) -> dict[str, Any]:
+    if "profile_config" not in selection and "mode_id" not in selection:
+        return dict(selection)
+    resolved = resolve_camera_runtime_selection(platform_path, selection)
+    profiles = load_camera_profiles(hardware_profiles_path)
+    hardware_profile_id = str(resolved["hardware_profile_id"])
+    if hardware_profile_id not in profiles:
+        raise ValueError(
+            "camera runtime profile references an unknown hardware profile: "
+            f"{hardware_profile_id}"
+        )
+    return resolved
+
+
+def _validate_perception_section(perception: dict[str, Any]) -> None:
+    segmentation_key = perception.get("segmentation_model_key")
+    if segmentation_key is not None and (
+        not isinstance(segmentation_key, int)
+        or isinstance(segmentation_key, bool)
+        or segmentation_key <= 0
+    ):
+        raise ValueError("platform segmentation model key must be positive or null")
+    if not isinstance(perception.get("detector_enabled"), bool):
+        raise ValueError("platform detector_enabled must be a boolean")
+    deployment_gate = perception.get("deployment_gate_enabled", True)
+    if not isinstance(deployment_gate, bool):
+        raise ValueError("platform deployment gate flag must be a boolean")
+    detector_model_id = perception.get("detector_model_id")
+    if detector_model_id is not None and (
+        not isinstance(detector_model_id, str) or not detector_model_id
+    ):
+        raise ValueError("platform detector model ID must be non-empty or null")
+    if not perception["detector_enabled"] and detector_model_id is not None:
+        raise ValueError("disabled platform detector cannot select a model")
+    calibration = perception.get("detector_range_calibration")
+    if calibration is not None:
+        if not isinstance(calibration, dict):
+            raise ValueError("detector range calibration must be an object")
+        calibration_id = calibration.get("calibration_id")
+        scales = calibration.get("class_distance_scales")
+        if not isinstance(calibration_id, str) or not calibration_id:
+            raise ValueError("detector range calibration ID must be non-empty")
+        if not isinstance(scales, dict) or not scales:
+            raise ValueError("detector range calibration requires class scales")
+        try:
+            parsed_scales = {
+                int(class_id): float(scale)
+                for class_id, scale in scales.items()
+            }
+        except (TypeError, ValueError) as error:
+            raise ValueError("detector range class scales are invalid") from error
+        if any(
+            class_id < 0 or scale <= 0.0
+            for class_id, scale in parsed_scales.items()
+        ):
+            raise ValueError("detector range class scales must be positive")
 
 
 def _required_object(document: dict[str, Any], key: str) -> dict[str, Any]:
@@ -172,7 +361,7 @@ def _validate_platform_sections(
     camera_driver = camera.get("driver")
     vehicle_driver = vehicle.get("driver")
     state_driver = state.get("driver")
-    if camera.get("profile") not in {"stress", "elp", "imx219"}:
+    if not isinstance(camera.get("profile"), str) or not camera["profile"]:
         raise ValueError("platform camera profile is invalid")
     if camera_driver not in {"simulator", "opencv"}:
         raise ValueError("platform camera driver is invalid")
@@ -240,6 +429,10 @@ def _validate_platform_sections(
     else:
         if camera_driver == "simulator" or vehicle_driver == "simulator":
             raise ValueError("real mode cannot use simulator I/O drivers")
+        if not isinstance(camera.get("hardware_profile_id"), str) or not camera.get(
+            "hardware_profile_id"
+        ):
+            raise ValueError("real camera requires a hardware profile ID")
         if vehicle_driver == "dry_run" and vehicle["motors_enabled"]:
             raise ValueError("dry-run vehicle cannot enable motors")
         if vehicle_driver == "jetracer" and not vehicle["motors_enabled"]:
@@ -312,6 +505,9 @@ def _validate_platform_sections(
                 camera["maximum_consecutive_read_failures"]
             ),
             failure_retry_s=float(camera["failure_retry_s"]),
+            rotation_degrees_clockwise=int(
+                camera.get("rotation_degrees_clockwise", 0)
+            ),
         ).validate()
 
 
@@ -398,7 +594,12 @@ def create_platform_runtime(
         if isinstance(configuration, PlatformConfiguration)
         else load_platform_configuration(configuration)
     )
-    camera = _camera_profile(resolved.camera)
+    camera = _camera_profile(
+        resolved.camera,
+        resolved.hardware_paths["camera_profiles"],
+    )
+    if resolved.mode == "real":
+        _apply_measured_camera_mount(camera, resolved)
     limits = _actuator_limits(resolved.vehicle)
     watchdog_timeout_s = float(resolved.vehicle["watchdog_timeout_s"])
     vehicle_configuration = _vehicle_configuration(resolved.driving_config_path)
@@ -474,6 +675,15 @@ def create_platform_runtime(
             "controller transport is not implemented for the identified hardware"
         )
     camera_options = resolved.camera
+    physical_camera = load_camera_profiles(
+        resolved.hardware_paths["camera_profiles"]
+    )[str(camera_options["hardware_profile_id"])]
+    identity_required = bool(
+        camera_options.get("validate_device_identity", False)
+    )
+    identity_options = camera_options.get("device_identity")
+    if identity_required and not isinstance(identity_options, dict):
+        raise ValueError("validated camera runtime requires device identity")
     source = OpenCVCameraFrameSource(
         OpenCVCameraConfig(
             device_index=_camera_device(camera_options),
@@ -491,6 +701,27 @@ def create_platform_runtime(
                 camera_options["maximum_consecutive_read_failures"]
             ),
             failure_retry_s=float(camera_options["failure_retry_s"]),
+            identity_requirement=(
+                CameraIdentityRequirement(
+                    tuple(identity_options["match_substrings"]),
+                    identity_options["serial_number"],
+                )
+                if identity_required
+                else None
+            ),
+            identity_probe_timeout_s=(
+                float(identity_options["probe_timeout_s"])
+                if identity_required
+                else None
+            ),
+            minimum_resolved_fps_fraction=(
+                physical_camera.acceptance.minimum_delivered_rate_fraction
+                if identity_required
+                else None
+            ),
+            rotation_degrees_clockwise=int(
+                camera_options.get("rotation_degrees_clockwise", 0)
+            ),
         )
     )
     return PlatformRuntime(
@@ -523,7 +754,42 @@ def create_platform_runtime(
     )
 
 
-def _camera_profile(options: dict[str, Any]) -> CameraProfile:
+def governor_config_for_platform(
+    configuration: PlatformConfiguration,
+    runtime_config_path: str | Path | None = None,
+) -> GovernorConfig:
+    """Resolve governor settings with platform speed and motion caps."""
+
+    options = runtime_config_section(
+        "governor",
+        runtime_config_path or configuration.runtime_config_path,
+    )
+    vehicle_limits = configuration.vehicle["limits"]
+    options["minimum_speed_mps"] = max(
+        float(options["minimum_speed_mps"]),
+        float(vehicle_limits["minimum_speed_mps"]),
+    )
+    options["maximum_speed_mps"] = min(
+        float(options["maximum_speed_mps"]),
+        float(vehicle_limits["maximum_speed_mps"]),
+    )
+    if configuration.mode == "real":
+        for field in (
+            "maximum_acceleration_mps2",
+            "maximum_deceleration_mps2",
+        ):
+            state_limit = configuration.state.get(field)
+            if state_limit is not None:
+                options[field] = min(float(options[field]), float(state_limit))
+    return GovernorConfig(**options)
+
+
+def _camera_profile(
+    options: dict[str, Any],
+    hardware_profiles_path: Path,
+) -> CameraProfile:
+    if "profile_config" in options:
+        return _configured_physical_camera(options, hardware_profiles_path)
     factories = {
         "stress": CameraProfile.stress_720p_200,
         "elp": CameraProfile.elp_112,
@@ -541,6 +807,97 @@ def _camera_profile(options: dict[str, Any]) -> CameraProfile:
     camera.apply_nominal_intrinsics()
     camera.validate()
     return camera
+
+
+def _configured_physical_camera(
+    options: dict[str, Any],
+    hardware_profiles_path: Path,
+) -> CameraProfile:
+    profiles = load_camera_profiles(hardware_profiles_path)
+    profile_id = str(options["hardware_profile_id"])
+    physical = profiles.get(profile_id)
+    if physical is None:
+        raise ValueError(f"camera hardware profile is not configured: {profile_id}")
+    geometry = physical.geometry
+    camera = CameraProfile()
+    camera.id = str(options["profile"])
+    camera.width = int(options["width"])
+    camera.height = int(options["height"])
+    camera.fps_numerator = int(options["fps_numerator"])
+    camera.fps_denominator = int(options["fps_denominator"])
+    camera.lens_model = (
+        LensModel.FISHEYE_EQUIDISTANT
+        if geometry["lens_model"] == "fisheye_equidistant"
+        else LensModel.BROWN_CONRADY
+    )
+    camera.shutter = (
+        ShutterType.GLOBAL
+        if geometry["shutter"] == "global"
+        else ShutterType.ROLLING
+    )
+    camera.nominal_hfov_rad = radians(
+        float(geometry["nominal_hfov_degrees"])
+    )
+    mount = options["nominal_mount"]
+    camera.mount_x_m = float(mount["x_m"])
+    camera.mount_y_m = float(mount["y_m"])
+    camera.mount_z_m = float(mount["z_m"])
+    camera.mount_roll_rad = float(mount["roll_rad"])
+    camera.mount_pitch_down_rad = float(mount["pitch_down_rad"])
+    camera.mount_yaw_rad = float(mount["yaw_rad"])
+    camera.mount_provisional = True
+    camera.exposure_s = float(options["exposure_s"])
+    camera.rolling_readout_s = float(options["rolling_readout_s"])
+    camera.provisional = bool(options["provisional"])
+    camera.apply_nominal_intrinsics()
+    if physical.calibrated:
+        _apply_calibrated_intrinsics(camera, physical.geometry)
+        camera.provisional = False
+    camera.validate()
+    return camera
+
+
+def _apply_calibrated_intrinsics(
+    camera: CameraProfile,
+    geometry: dict[str, Any],
+) -> None:
+    intrinsics = geometry["intrinsics"]
+    calibration_width, calibration_height = (
+        int(value) for value in geometry["calibration_image_size"]
+    )
+    width_scale = camera.width / calibration_width
+    height_scale = camera.height / calibration_height
+    camera.fx = float(intrinsics["fx"]) * width_scale
+    camera.fy = float(intrinsics["fy"]) * height_scale
+    camera.cx = float(intrinsics["cx"]) * width_scale
+    camera.cy = float(intrinsics["cy"]) * height_scale
+    distortion = [float(value) for value in geometry["distortion"]]
+    if len(distortion) > 5:
+        raise ValueError("camera calibration has too many distortion values")
+    camera.distortion = distortion + [0.0] * (5 - len(distortion))
+
+
+def _apply_measured_camera_mount(
+    camera: CameraProfile,
+    platform: PlatformConfiguration,
+) -> None:
+    profiles = load_camera_profiles(platform.hardware_paths["camera_profiles"])
+    profile_id = str(platform.camera["hardware_profile_id"])
+    profile = profiles.get(profile_id)
+    if profile is None:
+        raise ValueError(f"camera hardware profile is not configured: {profile_id}")
+    if not profile.mount_measured:
+        camera.mount_provisional = True
+        return
+    mount = profile.mount
+    camera.mount_x_m = float(mount["x_m"])
+    camera.mount_y_m = float(mount["y_m"])
+    camera.mount_z_m = float(mount["z_m"])
+    camera.mount_roll_rad = float(mount["roll_rad"])
+    camera.mount_pitch_down_rad = float(mount["pitch_down_rad"])
+    camera.mount_yaw_rad = float(mount["yaw_rad"])
+    camera.mount_provisional = False
+    camera.validate()
 
 
 def _actuator_limits(options: dict[str, Any]) -> ActuatorLimits:

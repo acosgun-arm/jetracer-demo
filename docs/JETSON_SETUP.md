@@ -1,71 +1,125 @@
 # Jetson software setup
 
-The current software baseline is provisional because the exact Jetson module
-and factory JetPack image have not arrived. It does not guess or replace the
-NVIDIA stack. The delivered versions will be captured in a preflight report and
-then promoted into `configs/jetson_software_baseline.json`.
+The validated Jetson Nano baseline is JetPack 4.6.6 / L4T 32.7.6, CUDA 10.2,
+TensorRT 8.2.1, GCC 7.5, CMake 3.10, and OpenCV 4.1. The native deployment path
+is C++17 and avoids coupling the future inference loop to the Nano's system
+Python.
 
 All commands below are headless. They do not open a camera or GUI and cannot
 energise the vehicle.
 
-## Before the hardware arrives
+## Deploy from the Mac
 
-Validate the manifest and inspect this development host:
-
-```bash
-python3 tools/check_jetson_compatibility.py \
-  --output /tmp/jetracer-development-compatibility.json
-python3 tools/bootstrap_jetson.py
-```
-
-The first command reports `development_host` on a compatible non-Jetson
-machine. The second prints the future Jetson changes but performs a dry run.
-
-## On the delivered Jetson
-
-First save an unmodified inventory. A blocked result is expected before build
-dependencies are installed:
+The deployment helper synchronizes source without model artifacts or build
+outputs, builds natively, runs the simulator core test, and runs a CUDA/TensorRT
+self-test. It never opens the camera or actuator interfaces:
 
 ```bash
-python3 tools/check_jetson_compatibility.py --strict-target \
-  --output /tmp/jetracer-jetson-before-bootstrap.json
+tools/deploy_jetson_native.sh
 ```
 
-Review the bootstrap plan, then explicitly apply it:
+Override the target when its address changes:
 
 ```bash
-python3 tools/bootstrap_jetson.py
-python3 tools/bootstrap_jetson.py --apply
+JETRACER_JETSON_HOST=jetson@192.168.50.195 \
+  tools/deploy_jetson_native.sh
 ```
 
-The bootstrap installs only host build dependencies, creates
-`.venv-jetson`, and installs this project with the native GUI CLI disabled. It
-does not install or modify JetPack, CUDA, TensorRT, camera drivers, or motor
-drivers.
+The successful probe prints `"ready": true`, the detected TensorRT/CUDA
+versions, and `"actuators_accessed": false`.
 
-Run the strict report again and verify the package and headless simulator:
+With a UVC camera connected, enumerate its native formats and frame rates
+without displaying or recording frames:
 
 ```bash
-.venv-jetson/bin/python tools/check_jetson_compatibility.py --strict-target \
-  --output /tmp/jetracer-jetson-after-bootstrap.json
-.venv-jetson/bin/python -c "import jetracer_sim"
-
-cmake -S . -B build-jetson -G Ninja \
-  -DJETRACER_SIM_BUILD_NATIVE_CLI=OFF \
-  -DJETRACER_SIM_BUILD_PYTHON=ON \
-  -DCMAKE_BUILD_TYPE=Release
-cmake --build build-jetson
-ctest --test-dir build-jetson --output-on-failure
-
-PYTHONPATH=build-jetson/python .venv-jetson/bin/python \
-  examples/realtime_demo.py \
-  --platform-config configs/platforms/sim.json \
-  --model-config configs/demo_models.json \
-  --benchmark-registry benchmarks/demo_model_benchmarks.json \
-  --headless --duration 1 --no-log
+ssh jetson@192.168.50.195 \
+  /home/jetson/jetracer-demo/build-jetson-native/jetracer-jetson-runtime \
+  --camera-probe /dev/video0
 ```
 
-Before declaring this baseline supported, copy the measured module,
-JetPack/L4T, CUDA, TensorRT, OpenCV and GStreamer versions from the report into
-the manifest, then retain both before/after reports with the hardware bring-up
-records.
+Run the reproducible 200 Hz transport benchmark (compressed frames are
+discarded without decoding or recording):
+
+```bash
+ssh jetson@192.168.50.195 \
+  /home/jetson/jetracer-demo/build-jetson-native/jetracer-jetson-runtime \
+  --camera-benchmark /dev/video0 1280 720 200 MJPG 10 4 5000 1000
+```
+
+The measured hardware result is retained in
+`benchmarks/jetson_elp_camera_transport.json`.
+
+Benchmark NVIDIA JPEG decode, the configured 180-degree correction, and resize
+to the 512x512 TensorRT input while retaining the result in NVMM GPU memory:
+
+```bash
+ssh jetson@192.168.50.195 \
+  /home/jetson/jetracer-demo/build-jetson-native/jetracer-jetson-runtime \
+  --preprocess-benchmark /dev/video0 1280 720 200 512 512 2 10 5000 1000
+```
+
+## Current scope
+
+This establishes native compilation, NVIDIA runtime probing, and lossless UVC
+transport at 200 Hz. MJPEG decoding, TensorRT engine loading,
+preprocessing/postprocessing, and the fail-closed actuator adapter are the next
+deployment layers; motors remain disabled until those layers pass hardware
+bring-up.
+
+## TensorRT compatibility
+
+TensorRT 8.2 cannot parse the opset-17 SegFormer `LayerNormalization`
+operator. Export the Jetson variant with opset 14, which decomposes it into
+supported primitives:
+
+```bash
+.venv/bin/python tools/export_segformer_onnx.py \
+  --models configs/road_segmentation_models.json \
+  --model-id segformer-b0-cityscapes-cpu-fp32 \
+  --output models/segformer-b0-cityscapes-512-opset14.onnx \
+  --opset 14 --overwrite
+```
+
+The engine and inference measurements are recorded in
+`benchmarks/jetson_segformer_tensorrt.json`. At MAXN the 512x512 FP16 model
+delivers 3.91 FPS, so it is retained as a high-quality slow option rather than
+the high-speed default.
+
+PIDNet-S was also exported and benchmarked as a TensorRT-friendly CNN. It
+reaches 28.03 FPS, but fails the current synthetic Waveshare quality gate due
+to 7.1% road recall and therefore is not exposed as a selectable model. See
+`benchmarks/jetson_pidnet_tensorrt.json` for the reproducible result.
+
+## Native color-lane benchmark
+
+The classical Waveshare backend shares one profile between Python and C++.
+Benchmark its complete ELP path without accessing actuators:
+
+```bash
+build-jetson-native/jetracer-jetson-runtime \
+  --color-lane-camera-benchmark \
+  configs/color_lane/waveshare-sim-white.json \
+  /dev/video0 1280 720 200 2 10 5000 1000
+```
+
+On the Nano this delivered 199.28 FPS with no camera-buffer gaps. Native lane
+processing averaged 3.78 ms and had 264.72 FPS standalone capacity. This white
+profile is for simulation validation; a real orange-line profile must be
+calibrated from physical-track images before driving.
+
+## Motor-disabled controller replay
+
+Replay the deterministic ELP/Waveshare clip through native colour fitting,
+ground projection, adaptive pure pursuit, and the speed governor:
+
+```bash
+build/native-shadow/jetracer-shadow-replay \
+  configs/color_lane/waveshare-sim-white.json \
+  configs/native_shadow_controller.json \
+  benchmarks/synthetic_clips/waveshare_3x2-elp-20260801-214642/rgb.mp4 \
+  build/shadow-replay/waveshare-elp.jsonl
+```
+
+The shadow configuration requires `"actuator_mode": "disabled"`; the binary
+contains only a telemetry sink and no PWM/I²C actuator adapter. Its camera
+calibration is synthetic-only and must not be used to enable real motion.

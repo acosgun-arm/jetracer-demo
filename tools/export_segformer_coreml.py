@@ -101,6 +101,17 @@ def artifact_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def validate_coremltools_runtime() -> None:
+    try:
+        from coremltools import libmilstoragepython
+        libmilstoragepython._BlobStorageWriter
+    except (AttributeError, ImportError) as error:
+        raise RuntimeError(
+            "coremltools has no native blob-writer extension for this Python; "
+            "use the documented Python 3.13 Core ML exporter environment"
+        ) from error
+
+
 def main() -> None:
     arguments = parse_arguments()
     forbidden = {"cv2", "jetracer_sim", "jetracer_sim._native"}
@@ -118,7 +129,24 @@ def main() -> None:
         raise ValueError("runtime configuration lacks Core ML export settings")
     selected = None if arguments.model_ids is None else set(arguments.model_ids)
     variants = coreml_variants(arguments.models.resolve(), selected)
-    model_name = arguments.model_name or str(pretrained["model_name"])
+    source_models = {
+        str(adapter.get("source_model", pretrained["model_name"]))
+        for _, adapter, _ in variants
+    }
+    if len(source_models) != 1:
+        raise ValueError("selected Core ML variants must use one source model")
+    model_name = arguments.model_name or source_models.pop()
+    configured_revisions = {
+        str(adapter["source_revision"])
+        for _, adapter, _ in variants
+        if adapter.get("source_revision") is not None
+    }
+    if arguments.revision is not None:
+        revision = arguments.revision
+    elif len(configured_revisions) <= 1:
+        revision = next(iter(configured_revisions), None)
+    else:
+        raise ValueError("selected Core ML variants use different revisions")
 
     try:
         import coremltools as ct
@@ -127,12 +155,13 @@ def main() -> None:
             "Core ML export requires coremltools in this isolated environment; "
             "install the coreml-export optional dependency"
         ) from error
+    validate_coremltools_runtime()
     import torch
     from transformers import AutoImageProcessor, AutoModelForSemanticSegmentation
 
     load_options: dict[str, Any] = {"trust_remote_code": False}
-    if arguments.revision is not None:
-        load_options["revision"] = arguments.revision
+    if revision is not None:
+        load_options["revision"] = revision
     processor = AutoImageProcessor.from_pretrained(model_name, **load_options)
     source_model = AutoModelForSemanticSegmentation.from_pretrained(
         model_name, **load_options
@@ -142,11 +171,18 @@ def main() -> None:
     reference_adapter = variants[0][1]
     input_width = int(reference_adapter["input_width"])
     input_height = int(reference_adapter["input_height"])
-    processor_size = getattr(processor, "size", None)
-    if isinstance(processor_size, dict) and (
-        processor_size.get("width"), processor_size.get("height")
-    ) != (input_width, input_height):
-        raise ValueError("manifest dimensions do not match the source processor")
+    if input_width <= 0 or input_height <= 0:
+        raise ValueError("manifest input dimensions must be positive")
+    raw_processor_size = getattr(processor, "size", None)
+    processor_size = (
+        dict(raw_processor_size)
+        if isinstance(raw_processor_size, Mapping)
+        else (
+            dict(vars(raw_processor_size))
+            if hasattr(raw_processor_size, "__dict__")
+            else raw_processor_size
+        )
+    )
     road_class_id = resolve_label_id(source_model.config.id2label, "road")
     for _, adapter, _ in variants:
         if (int(adapter["input_width"]), int(adapter["input_height"])) != (
@@ -206,8 +242,9 @@ def main() -> None:
             shutil.move(str(temporary_output), str(output))
         metadata = {
             "source_model": model_name,
-            "source_revision": arguments.revision,
+            "source_revision": revision,
             "resolved_commit": getattr(source_model.config, "_commit_hash", None),
+            "source_processor_size": processor_size,
             "model_id": model["model_id"],
             "precision": precision,
             "minimum_deployment_target": target_name,
